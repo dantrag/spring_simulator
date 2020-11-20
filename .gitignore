@@ -52,4 +52,4 @@ compile_commands.json
 *creator.user*
 
 !builds/*
-!/builds/release-x64/*
+!builds/*/*
