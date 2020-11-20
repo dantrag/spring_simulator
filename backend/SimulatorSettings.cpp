@@ -1,0 +1,39 @@
+#include "SimulatorSettings.h"
+
+#ifdef QT_CORE_LIB
+void SimulatorSettings::loadFromFile(QString filename) {
+  QSettings file_settings(filename, QSettings::IniFormat);
+  particle_default_radius_ = file_settings.value("Particle/DefaultRadius", 5.0).toDouble();
+  molten_particle_default_radius_ = file_settings.value("Particle/MoltenDefaultRadius", 7.5).toDouble();
+  molten_particle_cooldown_time_ = file_settings.value("Particle/CooldownTime", 10.0).toDouble();
+
+  spring_default_stiffness_ = file_settings.value("Spring/DeafultStiffness", 0.05).toDouble();
+  spring_default_length_ = file_settings.value("Spring/DefaultLength", 15.0).toDouble();
+  spring_connection_threshold_ = file_settings.value("Spring/ConnectionThreshold", 0.5).toDouble();
+  spring_disconnection_threshold_ = file_settings.value("Spring/DisconnectionThreshold", 5.0).toDouble();
+
+  relaxation_iteration_limit_ = file_settings.value("Relaxation/IterationLimit", 1000).toInt();
+  relaxation_convergence_limit_ = file_settings.value("Relaxation/ConvergenceLimit", 0.05).toDouble();
+
+  heater_speed_ = file_settings.value("Heater/Speed", 10.0).toDouble();
+  heater_size_ = file_settings.value("Heater/Size", 70.0).toDouble();
+}
+
+void SimulatorSettings::saveToFile(QString filename) {
+  QSettings file_settings(filename, QSettings::IniFormat);
+  file_settings.setValue("Particle/DefaultRadius", particle_default_radius_);
+  file_settings.setValue("Particle/MoltenDefaultRadius", molten_particle_default_radius_);
+  file_settings.setValue("Particle/CooldownTime", molten_particle_cooldown_time_);
+
+  file_settings.setValue("Spring/DeafultStiffness", spring_default_stiffness_);
+  file_settings.setValue("Spring/DefaultLength", spring_default_length_);
+  file_settings.setValue("Spring/ConnectionThreshold", spring_connection_threshold_);
+  file_settings.setValue("Spring/DisconnectionThreshold", spring_disconnection_threshold_);
+
+  file_settings.setValue("Relaxation/IterationLimit", relaxation_iteration_limit_);
+  file_settings.setValue("Relaxation/ConvergenceLimit", relaxation_convergence_limit_);
+
+  file_settings.setValue("Heater/Speed", heater_speed_);
+  file_settings.setValue("Heater/Size", heater_size_);
+}
+#endif
