@@ -43,7 +43,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>119</width>
+              <width>142</width>
               <height>139</height>
              </rect>
             </property>
@@ -133,8 +133,8 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-102</y>
-              <width>117</width>
+              <y>0</y>
+              <width>142</width>
               <height>170</height>
              </rect>
             </property>
@@ -249,7 +249,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
+              <width>156</width>
               <height>68</height>
              </rect>
             </property>
@@ -289,6 +289,13 @@
           </widget>
          </item>
          <item>
+          <widget class="Line" name="static43">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="static15">
            <property name="text">
             <string>Selected area:</string>
@@ -296,16 +303,113 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="heat_button">
-           <property name="text">
-            <string>Heat</string>
-           </property>
-          </widget>
+          <layout class="QHBoxLayout" name="layout33">
+           <item>
+            <widget class="QPushButton" name="heat_button">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="ButtonText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>170</red>
+                   <green>0</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="ButtonText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>170</red>
+                   <green>0</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="ButtonText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>120</red>
+                   <green>120</green>
+                   <blue>120</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Heat</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="cool_button">
+             <property name="palette">
+              <palette>
+               <active>
+                <colorrole role="ButtonText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>0</red>
+                   <green>0</green>
+                   <blue>255</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </active>
+               <inactive>
+                <colorrole role="ButtonText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>0</red>
+                   <green>0</green>
+                   <blue>255</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </inactive>
+               <disabled>
+                <colorrole role="ButtonText">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>120</red>
+                   <green>120</green>
+                   <blue>120</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+               </disabled>
+              </palette>
+             </property>
+             <property name="font">
+              <font>
+               <weight>75</weight>
+               <bold>true</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Cool</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="cool_button">
-           <property name="text">
-            <string>Cool</string>
+          <widget class="Line" name="static44">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
           </widget>
          </item>

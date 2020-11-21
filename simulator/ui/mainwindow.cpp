@@ -249,21 +249,64 @@ void MainWindow::displayPasses(bool show) {
                                                         pass[i + 1].x, pass[i + 1].y,
                                                         QPen(QBrush(QColor(static_cast<Qt::GlobalColor>(color))),
                                                              width, Qt::DotLine, Qt::RoundCap));
+        // TODO: set Z values
         line->setOpacity(0.1);
         passes_ui_.rbegin()->push_back(line);
       }
-      auto startpoint = ui_->graphicsView->scene()->addRect(pass.begin()->x - width, pass.begin()->y - width,
-                                                            width * 2, width * 2,
+      QVector2D vect = {0.0, 1.0};
+      if (pass.size() > 1) {
+        vect[0] = pass[1].x - pass[0].x;
+        vect[1] = pass[1].y - pass[0].y;
+        vect.normalize();
+      }
+      QPointF rotated_point = QTransform().rotate(135).map(QPointF(vect[0], vect[1]));
+      vect[0] = rotated_point.x();
+      vect[1] = rotated_point.y();
+      auto startpoint = ui_->graphicsView->scene()->addLine(pass.begin()->x, pass.begin()->y,
+                                                            pass.begin()->x + vect[0] * width * 2,
+                                                            pass.begin()->y + vect[1] * width * 2,
                                                             QPen(QBrush(QColor(static_cast<Qt::GlobalColor>(color))),
-                                                                 width));
+                                                                 width, Qt::SolidLine, Qt::RoundCap));
       startpoint->setOpacity(0.1);
       passes_ui_.rbegin()->push_back(startpoint);
-      auto endpoint = ui_->graphicsView->scene()->addEllipse(pass.rbegin()->x - width, pass.rbegin()->y - width,
-                                                             width * 2, width * 2,
-                                                             QPen(QBrush(QColor(static_cast<Qt::GlobalColor>(color))),
-                                                                  width));
+      rotated_point = QTransform().rotate(90).map(QPointF(vect[0], vect[1]));
+      vect[0] = rotated_point.x();
+      vect[1] = rotated_point.y();
+      startpoint = ui_->graphicsView->scene()->addLine(pass.begin()->x, pass.begin()->y,
+                                                       pass.begin()->x + vect[0] * width * 2,
+                                                       pass.begin()->y + vect[1] * width * 2,
+                                                       QPen(QBrush(QColor(static_cast<Qt::GlobalColor>(color))),
+                                                            width, Qt::SolidLine, Qt::RoundCap));
+      startpoint->setOpacity(0.1);
+      passes_ui_.rbegin()->push_back(startpoint);
+
+      vect = {0.0, -1.0};
+      if (pass.size() > 1) {
+        vect[0] = pass.rbegin()->x - pass[pass.size() - 2].x;
+        vect[1] = pass.rbegin()->y - pass[pass.size() - 2].y;
+        vect.normalize();
+      }
+      rotated_point = QTransform().rotate(135).map(QPointF(vect[0], vect[1]));
+      vect[0] = rotated_point.x();
+      vect[1] = rotated_point.y();
+      auto endpoint = ui_->graphicsView->scene()->addLine(pass.rbegin()->x, pass.rbegin()->y,
+                                                          pass.rbegin()->x + vect[0] * width * 2,
+                                                          pass.rbegin()->y + vect[1] * width * 2,
+                                                          QPen(QBrush(QColor(static_cast<Qt::GlobalColor>(color))),
+                                                               width, Qt::SolidLine, Qt::RoundCap));
       endpoint->setOpacity(0.1);
       passes_ui_.rbegin()->push_back(endpoint);
+      rotated_point = QTransform().rotate(90).map(QPointF(vect[0], vect[1]));
+      vect[0] = rotated_point.x();
+      vect[1] = rotated_point.y();
+      endpoint = ui_->graphicsView->scene()->addLine(pass.rbegin()->x, pass.rbegin()->y,
+                                                     pass.rbegin()->x + vect[0] * width * 2,
+                                                     pass.rbegin()->y + vect[1] * width * 2,
+                                                     QPen(QBrush(QColor(static_cast<Qt::GlobalColor>(color))),
+                                                          width, Qt::SolidLine, Qt::RoundCap));
+      endpoint->setOpacity(0.1);
+      passes_ui_.rbegin()->push_back(endpoint);
+
       color++;
     }
   } else {
