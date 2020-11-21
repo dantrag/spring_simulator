@@ -33,6 +33,7 @@ private:
 
   void clearUI();
   void initializeFieldCircle();
+  void initializeFieldRectangle();
   void initializeUI();
   void updateFieldUI();
   void doHeat();

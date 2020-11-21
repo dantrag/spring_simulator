@@ -72,8 +72,21 @@ void MainWindow::initializeFieldCircle() {
   double x = ui_->init_circle_x_spinbox->value();
   double y = ui_->init_circle_y_spinbox->value();
   double r = ui_->init_circle_radius_spinbox->value();
-  sim_->initializeCircle(Point(x, y), r,
-                         static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId()));
+  auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
+  sim_->initializeCircle(Point(x, y), r, mode);
+  initializeUI();
+}
+
+void MainWindow::initializeFieldRectangle() {
+  clearUI();
+  sim_->clear();
+
+  double left = ui_->init_rect_left_spinbox->value();
+  double top = ui_->init_rect_top_spinbox->value();
+  double right = ui_->init_rect_right_spinbox->value();
+  double bottom = ui_->init_rect_bottom_spinbox->value();
+  auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
+  sim_->initializeRectangle(Point(left, top), Point(right, bottom), mode);
   initializeUI();
 }
 
@@ -320,6 +333,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::loadSettings);
   connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);
   connect(ui_->init_circle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldCircle);
+  connect(ui_->init_rectangle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldRectangle);
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, [&](){ ui_->show_passes_checkbox->setChecked(false); });
   connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
   connectSettingsSignals();

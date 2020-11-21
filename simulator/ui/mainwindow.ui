@@ -14,7 +14,7 @@
    <string>Spring Simulator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="layout7" stretch="3,1,1,1">
+   <layout class="QHBoxLayout" name="layout7" stretch="3,1,1,0">
     <item>
      <widget class="QGraphicsView" name="graphicsView"/>
     </item>
@@ -36,7 +36,7 @@
          <item>
           <widget class="QToolBox" name="static32">
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="static33">
             <property name="geometry">
@@ -44,13 +44,16 @@
               <x>0</x>
               <y>0</y>
               <width>119</width>
-              <height>133</height>
+              <height>139</height>
              </rect>
             </property>
             <attribute name="label">
              <string>Circle</string>
             </attribute>
             <layout class="QVBoxLayout" name="layout24">
+             <property name="bottomMargin">
+              <number>15</number>
+             </property>
              <item>
               <layout class="QHBoxLayout" name="layout23">
                <item>
@@ -130,14 +133,116 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>0</y>
-              <width>98</width>
-              <height>68</height>
+              <y>-102</y>
+              <width>117</width>
+              <height>170</height>
              </rect>
             </property>
             <attribute name="label">
              <string>Rectangle</string>
             </attribute>
+            <layout class="QVBoxLayout" name="layout27">
+             <property name="bottomMargin">
+              <number>15</number>
+             </property>
+             <item>
+              <layout class="QHBoxLayout" name="layout28">
+               <item>
+                <widget class="QLabel" name="static39">
+                 <property name="text">
+                  <string>x&lt;sub&gt;left&lt;/sub&gt;:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="init_rect_left_spinbox">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>9999.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="layout29">
+               <item>
+                <widget class="QLabel" name="static40">
+                 <property name="text">
+                  <string>y&lt;sub&gt;top&lt;/sub&gt;:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="init_rect_top_spinbox">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>9999.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="layout30">
+               <item>
+                <widget class="QLabel" name="static41">
+                 <property name="text">
+                  <string>x&lt;sub&gt;right&lt;/sub&gt;:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="init_rect_right_spinbox">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>9999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>500.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="layout31">
+               <item>
+                <widget class="QLabel" name="static42">
+                 <property name="text">
+                  <string>y&lt;sub&gt;bottom&lt;/sub&gt;:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="init_rect_bottom_spinbox">
+                 <property name="decimals">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <double>9999.000000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>500.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QPushButton" name="init_rectangle_button">
+               <property name="text">
+                <string>Initialize</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
            <widget class="QWidget" name="static35">
             <property name="geometry">
