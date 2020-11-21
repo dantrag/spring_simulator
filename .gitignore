@@ -54,4 +54,5 @@ compile_commands.json
 !builds/*
 !builds/*/*
 !builds/*/*/*
+builds/debug*
 Makefile*
