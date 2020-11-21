@@ -34,6 +34,7 @@ private:
   void clearUI();
   void initializeFieldCircle();
   void initializeFieldRectangle();
+  void initializeFieldImage();
   void initializeUI();
   void updateFieldUI();
   void doHeat();

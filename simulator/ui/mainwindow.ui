@@ -36,7 +36,7 @@
          <item>
           <widget class="QToolBox" name="static32">
            <property name="currentIndex">
-            <number>1</number>
+            <number>2</number>
            </property>
            <widget class="QWidget" name="static33">
             <property name="geometry">
@@ -256,6 +256,15 @@
             <attribute name="label">
              <string>From image</string>
             </attribute>
+            <layout class="QVBoxLayout" name="layout32">
+             <item>
+              <widget class="QPushButton" name="init_select_image">
+               <property name="text">
+                <string>Select image</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </widget>
          </item>

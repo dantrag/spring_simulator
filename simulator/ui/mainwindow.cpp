@@ -20,6 +20,7 @@
 int kBlobScale = 4;
 
 void MainWindow::clearUI() {
+  displayPasses(false);
   for (auto p : particle_ui_) if (p.second) {
     ui_->graphicsView->scene()->removeItem(p.second);
     delete p.second;
@@ -88,6 +89,35 @@ void MainWindow::initializeFieldRectangle() {
   auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
   sim_->initializeRectangle(Point(left, top), Point(right, bottom), mode);
   initializeUI();
+}
+
+void MainWindow::initializeFieldImage() {
+  auto filename = QFileDialog::getOpenFileName(this, "Open image for initialization",
+                                               QApplication::applicationDirPath(),
+                                               "Portable Network Graphics (*.png);;"
+                                               "JPG/JPEG (*.jpg);;Windows Bitmap (*.bmp);;All Files (*)");
+  if (!filename.isEmpty()) {
+    try {
+      QPixmap pixmap(filename);
+      auto image = pixmap.toImage();
+      std::vector<std::vector<int>> rgb_data(image.height());
+      for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) rgb_data[i].push_back(static_cast<int>(image.pixel(j, i)));
+      }
+
+      if (!rgb_data.empty()) {
+        clearUI();
+        sim_->clear();
+        auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
+        sim_->initializeFromPixelArray(rgb_data, 5.0, [](int rgb) {
+          return qGray(static_cast<QRgb>(rgb)) < 128;
+        }, mode);
+        initializeUI();
+
+      }
+    } catch (const std::exception&) {
+    }
+  }
 }
 
 void MainWindow::doHeat() {
@@ -334,6 +364,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);
   connect(ui_->init_circle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldCircle);
   connect(ui_->init_rectangle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldRectangle);
+  connect(ui_->init_select_image, &QPushButton::clicked, this, &MainWindow::initializeFieldImage);
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, [&](){ ui_->show_passes_checkbox->setChecked(false); });
   connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
   connectSettingsSignals();
