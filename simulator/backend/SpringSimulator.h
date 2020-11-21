@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <vector>
+#include <functional>
 
 #include "backend/SimulatorSettings.h"
 #include "backend/Particle.h"
@@ -22,7 +23,10 @@ class SpringSimulator {
     kSquare,
   };
 
-  void initializeCircle(Point center, double radius, InitializationGrid mode = InitializationGrid::kHexagonal);
+  void initializeCircle(Point center, double radius,
+                        InitializationGrid mode = InitializationGrid::kHexagonal);
+  void initializeRectangle(Point lefttop, Point rightbottom,
+                           InitializationGrid mode = InitializationGrid::kHexagonal);
   void initializeFromPixelArray();
   #ifdef QT_CORE_LIB
   void initializeFromImage();
@@ -43,6 +47,9 @@ class SpringSimulator {
   std::vector<Particle*> particles_;
 
  protected:
+  double defaultInitializationInterval() const;
+  void initializeField(InitializationGrid mode, Point center, double width, double height, double interval,
+                       std::function<bool(double, double)> valid_point);
   void runLinearPass(const Point& start, const Point& finish);
 
   Spring* checkAndAddSpring(Particle* p1, Particle* p2);

@@ -24,71 +24,75 @@ Spring* SpringSimulator::checkAndAddSpring(Particle *p1, Particle *p2) {
   } else return nullptr;
 }
 
-void SpringSimulator::initializeCircle(Point center, double radius, InitializationGrid mode) {
-  for (auto p : particles_) {
-    delete p;
+void SpringSimulator::initializeField(InitializationGrid mode, Point center, double width, double height,
+                                      double interval, std::function<bool(double, double)> valid_point) {
+  clear();
+
+  constexpr double hex_scale = std::sqrt(3) / 2;
+  double y_interval = interval;
+  switch (mode) {
+    case InitializationGrid::kHexagonal :
+      y_interval = interval * hex_scale; break;
+    case InitializationGrid::kSquare :
+      break;
   }
-  particles_.clear();
 
-  double interval = settings_->particleDefaultRadius() * 2 + settings_->springDefaultLength();
-  if (mode == InitializationGrid::kHexagonal) {
-    // hexagonal grid coordinates
-    auto size_x = int((radius - interval / 2) / interval);
-    if (size_x <= 0) return;
-    auto size_y = int((radius - interval / 2) / (interval * 1.7320508) * 2);
-    if (size_y <= 0) return;
+  auto size_x = int((width / 2 - interval / 2) / interval);
+  auto size_y = int((height / 2 - interval / 2) / y_interval);
+  if (size_x <= 0) return;
+  if (size_y <= 0) return;
 
-    std::vector<std::vector<Particle*>> particles(2 * size_y + 1, std::vector<Particle*>(2 * size_x + 1));
-    for (int i = -size_y; i <= size_y; ++i) {
-      for (int j = -size_x; j <= size_x; ++j) {
-        double x = (i & 1) ? center.x + j * interval - interval / 2
-                           : center.x + j * interval;
-        double y = center.y + i * interval * 0.8660254;
-        if (distance(center, x, y) + interval / 2 <= radius + 1e-5)
-          particles[i + size_y][j + size_x] = new Particle(x, y, settings_);
-      }
+  std::vector<std::vector<Particle*>> particles(2 * size_y + 1, std::vector<Particle*>(2 * size_x + 1));
+  for (int i = -size_y; i <= size_y; ++i) {
+    for (int j = -size_x; j <= size_x; ++j) {
+      double x = center.x + j * interval;
+      if (mode == InitializationGrid::kHexagonal && (i & 1)) x -= interval / 2;
+      double y = center.y + i * y_interval;
+      if (valid_point(x, y))
+        particles[i + size_y][j + size_x] = new Particle(x, y, settings_);
     }
-    for (int i = 0; i <= 2 * size_y; ++i) {
-      for (int j = 0; j <= 2 * size_x; ++j) {
-        if (particles[i][j]) {
-          if (j > 0) checkAndAddSpring(particles[i][j], particles[i][j - 1]);
-          if (i > 0) {
-            checkAndAddSpring(particles[i][j], particles[i - 1][j]);
-            if ((i - size_y) & 1) {
-              if (j > 0) checkAndAddSpring(particles[i][j], particles[i - 1][j - 1]);
-            } else {
-              if (j < 2 * size_x) checkAndAddSpring(particles[i][j], particles[i - 1][j + 1]);
-            }
+  }
+
+  for (int i = 0; i <= 2 * size_y; ++i) {
+    for (int j = 0; j <= 2 * size_x; ++j) {
+      if (particles[i][j]) {
+        if (j > 0) checkAndAddSpring(particles[i][j], particles[i][j - 1]);
+        if (i > 0) checkAndAddSpring(particles[i][j], particles[i - 1][j]);
+        if (mode == InitializationGrid::kHexagonal && (i > 0)) {
+          if ((i - size_y) & 1) {
+            if (j > 0) checkAndAddSpring(particles[i][j], particles[i - 1][j - 1]);
+          } else {
+            if (j < 2 * size_x) checkAndAddSpring(particles[i][j], particles[i - 1][j + 1]);
           }
-          particles_.push_back(particles[i][j]);
         }
+        particles_.push_back(particles[i][j]);
       }
     }
   }
-  if (mode == InitializationGrid::kSquare) {
-    // square grid coordinates
-    auto size = int((radius - interval / 2) / interval);
-    if (size <= 0) return;
+}
 
-    std::vector<std::vector<Particle*>> particles(2 * size + 1, std::vector<Particle*>(2 * size + 1));
-    for (int i = -size; i <= size; ++i) {
-      for (int j = -size; j <= size; ++j) {
-        double x = center.x + j * interval;
-        double y = center.y + i * interval;
-        if (distance(center, x, y) + interval / 2 <= radius + 1e-5)
-          particles[i + size][j + size] = new Particle(x, y, settings_);
-      }
-    }
-    for (int i = 0; i <= 2 * size; ++i) {
-      for (int j = 0; j <= 2 * size; ++j) {
-        if (particles[i][j]) {
-          if (j > 0) checkAndAddSpring(particles[i][j], particles[i][j - 1]);
-          if (i > 0) checkAndAddSpring(particles[i][j], particles[i - 1][j]);
-          particles_.push_back(particles[i][j]);
-        }
-      }
-    }
-  }
+double SpringSimulator::defaultInitializationInterval() const {
+  return settings_->particleDefaultRadius() * 2 + settings_->springDefaultLength();
+}
+
+void SpringSimulator::initializeCircle(Point center, double radius, InitializationGrid mode) {
+  auto interval = defaultInitializationInterval();
+  initializeField(mode, center, radius * 2, radius * 2, interval, [&](double x, double y) {
+    return distance(center, x, y) + interval / 2 <= radius + 1e-5;
+  });
+}
+
+void SpringSimulator::initializeRectangle(Point lefttop, Point rightbottom, InitializationGrid mode) {
+  auto left = std::min(lefttop.x, rightbottom.x);
+  auto right = std::max(lefttop.x, rightbottom.x);
+  auto top = std::min(lefttop.y, rightbottom.y);
+  auto bottom = std::max(lefttop.y, rightbottom.y);
+  auto interval = defaultInitializationInterval();
+  initializeField(mode, Point((left + right) / 2, (top + bottom) / 2), right - left, bottom - top,
+                  interval, [&](double x, double y) {
+    return (x - interval / 2 >= left - 1e-5) && (x + interval / 2 <= right + 1e-5) &&
+           (y - interval / 2 >= top - 1e-5) && (y + interval / 2 <= bottom + 1e-5);
+  });
 }
 
 void particleDFS(Particle* current, int current_depth, int minimum_depth, int maximum_depth,
