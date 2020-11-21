@@ -95,6 +95,27 @@ void SpringSimulator::initializeRectangle(Point lefttop, Point rightbottom, Init
   });
 }
 
+void SpringSimulator::initializeFromPixelArray(const std::vector<std::vector<int>>& rgb_array, double scale,
+                                               std::function<bool(int)> add_pixel, InitializationGrid mode) {
+  int height = static_cast<int>(rgb_array.size());
+  int width = 0;
+  std::vector<std::vector<bool>> include;
+  for (const auto& line : rgb_array) {
+    include.push_back(std::vector<bool>());
+    for (auto pixel : line) include.rbegin()->push_back(add_pixel(pixel));
+    width = std::max(width, static_cast<int>(line.size()));
+  }
+  auto interval = defaultInitializationInterval();
+  initializeField(mode, Point(width * scale / 2, height * scale / 2), width * scale, height * scale, interval,
+                  [&](double x, double y) {
+    auto pixel_y = static_cast<int>(round(y / scale));
+    if (pixel_y >= height) return false;
+    auto pixel_x = static_cast<int>(round(x / scale));
+    if (pixel_x >= static_cast<int>(include[pixel_y].size())) return false;
+    return static_cast<bool>(include[pixel_y][pixel_x]);
+  });
+}
+
 void particleDFS(Particle* current, int current_depth, int minimum_depth, int maximum_depth,
                  std::set<Particle*>& visited,
                  std::set<Particle*>& neighbourhood) {

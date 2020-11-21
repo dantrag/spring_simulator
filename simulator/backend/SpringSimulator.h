@@ -27,7 +27,9 @@ class SpringSimulator {
                         InitializationGrid mode = InitializationGrid::kHexagonal);
   void initializeRectangle(Point lefttop, Point rightbottom,
                            InitializationGrid mode = InitializationGrid::kHexagonal);
-  void initializeFromPixelArray();
+  void initializeFromPixelArray(const std::vector<std::vector<int>>& rgb_array, double scale,
+                                std::function<bool(int)> add_pixel,
+                                InitializationGrid mode = InitializationGrid::kHexagonal);
   #ifdef QT_CORE_LIB
   void initializeFromImage();
   #endif
