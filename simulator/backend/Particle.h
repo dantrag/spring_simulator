@@ -17,6 +17,7 @@ struct Point {
 class Particle {
  public:
   Particle(int x, int y, SimulatorSettings* settings) : x_(x), y_(y), settings_(settings) {}
+  ~Particle();
 
   Point point() const { return Point(x_, y_); }
   double x() const { return x_; }

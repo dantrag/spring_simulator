@@ -235,9 +235,7 @@ void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
 void SpringSimulator::clear() {
   time_ = 0;
   for (auto p : particles_) {
-    for (auto s : p->springs()) {
-      delete s;
-    }
     delete p;
   }
+  particles_.clear();
 }

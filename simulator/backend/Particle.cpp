@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "Spring.h"
+
 double distance(double x1, double y1, double x2, double y2) {
   return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
@@ -35,4 +37,11 @@ void Particle::removeString(Spring* spring) {
 
   // if the spring was deleted, last item appears empty
   if (*springs_.rbegin() == nullptr) springs_.pop_back();
+}
+
+Particle::~Particle() {
+  for (auto s : springs_) {
+    s->otherEnd(this)->removeString(s);
+    delete s;
+  }
 }
