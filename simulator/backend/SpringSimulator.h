@@ -46,6 +46,8 @@ class SpringSimulator {
   const std::set<Spring*>& recentlyDeletedSprings() const { return recently_deleted_springs_; }
   void clearRecent() { recently_added_springs_.clear(); recently_deleted_springs_.clear(); }
 
+  const std::vector<Point> fieldContour() const;
+
   std::vector<Particle*> particles_;
 
  protected:

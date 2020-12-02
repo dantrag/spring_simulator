@@ -1,6 +1,8 @@
 #include "backend/SpringSimulator.h"
 
 #include <cmath>
+#include <unordered_map>
+#include <queue>
 
 #include "backend/Spring.h"
 
@@ -255,6 +257,144 @@ void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
     for (auto s : p->springs()) s->updateForce();
   }
   relaxHeat();
+}
+
+inline double crossProduct(const Point& p1, const Point& p2, const Point& p3) {
+  return (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
+}
+
+template<class VertexType>
+bool findCycle(VertexType* current, VertexType* parent,
+               std::unordered_map<VertexType*, std::vector<VertexType*>>& graph,
+               std::set<VertexType*>& visited,
+               std::vector<VertexType*>& current_path, std::vector<VertexType*>& cycle) {
+  visited.insert(current);
+  current_path.push_back(current);
+  for (auto next : graph[current]) {
+    if (!visited.count(next)) {
+      if (findCycle(next, current, graph, visited, current_path, cycle)) return true;
+    } else {
+      if (next != parent) {
+        for (auto particle = current_path.rbegin();
+             particle != current_path.rend() && *particle != next;
+             particle++)
+          cycle.push_back(*particle);
+        cycle.push_back(next);
+        return true;
+      }
+    }
+  }
+  current_path.pop_back();
+  return false;
+}
+
+const std::vector<Point> SpringSimulator::fieldContour() const {
+  // threshold of what is considered to be a cycle lying inside the material
+  const int max_inner_cycle_size = 4;
+
+  // pair of boolean - whether left side/right side of the spring is inside
+  std::unordered_map<Spring*, std::pair<bool, bool>> spring_sides_inside = {};
+
+  for (auto p : particles_) {
+    for (auto s : p->springs()) if (p < s->otherEnd(p)) {
+      // make sure to check every spring only once
+      auto other = s->otherEnd(p);
+      std::queue<Particle*> bfs_queue = {};
+      std::set<Particle*> visited = {p, other};
+      std::vector<Particle*> cycle_ends = {};
+      std::unordered_map<Particle*, std::pair<int, Particle*>> depth = {}; // depth and previous vertex
+      depth[other] = std::make_pair(-1, nullptr);
+      depth[p] = std::make_pair(0, other);
+      bfs_queue.push(p);
+      while (!bfs_queue.empty()) {
+        auto v = bfs_queue.front();
+        bfs_queue.pop();
+        for (auto s : v->springs()) {
+          auto next = s->otherEnd(v);
+          if (!visited.count(next) && depth[v].first < max_inner_cycle_size - 2) {
+            bfs_queue.push(next);
+            depth[next] = std::make_pair(depth[v].first + 1, v);
+            visited.insert(next);
+          }
+          if (next == other && next != depth[v].second)
+            cycle_ends.push_back(v);
+        }
+      }
+
+      for (auto v : cycle_ends) {
+        // register cycle as an inside cycle
+        // assume it is convex => geometric centre lies inside
+        double centre_x = 0.0, centre_y = 0.0;
+        auto current = v;
+        int size = 0;
+        while (current != nullptr) {
+          centre_x += current->point().x;
+          centre_y += current->point().y;
+          current = depth[current].second;
+          size++;
+        }
+        // TODO: check that (depth[v].first + 2) == size !
+        centre_x /= size;
+        centre_y /= size;
+        auto centre = Point(centre_x, centre_y);
+
+        std::vector<Spring*> cycle_springs = {};
+        current = v;
+        while (current != nullptr) {
+          auto parent = depth[current].second;
+          for (auto spring : current->springs()) {
+            if (spring->otherEnd(current) == parent) {
+              cycle_springs.push_back(spring);
+              break;
+            }
+          }
+          current = parent;
+        }
+        for (auto spring : v->springs()) {
+          if (spring->otherEnd(v) == other) {
+            cycle_springs.push_back(spring);
+            break;
+          }
+        }
+
+        for (auto spring : cycle_springs) {
+          if (!spring_sides_inside.count(spring) ||
+              !(spring_sides_inside[spring].first & spring_sides_inside[spring].second)) {
+            bool is_left = crossProduct(spring->particle1()->point(),
+                                        spring->particle2()->point(),
+                                        centre) >= 0.0;
+            if (is_left)
+              spring_sides_inside[spring].first = true;
+            else
+              spring_sides_inside[spring].second = true;
+          }
+        }
+      }
+    }
+  }
+
+  std::unordered_map<Particle*, std::vector<Particle*>> graph = {};
+  for (auto s : spring_sides_inside) {
+    if (!(s.second.first & s.second.second)) {
+      graph[s.first->particle1()].push_back(s.first->particle2());
+      graph[s.first->particle2()].push_back(s.first->particle1());
+    }
+  }
+
+  std::vector<Particle*> largest_cycle = {};
+  for (const auto& v : graph) {
+    std::set<Particle*> visited = {};
+    std::vector<Particle*> path = {}, cycle = {};
+    if (findCycle<Particle>(v.first, nullptr, graph, visited, path, cycle)) {
+      if (cycle.size() > largest_cycle.size()) {
+        largest_cycle = cycle;
+      }
+    }
+  }
+
+  std::vector<Point> contour = {};
+  for (auto p : largest_cycle) contour.push_back(p->point());
+  return contour;
 }
 
 void SpringSimulator::clear() {
