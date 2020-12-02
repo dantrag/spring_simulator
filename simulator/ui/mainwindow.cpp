@@ -321,6 +321,30 @@ void MainWindow::displayPasses(bool show) {
   ui_->graphicsView->update();
 }
 
+void MainWindow::displayContour(bool show) {
+  if (show) {
+    double width = sim_->settings()->particleDefaultRadius();
+    auto contour = sim_->fieldContour();
+    auto count = static_cast<int>(contour.size());
+    for (int i = 0; i < count; ++i) {
+      auto line = ui_->graphicsView->scene()->addLine(contour[i].x, contour[i].y,
+                                                      contour[(i + 1) % count].x, contour[(i + 1) % count].y,
+                                                      QPen(QBrush(Qt::darkGreen), width,
+                                                           Qt::SolidLine, Qt::RoundCap));
+      // TODO: set Z values
+      line->setOpacity(0.5);
+      contour_ui_.push_back(line);
+    }
+  } else {
+    for (auto line : contour_ui_) {
+      ui_->graphicsView->scene()->removeItem(line);
+      delete line;
+    }
+    contour_ui_.clear();
+  }
+  ui_->graphicsView->update();
+}
+
 void MainWindow::loadSettings() {
   auto filename = QFileDialog::getOpenFileName(this, "Load simulator settings from file",
                                                QApplication::applicationDirPath(),
@@ -410,6 +434,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->init_select_image, &QPushButton::clicked, this, &MainWindow::initializeFieldImage);
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, [&](){ ui_->show_passes_checkbox->setChecked(false); });
   connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
+  connect(ui_->show_contour_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayContour);
   connectSettingsSignals();
 
   ui_->init_mode_button_group->setId(ui_->init_hexagonal_button,

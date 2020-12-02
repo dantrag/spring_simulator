@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
+    <width>636</width>
     <height>703</height>
    </rect>
   </property>
@@ -43,7 +43,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>142</width>
+              <width>154</width>
               <height>139</height>
              </rect>
             </property>
@@ -134,7 +134,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>142</width>
+              <width>154</width>
               <height>170</height>
              </rect>
             </property>
@@ -249,7 +249,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>156</width>
+              <width>168</width>
               <height>68</height>
              </rect>
             </property>
@@ -953,6 +953,13 @@
         </layout>
        </item>
        <item>
+        <widget class="QCheckBox" name="show_contour_checkbox">
+         <property name="text">
+          <string>Display contour</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="static13">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -975,7 +982,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>620</width>
+     <width>636</width>
      <height>21</height>
     </rect>
    </property>

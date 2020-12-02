@@ -50,10 +50,12 @@ private:
   void saveSettings();
   void connectSettingsSignals();
   void displayPasses(bool show = true);
+  void displayContour(bool show = true);
 
   std::unordered_map<Particle*, QGraphicsEllipseItem*> particle_ui_;
   std::unordered_map<Spring*, QGraphicsLineItem*> spring_ui_;
   std::vector<std::vector<QGraphicsItem*>> passes_ui_;
+  std::vector<QGraphicsItem*> contour_ui_;
   double blob_scale_ = 1.00;
 
   SpringSimulator* sim_;
