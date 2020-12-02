@@ -118,15 +118,26 @@ void SpringSimulator::initializeFromPixelArray(const std::vector<std::vector<int
   });
 }
 
-void particleDFS(Particle* current, int current_depth, int minimum_depth, int maximum_depth,
-                 std::set<Particle*>& visited,
+void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
                  std::set<Particle*>& neighbourhood) {
-  visited.insert(current);
-  if (current_depth > maximum_depth) return;
-  if (current_depth >= minimum_depth) neighbourhood.insert(current);
-  for (auto s : current->springs()) {
-    if (!visited.count(s->otherEnd(current)))
-      particleDFS(s->otherEnd(current), current_depth + 1, minimum_depth, maximum_depth, visited, neighbourhood);
+  std::queue<Particle*> bfs_queue = {};
+  std::unordered_map<Particle*, int> depth = {};
+  bfs_queue.push(start);
+  depth[start] = 0;
+  while (!bfs_queue.empty()) {
+    auto p = bfs_queue.front();
+    bfs_queue.pop();
+    if (minimum_depth <= depth[p] && depth[p] <= maximum_depth) {
+      neighbourhood.insert(p);
+    }
+    if (depth[p] >= maximum_depth) break;
+    for (auto s : p->springs()) {
+      auto next = s->otherEnd(p);
+      if (!depth.count(next)) {
+        bfs_queue.push(next);
+        depth[next] = depth[p] + 1;
+      }
+    }
   }
 }
 
@@ -185,8 +196,8 @@ void SpringSimulator::relaxHeat() {
     // create new springs between close particles
     if (iteration_count % 50 == 0)
     for (auto p : movable_particles) {
-      std::set<Particle*> neighbours, visited;
-      particleDFS(p, 0, 2, 4, visited, neighbours);
+      std::set<Particle*> neighbours = {};
+      particleBFS(p, 2, 4, neighbours);
       neighbours.erase(p);
       for (auto neighbour : neighbours) {
         if (distance(p, neighbour) - p->radius() - neighbour->radius() <
