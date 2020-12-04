@@ -1,6 +1,9 @@
 #include "Spring.h"
 
 void Spring::updateForce() {
-  force_ = settings_->springDefaultStiffness() *
-      (length_ - (distance(ends_.first, ends_.second) - ends_.first->radius() - ends_.second->radius()));
+  if (actualLength() < settings_->springDefaultLength() / 2) {
+    // if the spring becomes too short, make the force larger
+    force_ = settings_->springDefaultStiffness() * length_;
+  } else
+  force_ = settings_->springDefaultStiffness() * (length_ - actualLength());
 }

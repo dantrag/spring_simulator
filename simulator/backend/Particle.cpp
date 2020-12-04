@@ -24,6 +24,68 @@ double distance(const Particle* p1, const Particle* p2) {
   return distance(p1->point(), p2->point());
 }
 
+double crossProduct(const Point& p1, const Point& p2, const Point& p3) {
+  return (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
+}
+
+bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const Point& p4) {
+  // not accounting for the three-on-a-line cases
+  /*
+   bool o1 = crossProduct(p1, p2, p3) > 0.0;
+   bool o2 = crossProduct(p1, p2, p4) > 0.0;
+   bool o3 = crossProduct(p3, p4, p1) > 0.0;
+   bool o4 = crossProduct(p3, p4, p2) > 0.0;
+
+   return (o1 != o2) && (o3 != o4);*/
+   struct line {
+     double a, b, c;
+   };
+   line l1, l2;
+   l1.a = 1;
+   if (p1.x == p2.x) {
+     l1.b = 0;
+     l1.c = -p1.x;
+   } else {
+     l1.b = - l1.a * (p2.x - p1.x) / (p2.y - p1.y);
+     l1.c = -l1.a * p1.x - l1.b * p1.y;
+   }
+   l2.a = 1;
+   if (p3.x == p4.x) {
+     l2.b = 0;
+     l2.c = -p3.x;
+   } else {
+     l2.b = - l2.a * (p4.x - p3.x) / (p4.y - p3.y);
+     l2.c = -l2.a * p3.x - l2.b * p3.y;
+   }
+   if (fabs(l1.a * l2.b - l2.a * l1.b) < 1e-5) {
+     // parallel
+     if (fabs(l1.b) < 1e-5) {
+       // vertical
+       return (std::min(std::max(p1.y, p2.y), std::max(p3.y, p4.y)) >
+               std::max(std::min(p1.y, p2.y), std::min(p3.y, p4.y)));
+     }
+     if (fabs(l2.c / l2.b - l1.c / l1.b) >= 1e-5) {
+       return false;
+     } else {
+       return (std::min(std::max(p1.x, p2.x), std::max(p3.y, p4.x)) >
+               std::max(std::min(p1.x, p2.x), std::min(p3.y, p4.x)));
+     }
+   } else {
+     // intersection point
+     double D = l1.a * l2.b - l1.b * l2.a;
+     double Dx = l1.b * l2.c - l1.c * l2.b;
+     double Dy = l1.c * l2.a - l1.a * l2.c;
+     double x = Dx / D;
+     double y = Dy / D;
+     if (fabs(l1.b) < 1e-5) {
+       // l1 is vertical
+       return (y - p1.y) * (y - p2.y) < 0;
+     } else {
+       return (x - p1.x) * (x - p2.x) < 0;
+     }
+   }
+}
+
 void Particle::removeString(Spring* spring) {
   for (size_t i = 0; i < springs_.size(); ++i) {
     if (springs_[i] == spring) {
