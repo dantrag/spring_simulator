@@ -192,17 +192,38 @@ void SpringSimulator::relaxHeat() {
       }
     }
 
-    // create new springs between close particles
+    // create new springs between close particles - but make sure there are no overlaps
     if (iteration_count % 50 == 0)
     for (auto p : movable_particles) {
-      std::set<Particle*> neighbours = {};
-      particleBFS(p, 2, 4, neighbours);
-      neighbours.erase(p);
-      for (auto neighbour : neighbours) {
-        if (distance(p, neighbour) - p->radius() - neighbour->radius() <
+      std::set<Particle*> new_partners = {};
+      particleBFS(p, 2, 4, new_partners);
+      std::set<Particle*> neighbourhood = new_partners;
+      particleBFS(p, 1, 1, neighbourhood);
+      for (auto partner : new_partners) {
+        if (distance(p, partner) - p->radius() - partner->radius() <
             settings_->springDefaultLength() * settings_->springConnectionThreshold()) {
-          auto spring = checkAndAddSpring(p, neighbour);
-          if (spring) recently_added_springs_.insert(spring);
+          // check if new spring will intersect with some other
+          bool intersect = false;
+          for (auto other : neighbourhood) {
+            if (other != partner) {
+              for (auto spring : other->springs()) {
+                if (spring->otherEnd(other) != partner &&
+                    spring->otherEnd(other) != p) {
+                  // check intersection
+                  if (segmentsIntersect(p->point(), partner->point(),
+                                        other->point(), spring->otherEnd(other)->point())) {
+                    intersect = true;
+                    break;
+                  }
+                }
+              }
+            }
+            if (intersect) break;
+          }
+          if (!intersect) {
+            auto spring = checkAndAddSpring(p, partner);
+            if (spring) recently_added_springs_.insert(spring);
+          }
         }
       }
     }
