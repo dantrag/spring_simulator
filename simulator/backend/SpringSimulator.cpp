@@ -130,7 +130,7 @@ void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
     if (minimum_depth <= depth[p] && depth[p] <= maximum_depth) {
       neighbourhood.insert(p);
     }
-    if (depth[p] >= maximum_depth) break;
+    if (depth[p] > maximum_depth) break;
     for (auto s : p->springs()) {
       auto next = s->otherEnd(p);
       if (!depth.count(next)) {
@@ -173,7 +173,6 @@ void SpringSimulator::relaxHeat() {
 
     for (auto p : movable_particles) {
       p->applyDisplacement();
-      for (auto s : p->springs()) s->updateForce();
     }
 
     // delete too long springs
@@ -206,6 +205,10 @@ void SpringSimulator::relaxHeat() {
           if (spring) recently_added_springs_.insert(spring);
         }
       }
+    }
+
+    for (auto p : movable_particles) {
+      for (auto s : p->springs()) s->updateForce();
     }
 
     iteration_count++;
