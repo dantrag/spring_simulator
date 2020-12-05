@@ -273,10 +273,6 @@ void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
   relaxHeat();
 }
 
-inline double crossProduct(const Point& p1, const Point& p2, const Point& p3) {
-  return (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
-}
-
 template<class VertexType>
 bool findCycle(VertexType* current, VertexType* parent,
                std::unordered_map<VertexType*, std::vector<VertexType*>>& graph,
