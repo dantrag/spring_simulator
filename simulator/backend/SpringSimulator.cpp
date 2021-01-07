@@ -141,6 +141,97 @@ void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
   }
 }
 
+// check if removal of the spring will create a long cycle (potential void)
+bool checkSpringRemovalAllowance(Spring* s, int min_cycle_length, int max_cycle_length,
+                                 std::vector<Particle*>& cycle, bool& fixable) {
+  std::set<Spring*> forbidden_springs = {s};
+  std::queue<Particle*> bfs_queue;
+  bfs_queue.push(s->particle1());
+  std::map<Particle*, Spring*> link_to_previous = {};
+  link_to_previous[s->particle1()] = nullptr;
+  std::map<Particle*, int> depth = {};
+  depth[s->particle1()] = 0;
+
+  while (!bfs_queue.empty()) {
+    auto current = bfs_queue.front();
+    bfs_queue.pop();
+    for (auto adjacent_spring : current->springs()) {
+      if (!forbidden_springs.count(adjacent_spring)) {
+        auto next = adjacent_spring->otherEnd(current);
+        if (!link_to_previous.count(next)) {
+          bfs_queue.push(next);
+          link_to_previous[next] = adjacent_spring;
+          depth[next] = depth[current] + 1;
+          if (next == s->particle2() || depth[next] > max_cycle_length / 2) {
+            while (!bfs_queue.empty()) bfs_queue.pop();
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (!depth.count(s->particle2())) {
+    // particles became disjointed or too long cycle forms, so removal of the spring is not possible
+    fixable = false;
+    return false;
+  }
+
+  auto current = s->particle2();
+  while (current != s->particle1()) {
+    cycle.push_back(current);
+    forbidden_springs.insert(link_to_previous[current]);
+    current = link_to_previous[current]->otherEnd(current);
+  }
+  std::reverse(cycle.begin(), cycle.end());
+  int half_cycle_size = depth[s->particle2()];
+
+  bfs_queue.push(s->particle1());
+  link_to_previous.clear();
+  depth.clear();
+  depth[s->particle1()] = 0;
+  link_to_previous[s->particle1()] = nullptr;
+
+  while (!bfs_queue.empty()) {
+    auto current = bfs_queue.front();
+    bfs_queue.pop();
+    for (auto adjacent_spring : current->springs()) {
+      if (!forbidden_springs.count(adjacent_spring)) {
+        auto next = adjacent_spring->otherEnd(current);
+        if (!link_to_previous.count(next)) {
+          bfs_queue.push(next);
+          link_to_previous[next] = adjacent_spring;
+          depth[next] = depth[current] + 1;
+          if (next == s->particle2() || depth[next] + half_cycle_size > max_cycle_length) {
+            while (!bfs_queue.empty()) bfs_queue.pop();
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (!depth.count(s->particle2())) {
+    // only one path between the ends of the spring, no cycle formed
+    // or (very unlikely) the second path is too long ("creating a crack")
+    fixable = false;
+    if (half_cycle_size <= max_cycle_length / 2 && s->actualLength() / s->length() > 1.6)
+      return true;
+    else
+      return false;
+  }
+
+  current = s->particle2();
+  while (current != s->particle1()) {
+    forbidden_springs.insert(link_to_previous[current]);
+    current = link_to_previous[current]->otherEnd(current);
+    cycle.push_back(current);
+  }
+
+  fixable = true;
+  return (depth[s->particle2()] + half_cycle_size < min_cycle_length);
+}
+
 void SpringSimulator::relaxHeat() {
   double max_displacement = 0;
   int iteration_count = 0;
@@ -176,13 +267,68 @@ void SpringSimulator::relaxHeat() {
     }
 
     // delete too long springs
-    if (iteration_count % 50 == 0)
-    for (auto p : movable_particles) {
-      for (auto s : p->springs()) {
-        if (s == nullptr) continue;
-        if (s->actualLength() > s->length() * settings_->springDisconnectionThreshold()) {
-          p->removeString(s);
-          s->otherEnd(p)->removeString(s);
+    if (iteration_count % 50 == 0) {
+      auto spring_comparator = [](Spring* s1, Spring* s2) { return s1->actualLength() / s1->length() >
+                                                                   s2->actualLength() / s2->length(); };
+      std::set<Spring*, decltype(spring_comparator)> sorted_springs(spring_comparator);
+      for (auto p : movable_particles) {
+        for (auto s : p->springs()) {
+          if (s != nullptr && s->actualLength() / s->length() > settings_->springDisconnectionThreshold())
+            sorted_springs.insert(s);
+        }
+      }
+
+      const int min_cycle_length = 4;
+      const int max_cycle_length = 4;
+      for (auto s : sorted_springs) {
+        // check if removal of the spring will create no leaves/isolated nodes
+        if (s->particle1()->springs().size() <= 2) continue;
+        if (s->particle2()->springs().size() <= 2) continue;
+
+        if (s->actualLength() / s->length() > 1.4) {
+          s->updateForce();
+        }
+
+        // check if removal of the spring will create no long cycles (potential voids)
+        std::vector<Particle*> cycle = {}, temp_cycle = {};
+        bool can_fix = false;
+        bool can_remove = checkSpringRemovalAllowance(s, min_cycle_length, max_cycle_length, cycle, can_fix);
+        if (!can_remove && can_fix) {
+          // if a long cycle is created, can it be fixed with adding a shorter spring?
+          Spring* new_spring = nullptr;
+          for (auto p1 : cycle) {
+            for (auto p2 : cycle) {
+              if (p1 >= p2) continue;
+              if (p1 == s->particle1() && p2 == s->particle2()) continue;
+              if (p1 == s->particle2() && p2 == s->particle1()) continue;
+              new_spring = checkAndAddSpring(p1, p2);
+              if (new_spring) {
+                double nal = new_spring->actualLength();
+                double nl = new_spring->length();
+                double sal = s->actualLength();
+                double sl = s->length();
+                if (new_spring->actualLength() / new_spring->length() < s->actualLength() / s->length() &&
+                    checkSpringRemovalAllowance(s, min_cycle_length, max_cycle_length, temp_cycle, can_fix)) {
+                  // can eliminate the formed long cycle with a shorter spring, keep it
+                  recently_added_springs_.insert(new_spring);
+                  break;
+                } else {
+                  p1->removeString(new_spring);
+                  p2->removeString(new_spring);
+                  delete new_spring;
+                  new_spring = nullptr;
+                }
+                temp_cycle.clear();
+              }
+            }
+            if (new_spring != nullptr) break;
+          }
+          if (new_spring != nullptr) can_remove = true;
+        }
+
+        if (can_remove) {
+          s->particle1()->removeString(s);
+          s->particle2()->removeString(s);
           if (recently_added_springs_.count(s))
             recently_added_springs_.erase(s);
           else
