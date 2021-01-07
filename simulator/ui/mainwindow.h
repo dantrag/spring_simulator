@@ -10,6 +10,7 @@
 #include <QGraphicsLineItem>
 
 #include "backend/SpringSimulator.h"
+#include "backend/SpringSimulatorState.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,6 +38,11 @@ private:
   void initializeFieldImage();
   void initializeUI();
   void updateFieldUI();
+  void addNewState();
+  void restoreState(SpringSimulatorState* state);
+  void decrementState();
+  void incrementState();
+
   void doHeat();
   void doCool();
   // each heater pass is a piecewise linear curve defined by a vector of points
@@ -52,8 +58,11 @@ private:
   void displayPasses(bool show = true);
   void displayContour(bool show = true);
 
-  std::unordered_map<Particle*, QGraphicsEllipseItem*> particle_ui_;
-  std::unordered_map<Spring*, QGraphicsLineItem*> spring_ui_;
+  std::unordered_map<ParticleState*, QGraphicsEllipseItem*> particle_ui_;
+  std::unordered_map<SpringState*, QGraphicsLineItem*> spring_ui_;
+  std::vector<SpringSimulatorState*> sim_states_;
+  SpringSimulatorState* current_sim_state_ = nullptr;
+
   std::vector<std::vector<QGraphicsItem*>> passes_ui_;
   std::vector<QGraphicsItem*> contour_ui_;
   double blob_scale_ = 1.00;
