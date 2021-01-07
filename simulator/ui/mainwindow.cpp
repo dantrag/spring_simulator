@@ -212,9 +212,13 @@ void MainWindow::updateFieldUI() {
                              p->y() - p->radius() * blob_scale_,
                              2 * p->radius() * blob_scale_,
                              2 * p->radius() * blob_scale_);
+    particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
+                                                   .arg(p->y(), 0, 'f', 0));
     for (auto s : p->springs()) {
       spring_ui_[s]->setLine(s->particle1()->x(), s->particle1()->y(),
                              s->particle2()->x(), s->particle2()->y());
+      spring_ui_[s]->setToolTip(QString("L: %1\nE: %2").arg(s->length(), 0, 'f', 1)
+                                                       .arg(s->actualLength() / s->length(), 0, 'f', 2));
     }
   }
   if (ui_->graphicsView->scene()) ui_->graphicsView->scene()->update();
@@ -400,7 +404,7 @@ void MainWindow::connectSettingsSignals() {
   connect(ui_->spring_connection_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           [&](double value) { sim_->settings()->setSpringConnectionThreshold(value); });
   connect(ui_->spring_disconnection_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-          [&](double value) { sim_->settings()->setSpringConnectionThreshold(value); });
+          [&](double value) { sim_->settings()->setSpringDisconnectionThreshold(value); });
   connect(ui_->relaxation_convergence_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           [&](double value) { sim_->settings()->setRelaxationConvergenceLimit(value); });
   connect(ui_->iteration_limit_spinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
