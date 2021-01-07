@@ -209,10 +209,6 @@ void MainWindow::updateFieldUI() {
 void MainWindow::restoreState(SpringSimulatorState* state) {
   current_sim_state_ = state;
   updateFieldUI();
-    particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
-                                                   .arg(p->y(), 0, 'f', 0));
-      spring_ui_[s]->setToolTip(QString("L: %1\nE: %2").arg(s->length(), 0, 'f', 1)
-                                                       .arg(s->actualLength() / s->length(), 0, 'f', 2));
 }
 
 void MainWindow::decrementState() {
