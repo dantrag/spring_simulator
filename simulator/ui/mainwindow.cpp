@@ -34,34 +34,21 @@ void MainWindow::clearUI() {
   ui_->graphicsView->scene()->clear();
 }
 
+void MainWindow::addNewState() {
+  current_sim_state_ = new SpringSimulatorState(sim_, static_cast<int>(sim_states_.size()));
+  sim_states_.push_back(current_sim_state_);
+}
+
 void MainWindow::initializeUI() {
+  addNewState();
+
   delete ui_->graphicsView->scene();
   ui_->graphicsView->setScene(new QCustomGraphicsScene(ui_->graphicsView));
+  updateFieldUI();
+
   if (ui_->show_passes_checkbox->isChecked()) displayPasses();
 
-  for (auto p : sim_->particles_) {
-    particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius(),
-                                                             p->y() - p->radius(),
-                                                             2 * p->radius(),
-                                                             2 * p->radius(),
-                                                             QPen(Qt::darkRed), QBrush(Qt::darkRed));
-    // TODO: use constants for Z values;
-    particle_ui_[p]->setZValue(20);
-
-    for (auto s : p->springs()) {
-      if (!spring_ui_.count(s)) {
-        spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
-                                                            s->particle2()->x(), s->particle2()->y(),
-                                                            QPen(Qt::darkGreen));
-        // TODO: use constants for Z values;
-        spring_ui_[s]->setZValue(10);
-      }
-    }
-  }
-
   ui_->graphicsView->fitInView(ui_->graphicsView->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
-  /*double scale = double(width()) / (ui_->graphicsView->width() + 1);
-  ui_->graphicsView->scale(scale, scale);*/
   ui_->zoom_slider->setValue(int(ui_->graphicsView->matrix().m11() * 100));
   updateZoom();
 }
@@ -142,6 +129,7 @@ void MainWindow::doHeat() {
   }
 
   sim_->relaxHeat();
+  addNewState();
   updateFieldUI();
 }
 
@@ -167,6 +155,7 @@ void MainWindow::doCool() {
   }
 
   sim_->relaxHeat();
+  addNewState();
   updateFieldUI();
 }
 
@@ -186,53 +175,73 @@ void MainWindow::runPasses() {
   auto passes = getPasses();
   for (auto& pass : passes) {
     sim_->runLinearPasses(pass);
+    addNewState();
   }
 
   updateFieldUI();
 }
 
 void MainWindow::updateFieldUI() {
-  for (auto s : sim_->recentlyDeletedSprings()) {
-    if (spring_ui_.count(s)) {
-      ui_->graphicsView->scene()->removeItem(spring_ui_[s]);
-      spring_ui_.erase(s);
-    }
+  ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
+
+  clearUI();
+  for (auto p : current_sim_state_->particles()) {
+    particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius() * blob_scale_,
+                                                             p->y() - p->radius() * blob_scale_,
+                                                             2 * p->radius() * blob_scale_,
+                                                             2 * p->radius() * blob_scale_,
+                                                             QPen(Qt::darkRed), QBrush(Qt::darkRed));
+    particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
+                                                   .arg(p->y(), 0, 'f', 0));
+    particle_ui_[p]->setZValue(20);
   }
-  for (auto s : sim_->recentlyAddedSprings()) {
+  for (auto s : current_sim_state_->springs()) {
     spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
                                                         s->particle2()->x(), s->particle2()->y(),
                                                         QPen(Qt::darkGreen));
-    // TODO: use constants for Z values;
+    spring_ui_[s]->setToolTip(QString("L: %1\nS: %2").arg(s->actualLength(), 0, 'f', 1)
+                                                     .arg(s->stretch(), 0, 'f', 2));
     spring_ui_[s]->setZValue(10);
-  }
-  sim_->clearRecent();
-
-  for (auto p : sim_->particles_) {
-    particle_ui_[p]->setRect(p->x() - p->radius() * blob_scale_,
-                             p->y() - p->radius() * blob_scale_,
-                             2 * p->radius() * blob_scale_,
-                             2 * p->radius() * blob_scale_);
-    particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
-                                                   .arg(p->y(), 0, 'f', 0));
-    for (auto s : p->springs()) {
-      spring_ui_[s]->setLine(s->particle1()->x(), s->particle1()->y(),
-                             s->particle2()->x(), s->particle2()->y());
-      spring_ui_[s]->setToolTip(QString("L: %1\nE: %2").arg(s->length(), 0, 'f', 1)
-                                                       .arg(s->actualLength() / s->length(), 0, 'f', 2));
-    }
   }
   if (ui_->graphicsView->scene()) ui_->graphicsView->scene()->update();
 }
 
+void MainWindow::restoreState(SpringSimulatorState* state) {
+  current_sim_state_ = state;
+  updateFieldUI();
+    particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
+                                                   .arg(p->y(), 0, 'f', 0));
+      spring_ui_[s]->setToolTip(QString("L: %1\nE: %2").arg(s->length(), 0, 'f', 1)
+                                                       .arg(s->actualLength() / s->length(), 0, 'f', 2));
+}
+
+void MainWindow::decrementState() {
+  auto iterator = std::find(sim_states_.begin(), sim_states_.end(), current_sim_state_);
+  if (iterator != sim_states_.end() && iterator != sim_states_.begin()) {
+    iterator--;
+    restoreState(*iterator);
+  }
+}
+
+void MainWindow::incrementState() {
+  auto iterator = std::find(sim_states_.begin(), sim_states_.end(), current_sim_state_);
+  if (iterator != sim_states_.end() && *iterator != *sim_states_.rbegin()) {
+    iterator++;
+    restoreState(*iterator);
+  }
+}
+
 void MainWindow::toggleBlobMode() {
   blob_scale_ = ui_->blob_mode_checkbox->isChecked() ? 4.0 : 1.0;
-  for (auto p : sim_->particles_) {
-    particle_ui_[p]->setRect(p->x() - p->radius() * blob_scale_,
-                             p->y() - p->radius() * blob_scale_,
-                             2 * p->radius() * blob_scale_,
-                             2 * p->radius() * blob_scale_);
+  if (current_sim_state_ != nullptr) {
+    for (auto p : current_sim_state_->particles()) {
+      particle_ui_[p]->setRect(p->x() - p->radius() * blob_scale_,
+                               p->y() - p->radius() * blob_scale_,
+                               2 * p->radius() * blob_scale_,
+                               2 * p->radius() * blob_scale_);
+    }
+    updateFieldUI();
   }
-  updateFieldUI();
 }
 
 void MainWindow::updateZoom() {
@@ -439,6 +448,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, [&](){ ui_->show_passes_checkbox->setChecked(false); });
   connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
   connect(ui_->show_contour_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayContour);
+  connect(ui_->previous_state_button, &QToolButton::clicked, this, &MainWindow::decrementState);
+  connect(ui_->next_state_button, &QToolButton::clicked, this, &MainWindow::incrementState);
   connectSettingsSignals();
 
   ui_->init_mode_button_group->setId(ui_->init_hexagonal_button,
