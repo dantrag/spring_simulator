@@ -17,18 +17,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     backend/Particle.cpp \
+    backend/ParticleState.cpp \
     backend/SimulatorSettings.cpp \
     backend/Spring.cpp \
     backend/SpringSimulator.cpp \
+    backend/SpringSimulatorState.cpp \
+    backend/SpringState.cpp \
     main.cpp \
     ui/mainwindow.cpp \
     ui/qcustomgraphicsscene.cpp
 
 HEADERS += \
     backend/Particle.h \
+    backend/ParticleState.h \
     backend/SimulatorSettings.h \
     backend/Spring.h \
     backend/SpringSimulator.h \
+    backend/SpringSimulatorState.h \
+    backend/SpringState.h \
     ui/mainwindow.h \
     ui/qcustomgraphicsscene.h
 
