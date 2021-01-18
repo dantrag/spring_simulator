@@ -4,6 +4,24 @@
 
 #include "Spring.h"
 
+struct Line {
+  Line() {}
+  Line(const Point& p1, const Point& p2) {
+    a = 1;
+    if (p1.x == p2.x) {
+      b = 0;
+      c = -p1.x;
+    } else {
+      b = - a * (p2.x - p1.x) / (p2.y - p1.y);
+      c = -a * p1.x - b * p1.y;
+    }
+  }
+
+  double a = 0.0;
+  double b = 0.0;
+  double c = 0.0;
+};
+
 double distance(double x1, double y1, double x2, double y2) {
   return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
@@ -24,6 +42,17 @@ double distance(const Particle* p1, const Particle* p2) {
   return distance(p1->point(), p2->point());
 }
 
+double distance(const Particle* p1, const Particle* p2, const Particle* p3) {
+  return distance(p1->point(), p2->point(), p3->point());
+}
+
+double distance(const Point& p1, const Point& p2, const Point& p3) {
+  Line l(p2, p3);
+  double distance_to_line = std::abs(l.a * p1.x + l.b * p1.y + l.c) /
+                            std::sqrt(l.a * l.a + l.b * l.b + l.c * l.c);
+  return std::min(distance_to_line, std::min(distance(p1, p2), distance(p1, p3)));
+}
+
 double crossProduct(const Point& p1, const Point& p2, const Point& p3) {
   return (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
 }
@@ -37,26 +66,8 @@ bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const 
    bool o4 = crossProduct(p3, p4, p2) > 0.0;
 
    return (o1 != o2) && (o3 != o4);*/
-   struct line {
-     double a, b, c;
-   };
-   line l1, l2;
-   l1.a = 1;
-   if (p1.x == p2.x) {
-     l1.b = 0;
-     l1.c = -p1.x;
-   } else {
-     l1.b = - l1.a * (p2.x - p1.x) / (p2.y - p1.y);
-     l1.c = -l1.a * p1.x - l1.b * p1.y;
-   }
-   l2.a = 1;
-   if (p3.x == p4.x) {
-     l2.b = 0;
-     l2.c = -p3.x;
-   } else {
-     l2.b = - l2.a * (p4.x - p3.x) / (p4.y - p3.y);
-     l2.c = -l2.a * p3.x - l2.b * p3.y;
-   }
+   Line l1(p1, p2), l2(p3, p4);
+
    if (fabs(l1.a * l2.b - l2.a * l1.b) < 1e-5) {
      // parallel
      if (fabs(l1.b) < 1e-5) {
