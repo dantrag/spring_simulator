@@ -342,10 +342,6 @@ void SpringSimulator::relaxHeat() {
               if (p1 == s->particle2() && p2 == s->particle1()) continue;
               new_spring = checkAndAddSpring(p1, p2);
               if (new_spring) {
-                double nal = new_spring->actualLength();
-                double nl = new_spring->length();
-                double sal = s->actualLength();
-                double sl = s->length();
                 if (new_spring->actualLength() / new_spring->length() < s->actualLength() / s->length() &&
                     checkSpringRemovalAllowance(s, min_cycle_length, max_cycle_length, temp_cycle, can_fix)) {
                   // can eliminate the formed long cycle with a shorter spring, keep it

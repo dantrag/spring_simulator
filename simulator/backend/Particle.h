@@ -58,30 +58,6 @@ class Particle {
 
   const SimulatorSettings* settings_ = nullptr;
 };
-/*
-struct Particle2 {
-  QGraphicsEllipseItem* ui = nullptr;
-
-  void render(QGraphicsScene* scene) {
-    if (ui) {
-      ui->setRect(kRenderCenterX + this->x - radius() * kBlobScale, kRenderCenterY + this->y - radius() * kBlobScale,
-                  radius() * 2 * kBlobScale, radius() * 2 * kBlobScale);
-    } else {
-      ui = scene->addEllipse(kRenderCenterX + this->x - radius() * kBlobScale, kRenderCenterY + this->y - radius() * kBlobScale,
-                             radius() * 2 * kBlobScale, radius() * 2 * kBlobScale,
-                             QPen(Qt::darkRed), QBrush(Qt::darkRed));
-      ui->setZValue(20);
-    }
-  }
-  void setMolten(bool ismolten, int timeout = -1) {
-    molten = ismolten;
-    molten_timeout = timeout;
-    ui->setRect(kRenderCenterX + this->x - radius(), kRenderCenterY + this->y - radius(),
-                radius() * 2, radius() * 2);
-  }
-};
-*/
-
 
 double distance(double x1, double y1, double x2, double y2);
 double distance(const Point& p, double x, double y);
