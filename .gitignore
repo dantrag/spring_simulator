@@ -55,4 +55,5 @@ compile_commands.json
 !builds/*/*
 !builds/*/*/*
 builds/debug*
+object_script.*
 Makefile*
