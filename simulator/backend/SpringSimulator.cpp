@@ -221,6 +221,8 @@ bool checkSpringRemovalAllowance(Spring* s, int min_cycle_length, int max_cycle_
       return false;
   }
 
+  // otherwise we have found a long cycle! but is it minimal?
+
   current = s->particle2();
   while (current != s->particle1()) {
     forbidden_springs.insert(link_to_previous[current]);
@@ -229,6 +231,25 @@ bool checkSpringRemovalAllowance(Spring* s, int min_cycle_length, int max_cycle_
   }
 
   fixable = true;
+
+  // try to shrink the found cycle - there can be at most one edge between two "sides" of the cycle,
+  // according to our design where we add 1 edge that might intersect s
+
+  for (int i = 0; i < half_cycle_size - 1; ++i) {
+    for (int j = half_cycle_size; j < static_cast<int>(cycle.size()) - 1; ++j) {
+      for (auto s : cycle[i]->springs()) {
+        if (s->otherEnd(cycle[i]) == cycle[j]) {
+          // we can split the cycle
+          int sub_cycle_size1 = j - i + 1;
+          int sub_cycle_size2 = static_cast<int>(cycle.size()) - sub_cycle_size1 + 2;
+          if (sub_cycle_size1 < min_cycle_length && sub_cycle_size2 < min_cycle_length) {
+            return true;
+          }
+        }
+      }
+    }
+  }
+
   return (depth[s->particle2()] + half_cycle_size < min_cycle_length);
 }
 
