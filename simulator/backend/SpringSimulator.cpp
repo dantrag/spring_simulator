@@ -265,6 +265,8 @@ void SpringSimulator::relaxHeat() {
     for (auto p : movable_particles) {
       double x_displacement = 0.0;
       double y_displacement = 0.0;
+      double max_allowable_displacement = settings_->springDefaultLength() / 4;
+      std::set<Particle*> neighbours = {};
       for (auto s : p->springs()) {
         double delta_x = s->otherEnd(p)->x() - p->x();
         double delta_y = s->otherEnd(p)->y() - p->y();
@@ -278,8 +280,28 @@ void SpringSimulator::relaxHeat() {
         delta_y *= std::fabs(s->force());
         x_displacement += delta_x;
         y_displacement += delta_y;
+
+        max_allowable_displacement = std::min(max_allowable_displacement, s->actualLength() / 4);
+        neighbours.insert(s->otherEnd(p));
       }
-      max_displacement = std::max(max_displacement, std::sqrt(x_displacement * x_displacement + y_displacement * y_displacement));
+      for (auto neighbour : neighbours) {
+        for (auto neighbour_spring : neighbour->springs()) {
+          if (neighbours.count(neighbour_spring->otherEnd(neighbour)) &&
+              neighbour < neighbour_spring->otherEnd(neighbour)) {
+            double distance_to_spring = distance(p,
+                                                 neighbour,
+                                                 neighbour_spring->otherEnd(neighbour));
+            max_allowable_displacement = std::min(max_allowable_displacement, distance_to_spring / 2);
+          }
+        }
+      }
+
+      double total_displacement = distance(Point(0, 0), Point(x_displacement, y_displacement));
+      if (total_displacement > max_allowable_displacement) {
+        x_displacement /= (total_displacement / max_allowable_displacement);
+        y_displacement /= (total_displacement / max_allowable_displacement);
+      }
+      max_displacement = std::max(max_displacement, total_displacement);
       p->setDisplacement(Point(x_displacement, y_displacement));
     }
 
@@ -305,10 +327,6 @@ void SpringSimulator::relaxHeat() {
         // check if removal of the spring will create no leaves/isolated nodes
         if (s->particle1()->springs().size() <= 2) continue;
         if (s->particle2()->springs().size() <= 2) continue;
-
-        if (s->actualLength() / s->length() > 1.4) {
-          s->updateForce();
-        }
 
         // check if removal of the spring will create no long cycles (potential voids)
         std::vector<Particle*> cycle = {}, temp_cycle = {};
