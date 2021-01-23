@@ -50,6 +50,8 @@ private:
   void runPasses();
 
   void toggleBlobMode();
+  void changeBackground();
+  void changeBackgroundOpacity(int value);
   void updateZoom();
   void populateSettings();
   void loadSettings();
@@ -65,6 +67,7 @@ private:
 
   std::vector<std::vector<QGraphicsItem*>> passes_ui_;
   std::vector<QGraphicsItem*> contour_ui_;
+  QGraphicsPixmapItem* bkg_image_ui_ = nullptr;
   double blob_scale_ = 1.00;
 
   SpringSimulator* sim_;

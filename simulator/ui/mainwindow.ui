@@ -14,7 +14,7 @@
    <string>Spring Simulator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="layout7" stretch="3,1,1,0">
+   <layout class="QHBoxLayout" name="layout7" stretch="4,1,1,1">
     <item>
      <widget class="QGraphicsView" name="graphicsView"/>
     </item>
@@ -249,8 +249,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>168</width>
-              <height>68</height>
+              <width>154</width>
+              <height>73</height>
              </rect>
             </property>
             <attribute name="label">
@@ -263,6 +263,42 @@
                 <string>Select image</string>
                </property>
               </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="layout35">
+               <item>
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Opacity:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="bkg_opacity_slider">
+                 <property name="minimum">
+                  <number>0</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>0</number>
+                 </property>
+                 <property name="sliderPosition">
+                  <number>0</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="tickPosition">
+                  <enum>QSlider::TicksBothSides</enum>
+                 </property>
+                 <property name="tickInterval">
+                  <number>20</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -959,6 +995,13 @@
         <widget class="QCheckBox" name="show_contour_checkbox">
          <property name="text">
           <string>Display contour</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="change_bkg_button">
+         <property name="text">
+          <string>Change background</string>
          </property>
         </widget>
        </item>

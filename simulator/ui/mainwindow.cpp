@@ -31,6 +31,11 @@ void MainWindow::clearUI() {
     delete s.second;
   }
   spring_ui_.clear();
+
+  if (bkg_image_ui_) ui_->graphicsView->scene()->removeItem(bkg_image_ui_);
+  delete bkg_image_ui_;
+  bkg_image_ui_ = nullptr;
+
   ui_->graphicsView->scene()->clear();
 }
 
@@ -96,11 +101,11 @@ void MainWindow::initializeFieldImage() {
         clearUI();
         sim_->clear();
         auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
-        sim_->initializeFromPixelArray(rgb_data, 5.0, [](int rgb) {
+        sim_->initializeFromPixelArray(rgb_data, 1.0, [](int rgb) {
           return qGray(static_cast<QRgb>(rgb)) < 128;
         }, mode);
-        initializeUI();
 
+        initializeUI();
       }
     } catch (const std::exception&) {
     }
@@ -182,26 +187,29 @@ void MainWindow::runPasses() {
 }
 
 void MainWindow::updateFieldUI() {
-  ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
-
   clearUI();
-  for (auto p : current_sim_state_->particles()) {
-    particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius() * blob_scale_,
-                                                             p->y() - p->radius() * blob_scale_,
-                                                             2 * p->radius() * blob_scale_,
-                                                             2 * p->radius() * blob_scale_,
-                                                             QPen(Qt::darkRed), QBrush(Qt::darkRed));
-    particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
-                                                   .arg(p->y(), 0, 'f', 0));
-    particle_ui_[p]->setZValue(20);
-  }
-  for (auto s : current_sim_state_->springs()) {
-    spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
-                                                        s->particle2()->x(), s->particle2()->y(),
-                                                        QPen(Qt::darkGreen));
-    spring_ui_[s]->setToolTip(QString("L: %1\nS: %2").arg(s->actualLength(), 0, 'f', 1)
-                                                     .arg(s->stretch(), 0, 'f', 2));
-    spring_ui_[s]->setZValue(10);
+
+  if (current_sim_state_) {
+    ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
+
+    for (auto p : current_sim_state_->particles()) {
+      particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius() * blob_scale_,
+                                                               p->y() - p->radius() * blob_scale_,
+                                                               2 * p->radius() * blob_scale_,
+                                                               2 * p->radius() * blob_scale_,
+                                                               QPen(Qt::darkRed), QBrush(Qt::darkRed));
+      particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
+                                                     .arg(p->y(), 0, 'f', 0));
+      particle_ui_[p]->setZValue(20);
+    }
+    for (auto s : current_sim_state_->springs()) {
+      spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
+                                                          s->particle2()->x(), s->particle2()->y(),
+                                                          QPen(Qt::darkGreen));
+      spring_ui_[s]->setToolTip(QString("L: %1\nS: %2").arg(s->actualLength(), 0, 'f', 1)
+                                                       .arg(s->stretch(), 0, 'f', 2));
+      spring_ui_[s]->setZValue(10);
+    }
   }
   if (ui_->graphicsView->scene()) ui_->graphicsView->scene()->update();
 }
@@ -238,6 +246,26 @@ void MainWindow::toggleBlobMode() {
     }
     updateFieldUI();
   }
+}
+
+void MainWindow::changeBackground() {
+  auto filename = QFileDialog::getOpenFileName(this, "Load background image",
+                                               QApplication::applicationDirPath(),
+                                               "Portable Network Graphics (*.png);;"
+                                               "JPG/JPEG (*.jpg);;Windows Bitmap (*.bmp);;All Files (*)");
+  if (!filename.isEmpty()) {
+    try {
+      QPixmap pixmap(filename);
+      if (bkg_image_ui_) ui_->graphicsView->scene()->removeItem(bkg_image_ui_);
+      delete bkg_image_ui_;
+      bkg_image_ui_ = ui_->graphicsView->scene()->addPixmap(pixmap);
+    } catch (const std::exception&) {
+    }
+  }
+}
+
+void MainWindow::changeBackgroundOpacity(int value) {
+  if (bkg_image_ui_) bkg_image_ui_->setOpacity(double(value) / 100.0);
 }
 
 void MainWindow::updateZoom() {
@@ -435,6 +463,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
 
   connect(ui_->blob_mode_checkbox, &QCheckBox::clicked, this, &MainWindow::toggleBlobMode);
   connect(ui_->zoom_slider, &QSlider::valueChanged, this, &MainWindow::updateZoom);
+  connect(ui_->bkg_opacity_slider, &QSlider::valueChanged, this, &MainWindow::changeBackgroundOpacity);
 
   connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::loadSettings);
   connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);
@@ -444,6 +473,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, [&](){ ui_->show_passes_checkbox->setChecked(false); });
   connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
   connect(ui_->show_contour_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayContour);
+  connect(ui_->change_bkg_button, &QPushButton::clicked, this, &MainWindow::changeBackground);
   connect(ui_->previous_state_button, &QToolButton::clicked, this, &MainWindow::decrementState);
   connect(ui_->next_state_button, &QToolButton::clicked, this, &MainWindow::incrementState);
   connectSettingsSignals();
