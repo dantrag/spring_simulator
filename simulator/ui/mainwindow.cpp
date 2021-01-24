@@ -53,9 +53,7 @@ void MainWindow::initializeUI() {
 
   if (ui_->show_passes_checkbox->isChecked()) displayPasses();
 
-  ui_->graphicsView->fitInView(ui_->graphicsView->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
-  ui_->zoom_slider->setValue(int(ui_->graphicsView->matrix().m11() * 100));
-  updateZoom();
+  fitToView();
 }
 
 void MainWindow::initializeFieldCircle() {
@@ -274,6 +272,12 @@ void MainWindow::updateZoom() {
   ui_->graphicsView->scale(scale, scale);
 }
 
+void MainWindow::fitToView() {
+  ui_->graphicsView->fitInView(ui_->graphicsView->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
+  ui_->zoom_slider->setValue(int(ui_->graphicsView->matrix().m11() * 100));
+  updateZoom();
+}
+
 void MainWindow::displayPasses(bool show) {
   if (show) {
     auto passes = getPasses();
@@ -356,6 +360,7 @@ void MainWindow::displayPasses(bool show) {
     passes_ui_.clear();
   }
   ui_->graphicsView->update();
+  fitToView();
 }
 
 void MainWindow::displayContour(bool show) {

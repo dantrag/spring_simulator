@@ -952,10 +952,16 @@
             <number>5</number>
            </property>
            <property name="maximum">
-            <number>200</number>
+            <number>1000</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>50</number>
            </property>
            <property name="value">
-            <number>100</number>
+            <number>200</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -964,7 +970,7 @@
             <enum>QSlider::TicksBothSides</enum>
            </property>
            <property name="tickInterval">
-            <number>20</number>
+            <number>50</number>
            </property>
           </widget>
          </item>

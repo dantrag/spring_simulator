@@ -53,6 +53,7 @@ private:
   void changeBackground();
   void changeBackgroundOpacity(int value);
   void updateZoom();
+  void fitToView();
   void populateSettings();
   void loadSettings();
   void saveSettings();
