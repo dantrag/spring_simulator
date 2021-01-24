@@ -265,9 +265,9 @@
               </widget>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="layout35">
+              <layout class="QHBoxLayout" name="layout22">
                <item>
-                <widget class="QLabel" name="label">
+                <widget class="QLabel" name="static29">
                  <property name="text">
                   <string>Opacity:</string>
                  </property>
@@ -971,27 +971,6 @@
            </property>
            <property name="tickInterval">
             <number>50</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="layout22">
-         <item>
-          <widget class="QLabel" name="static29">
-           <property name="text">
-            <string>Display mode:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="blob_mode_checkbox">
-           <property name="text">
-            <string>Blob</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
            </property>
           </widget>
          </item>

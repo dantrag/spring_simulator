@@ -17,8 +17,6 @@
 #include "backend/Spring.h"
 #include "ui/qcustomgraphicsscene.h"
 
-int kBlobScale = 4;
-
 void MainWindow::clearUI() {
   displayPasses(false);
   for (auto p : particle_ui_) if (p.second) {
@@ -191,10 +189,10 @@ void MainWindow::updateFieldUI() {
     ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
 
     for (auto p : current_sim_state_->particles()) {
-      particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius() * blob_scale_,
-                                                               p->y() - p->radius() * blob_scale_,
-                                                               2 * p->radius() * blob_scale_,
-                                                               2 * p->radius() * blob_scale_,
+      particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius(),
+                                                               p->y() - p->radius(),
+                                                               2 * p->radius(),
+                                                               2 * p->radius(),
                                                                QPen(Qt::darkRed), QBrush(Qt::darkRed));
       particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
                                                      .arg(p->y(), 0, 'f', 0));
@@ -230,19 +228,6 @@ void MainWindow::incrementState() {
   if (iterator != sim_states_.end() && *iterator != *sim_states_.rbegin()) {
     iterator++;
     restoreState(*iterator);
-  }
-}
-
-void MainWindow::toggleBlobMode() {
-  blob_scale_ = ui_->blob_mode_checkbox->isChecked() ? 4.0 : 1.0;
-  if (current_sim_state_ != nullptr) {
-    for (auto p : current_sim_state_->particles()) {
-      particle_ui_[p]->setRect(p->x() - p->radius() * blob_scale_,
-                               p->y() - p->radius() * blob_scale_,
-                               2 * p->radius() * blob_scale_,
-                               2 * p->radius() * blob_scale_);
-    }
-    updateFieldUI();
   }
 }
 
@@ -460,13 +445,11 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   ui_->graphicsView->setScene(new QCustomGraphicsScene(ui_->graphicsView));
 
   populateSettings();
-  toggleBlobMode();
 
   connect(ui_->heat_button, &QPushButton::clicked, this, &MainWindow::doHeat);
   connect(ui_->cool_button, &QPushButton::clicked, this, &MainWindow::doCool);
   connect(ui_->submit_passes_button, &QPushButton::clicked, this, &MainWindow::runPasses);
 
-  connect(ui_->blob_mode_checkbox, &QCheckBox::clicked, this, &MainWindow::toggleBlobMode);
   connect(ui_->zoom_slider, &QSlider::valueChanged, this, &MainWindow::updateZoom);
   connect(ui_->bkg_opacity_slider, &QSlider::valueChanged, this, &MainWindow::changeBackgroundOpacity);
 
