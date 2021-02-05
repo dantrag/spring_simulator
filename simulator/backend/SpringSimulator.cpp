@@ -475,6 +475,7 @@ void SpringSimulator::runLinearPass(const Point& start, const Point& finish) {
 
 
 void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
+  auto total_timer = std::chrono::steady_clock::now();
   for (size_t i = 0; i < points.size() - 1; ++i) {
     auto timer = std::chrono::steady_clock::now();
     runLinearPass(points[i], points[i + 1]);
@@ -492,6 +493,7 @@ void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
     for (auto s : p->springs()) s->updateForce();
   }
   relaxHeat();
+  log_ << "Total time: " << stopwatch(total_timer) << " ms\n";
 }
 
 template<class VertexType>
