@@ -208,6 +208,10 @@ void MainWindow::updateFieldUI() {
     }
   }
   if (ui_->graphicsView->scene()) ui_->graphicsView->scene()->update();
+
+  ui_->log_text_edit->clear();
+  ui_->log_text_edit->insertPlainText(QString::fromStdString(sim_->log()));
+  ui_->log_text_edit->ensureCursorVisible();
 }
 
 void MainWindow::restoreState(SpringSimulatorState* state) {
@@ -473,7 +477,9 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   ui_->init_hexagonal_button->setChecked(true);
 
   auto rect = this->screen()->geometry();
-  resize(rect.width() / 3 * 2, rect.height() / 3 * 2);
+  resize(rect.width() / 4 * 3, rect.height() / 4 * 3);
+
+  ui_->log_text_edit->setCenterOnScroll(true);
 
   updateZoom();
 }
