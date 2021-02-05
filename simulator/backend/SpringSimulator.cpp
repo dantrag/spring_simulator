@@ -3,8 +3,14 @@
 #include <cmath>
 #include <unordered_map>
 #include <queue>
+#include <chrono>
 
 #include "backend/Spring.h"
+
+double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start) {
+  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - start;
+  return duration.count() * 1000;
+}
 
 SpringSimulator::SpringSimulator() {
   settings_ = new SimulatorSettings();
@@ -28,6 +34,9 @@ Spring* SpringSimulator::checkAndAddSpring(Particle *p1, Particle *p2) {
 
 void SpringSimulator::initializeField(InitializationGrid mode, Point center, double width, double height,
                                       double interval, std::function<bool(double, double)> valid_point) {
+  log_ << "Initializing field";
+  auto timer = std::chrono::steady_clock::now();
+
   clear();
 
   constexpr double hex_scale = std::sqrt(3) / 2;
@@ -71,6 +80,8 @@ void SpringSimulator::initializeField(InitializationGrid mode, Point center, dou
       }
     }
   }
+
+  log_ << " (" << particles_.size() << " particles) " << stopwatch(timer) << " ms\n";
 }
 
 double SpringSimulator::defaultInitializationInterval() const {
@@ -260,6 +271,9 @@ void SpringSimulator::relaxHeat() {
   for (auto p : particles_)
     if (p->isMovable()) movable_particles.push_back(p);
 
+  log_ << movable_particles.size() << " movable particles\n";
+  auto timer = std::chrono::steady_clock::now();
+
   do {
     max_displacement = 0;
     for (auto p : movable_particles) {
@@ -420,6 +434,8 @@ void SpringSimulator::relaxHeat() {
   for (auto p : movable_particles) {
     if (!p->isMolten()) p->setMovable(false);
   }
+
+  log_ << iteration_count << " steps in " << stopwatch(timer) << " ms\n";
 }
 
 void SpringSimulator::runLinearPass(const Point& start, const Point& finish) {
@@ -459,8 +475,12 @@ void SpringSimulator::runLinearPass(const Point& start, const Point& finish) {
 
 
 void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
-  for (size_t i = 0; i < points.size() - 1; ++i)
+  auto total_timer = std::chrono::steady_clock::now();
+  for (size_t i = 0; i < points.size() - 1; ++i) {
+    auto timer = std::chrono::steady_clock::now();
     runLinearPass(points[i], points[i + 1]);
+    log_ << "Linear pass #" << i + 1 << " ran in " << stopwatch(timer) << " ms\n";
+  }
 
   // after-pass cooldown
   for (auto p : particles_) {
@@ -473,6 +493,7 @@ void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
     for (auto s : p->springs()) s->updateForce();
   }
   relaxHeat();
+  log_ << "Total time: " << stopwatch(total_timer) << " ms\n";
 }
 
 template<class VertexType>

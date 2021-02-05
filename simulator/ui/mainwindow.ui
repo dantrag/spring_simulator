@@ -522,7 +522,7 @@
             <item>
              <widget class="QDoubleSpinBox" name="particle_radius_spinbox">
               <property name="decimals">
-               <number>1</number>
+               <number>2</number>
               </property>
               <property name="minimum">
                <double>0.100000000000000</double>
@@ -552,7 +552,7 @@
             <item>
              <widget class="QDoubleSpinBox" name="particle_molten_radius_spinbox">
               <property name="decimals">
-               <number>1</number>
+               <number>2</number>
               </property>
               <property name="minimum">
                <double>0.100000000000000</double>
@@ -625,7 +625,7 @@
             <item>
              <widget class="QDoubleSpinBox" name="spring_length_spinbox">
               <property name="decimals">
-               <number>1</number>
+               <number>2</number>
               </property>
               <property name="minimum">
                <double>0.100000000000000</double>
@@ -1026,6 +1026,16 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="static45">
+         <property name="text">
+          <string>Tech log:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPlainTextEdit" name="log_text_edit"/>
        </item>
        <item>
         <spacer name="static13">

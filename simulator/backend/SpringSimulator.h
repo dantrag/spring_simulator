@@ -2,6 +2,7 @@
 #define SPRINGSIMULATOR_H
 
 #include <string>
+#include <sstream>
 #include <set>
 #include <vector>
 #include <functional>
@@ -34,6 +35,7 @@ class SpringSimulator {
   void initializeFromImage();
   #endif
   void clear();
+  std::string log() const { return log_.str(); };
 
   int getTime() const { return time_; }
   void incrementTime() { time_++; }
@@ -62,6 +64,7 @@ class SpringSimulator {
   std::set<Spring*> recently_deleted_springs_;
   int time_ = 0;
   SimulatorSettings* settings_;
+  std::stringstream log_;
 };
 
 #endif // SPRINGSIMULATOR_H
