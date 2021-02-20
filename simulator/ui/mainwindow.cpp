@@ -118,14 +118,14 @@ void MainWindow::doHeat() {
   scene->releaseSelection();
   if (left == right || top == bottom) return;
 
-  for (auto p : sim_->particles_) {
+  for (auto p : sim_->particles()) {
     if (p->x() >= left && p->x() <= right &&
         p->y() >= top && p->y() <= bottom) {
       p->setMolten(true);
       p->setMovable(true);
     }
   }
-  for (auto p : sim_->particles_) {
+  for (auto p : sim_->particles()) {
     for (auto s : p->springs()) s->updateForce();
   }
 
@@ -143,7 +143,7 @@ void MainWindow::doCool() {
   double bottom = std::max(rect.top(), rect.bottom());
   scene->releaseSelection();
 
-  for (auto p : sim_->particles_) {
+  for (auto p : sim_->particles()) {
     if (p->x() >= left && p->x() <= right &&
         p->y() >= top && p->y() <= bottom &&
         p->isMolten()) {
@@ -151,7 +151,7 @@ void MainWindow::doCool() {
       p->setMovable(true);
     }
   }
-  for (auto p : sim_->particles_) {
+  for (auto p : sim_->particles()) {
     for (auto s : p->springs()) s->updateForce();
   }
 

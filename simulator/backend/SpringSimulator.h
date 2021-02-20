@@ -50,7 +50,7 @@ class SpringSimulator {
 
   const std::vector<Point> fieldContour() const;
 
-  std::vector<Particle*> particles_;
+  const std::vector<Particle*>& particles() const { return particles_; }
 
  protected:
   double defaultInitializationInterval() const;
@@ -60,6 +60,7 @@ class SpringSimulator {
 
   Spring* checkAndAddSpring(Particle* p1, Particle* p2);
 
+  std::vector<Particle*> particles_;
   std::set<Spring*> recently_added_springs_;
   std::set<Spring*> recently_deleted_springs_;
   int time_ = 0;

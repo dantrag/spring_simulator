@@ -9,12 +9,12 @@ SpringSimulatorState::SpringSimulatorState(const SpringSimulator* simulator, int
   id_ = id;
   std::map<Particle*, ParticleState*> states = {};
 
-  for (const auto p : simulator->particles_) {
+  for (const auto p : simulator->particles()) {
     particles_.push_back(new ParticleState(p));
     states[p] = *particles_.rbegin();
   }
 
-  for (const auto p : simulator->particles_) {
+  for (const auto p : simulator->particles()) {
     for (const auto s : p->springs()) {
       // iterate only once each string
       if (p < s->otherEnd(p)) {
