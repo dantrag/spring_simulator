@@ -452,7 +452,7 @@
          <item>
           <widget class="QLabel" name="static1">
            <property name="text">
-            <string>Passes:</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Passes (x&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, y&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, ..., x&lt;span style=&quot; vertical-align:sub;&quot;&gt;n&lt;/span&gt;, y&lt;span style=&quot; vertical-align:sub;&quot;&gt;n&lt;/span&gt;):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -531,7 +531,7 @@
                <double>999.000000000000000</double>
               </property>
               <property name="value">
-               <double>0.500000000000000</double>
+               <double>1.000000000000000</double>
               </property>
              </widget>
             </item>
@@ -561,7 +561,7 @@
                <double>999.000000000000000</double>
               </property>
               <property name="value">
-               <double>1.000000000000000</double>
+               <double>2.000000000000000</double>
               </property>
              </widget>
             </item>
@@ -588,7 +588,7 @@
                <number>999</number>
               </property>
               <property name="value">
-               <number>2</number>
+               <number>20</number>
               </property>
              </widget>
             </item>
@@ -634,7 +634,7 @@
                <double>999.000000000000000</double>
               </property>
               <property name="value">
-               <double>2.500000000000000</double>
+               <double>5.500000000000000</double>
               </property>
              </widget>
             </item>
@@ -667,7 +667,7 @@
                <double>0.010000000000000</double>
               </property>
               <property name="value">
-               <double>0.100000000000000</double>
+               <double>0.010000000000000</double>
               </property>
              </widget>
             </item>
@@ -773,7 +773,7 @@
                <number>10000</number>
               </property>
               <property name="value">
-               <number>1000</number>
+               <number>2000</number>
               </property>
              </widget>
             </item>
@@ -879,7 +879,7 @@
                <double>999.000000000000000</double>
               </property>
               <property name="value">
-               <double>14.000000000000000</double>
+               <double>20.000000000000000</double>
               </property>
              </widget>
             </item>

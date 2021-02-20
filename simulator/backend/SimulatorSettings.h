@@ -47,20 +47,20 @@ class SimulatorSettings {
   #endif
 
  private:
-  double particle_default_radius_ = 5;
-  double molten_particle_default_radius_ = 7.5;
-  int molten_particle_cooldown_time_ = 10;
+  double particle_default_radius_ = 1.0;
+  double molten_particle_default_radius_ = 2.0;
+  int molten_particle_cooldown_time_ = 20;
 
-  double spring_default_stiffness_ = 5.0 * 0.01;
-  double spring_default_length_ = 15;
-  double spring_connection_threshold_ = 0.66;
-  double spring_disconnection_threshold_ = 1.5;
+  double spring_default_stiffness_ = 0.01;
+  double spring_default_length_ = 5.5;
+  double spring_connection_threshold_ = 1.0;
+  double spring_disconnection_threshold_ = 1.3;
 
-  int relaxation_iteration_limit_ = 1000;
-  double relaxation_convergence_limit_ = 0.05;
+  int relaxation_iteration_limit_ = 2000;
+  double relaxation_convergence_limit_ = 0.001;
 
-  double heater_speed_ = 10.0;
-  double heater_size_ = 70.0;
+  double heater_speed_ = 2.0;
+  double heater_size_ = 20.0;
 };
 
 #endif // SIMULATORSETTINGS_H
