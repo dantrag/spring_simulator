@@ -30,6 +30,12 @@ void MainWindow::clearUI() {
   }
   spring_ui_.clear();
 
+  for (auto line : contour_ui_) if (line) {
+    ui_->graphicsView->scene()->removeItem(line);
+    delete line;
+  }
+  contour_ui_.clear();
+
   if (bkg_image_ui_) ui_->graphicsView->scene()->removeItem(bkg_image_ui_);
   delete bkg_image_ui_;
   bkg_image_ui_ = nullptr;
@@ -176,6 +182,19 @@ void MainWindow::runPasses() {
   auto passes = getPasses();
   for (auto& pass : passes) {
     sim_->runLinearPasses(pass);
+/*
+    auto contour = sim_->fieldContour();
+    clearUI();
+    sim_->clear();
+    std::vector<std::vector<int>> rgb_array = {};
+    contourToPixelArray(contour, rgb_array);
+
+
+    auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
+    sim_->initializeFromPixelArray(rgb_array, 1.0, [](int rgb) {
+      return qGray(static_cast<QRgb>(rgb)) < 128;
+    }, mode);
+*/
     addNewState();
   }
 
@@ -187,6 +206,7 @@ void MainWindow::updateFieldUI() {
 
   if (current_sim_state_) {
     ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
+    double width = sim_->settings()->particleDefaultRadius();
 
     for (auto p : current_sim_state_->particles()) {
       particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius(),
@@ -201,7 +221,7 @@ void MainWindow::updateFieldUI() {
     for (auto s : current_sim_state_->springs()) {
       spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
                                                           s->particle2()->x(), s->particle2()->y(),
-                                                          QPen(Qt::darkGreen));
+                                                          QPen(QBrush(Qt::darkGreen), width));
       spring_ui_[s]->setToolTip(QString("L: %1\nS: %2").arg(s->actualLength(), 0, 'f', 1)
                                                        .arg(s->stretch(), 0, 'f', 2));
       spring_ui_[s]->setZValue(10);
@@ -354,7 +374,7 @@ void MainWindow::displayPasses(bool show) {
 
 void MainWindow::displayContour(bool show) {
   if (show) {
-    double width = sim_->settings()->particleDefaultRadius();
+    double width = sim_->settings()->particleDefaultRadius() * 2;
     auto contour = sim_->fieldContour();
     auto count = static_cast<int>(contour.size());
     for (int i = 0; i < count; ++i) {
