@@ -67,4 +67,6 @@ class SpringSimulator {
   std::stringstream log_;
 };
 
+void contourToPixelArray(const std::vector<Point>& points, std::vector<std::vector<int>>& rgb_array);
+
 #endif // SPRINGSIMULATOR_H

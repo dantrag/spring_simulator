@@ -48,8 +48,8 @@ void SpringSimulator::initializeField(InitializationGrid mode, Point center, dou
       break;
   }
 
-  auto size_x = int((width / 2 - interval / 2) / interval);
-  auto size_y = int((height / 2 - interval / 2) / y_interval);
+  auto size_x = static_cast<int>(std::ceil((width / 2) / interval));
+  auto size_y = static_cast<int>(std::ceil((height / 2) / y_interval));
   if (size_x <= 0) return;
   if (size_y <= 0) return;
 
@@ -59,7 +59,7 @@ void SpringSimulator::initializeField(InitializationGrid mode, Point center, dou
       double x = center.x + j * interval;
       if (mode == InitializationGrid::kHexagonal && (i & 1)) x -= interval / 2;
       double y = center.y + i * y_interval;
-      if (valid_point(x, y))
+      if (x >= 0 && y >= 0 && valid_point(x, y))
         particles[i + size_y][j + size_x] = new Particle(x, y, settings_);
     }
   }
@@ -127,6 +127,81 @@ void SpringSimulator::initializeFromPixelArray(const std::vector<std::vector<int
     if (pixel_x >= static_cast<int>(include[pixel_y].size())) return false;
     return static_cast<bool>(include[pixel_y][pixel_x]);
   });
+}
+
+void contourToPixelArray(const std::vector<Point>& points, std::vector<std::vector<int>>& rgb_array) {
+  if (points.empty()) return;
+
+  auto left = points[0].x;
+  auto top = points[0].y;
+  auto right = left;
+  auto bottom = top;
+  for (const auto& point : points) {
+    top = std::min(top, point.y);
+    bottom = std::max(bottom, point.y);
+    left = std::min(left, point.x);
+    right = std::max(right, point.x);
+  }
+  top = std::floor(top);
+  bottom = std::ceil(bottom);
+  left = std::floor(left);
+  right = std::ceil(right);
+
+  // only positive coordinates for direct conversion to rgb_array
+  if (top < 0 || left < 0) return;
+  rgb_array.resize(static_cast<int>(bottom) + 1);
+  for (auto& rgb_line : rgb_array) {
+    rgb_line.resize(static_cast<int>(right) + 1, 0xffffff); // white RGB
+  }
+
+  // contour edge is represented by its endpoints, ordered by ordinate
+  std::vector<std::pair<Point, Point>> edges = {};
+  for (int i = 0; i < static_cast<int>(points.size()); ++i) {
+    int i1 = i;
+    int i2 = i + 1;
+    if (i1 == static_cast<int>(points.size()) - 1) i2 = 0;
+    if (points[i1].y > points[i2].y) std::swap(i1, i2);
+
+    edges.push_back(std::make_pair(points[i1], points[i2]));
+  }
+
+  // for each y coordinate, find all intersections with the contour
+  for (int y = static_cast<int>(top); y <= static_cast<int>(bottom); ++y) {
+    std::vector<double> intersections_x;
+    for (const auto& edge : edges) {
+      // y1 <= y2 is guaranteed by construction
+      auto y1 = edge.first.y;
+      auto y2 = edge.second.y;
+      auto x1 = edge.first.x;
+      auto x2 = edge.second.x;
+
+      // ignore horizontal edges
+      if (y1 == y2) continue;
+
+      if (y1 <= y && y <= y2) {
+        // this edge intersects this horizontal line, remember intersection
+        double x = 0.0;
+        if (y1 == y) {
+          x = x1;
+        } else if (y2 == y) {
+          x = x2;
+        } else {
+          // floating-point precision required to correctly find intersection
+          x = (y - edge.first.y) / (edge.second.y - edge.first.y) * (x2 - x1) + x1;
+        }
+        intersections_x.push_back(x);
+      }
+    }
+
+    // pixels between an even and an odd index are inside
+    std::sort(intersections_x.begin(), intersections_x.end());
+    for (int i = 0; i < static_cast<int>(intersections_x.size()) - 1; i += 2) {
+      for (int x = static_cast<int>(std::floor(intersections_x[i]));
+               x <= static_cast<int>(std::ceil(intersections_x[i + 1])); ++x) {
+        rgb_array[y][x] = 0; // black RGB
+      }
+    }
+  }
 }
 
 void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
