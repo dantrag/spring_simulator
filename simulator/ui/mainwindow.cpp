@@ -476,8 +476,11 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
                                      static_cast<int>(SpringSimulator::InitializationGrid::kSquare));
   ui_->init_hexagonal_button->setChecked(true);
 
-  auto rect = this->screen()->geometry();
-  resize(rect.width() / 4 * 3, rect.height() / 4 * 3);
+  auto screen = QApplication::screenAt(this->pos());
+  if (screen) {
+    auto rect = screen->availableGeometry();
+    resize(rect.width() / 4 * 3, rect.height() / 4 * 3);
+  }
 
   ui_->log_text_edit->setCenterOnScroll(true);
 
