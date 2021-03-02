@@ -6,8 +6,13 @@
 #include <algorithm>
 #include <queue>
 #include <chrono>
+#include <fstream>
+
+#include <string>
 
 #include "backend/Spring.h"
+
+using namespace std;
 
 double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start) {
   std::chrono::duration<double> duration = std::chrono::steady_clock::now() - start;
@@ -639,3 +644,156 @@ void SpringSimulator::clear() {
   }
   particles_.clear();
 }
+
+// std::vector<std::tuple<std::tuple<double, double>, std::tuple<double, double>>> SpringSimulator::getGraph(std::vector<Particle*> particles){
+
+//   std::vector<std::tuple<std::tuple<double, double>, std::tuple<double, double>>> tuple_list;
+
+//   int i = 0;
+//   for (const auto &particle : particles)
+//   {
+//     //cout << particle->x() << endl;
+//     auto springs = particle -> springs();
+//     //vector<tuple<tuple<double>, tuple<double>>> tuple_i;
+
+//     //std::cout << "Paricle " << particle->x() << ", " << particle->y() << endl;
+//     for(Spring* spring:springs){
+//       auto p1 = spring -> particle1();
+//       auto p2 = spring -> particle2();
+      
+//       std::tuple<std::tuple<double, double>, std::tuple<double, double>> double_trouble = std::make_tuple(std::make_tuple(p1->x(), p1->y()), std::make_tuple(p2->x(), p2->y()));
+//       tuple_list.push_back(double_trouble);
+
+//       //cout << "Particle index: " << i << " " << x -> x() << ", " << x -> y() << " - " << y -> x() << ", " << y -> y() << endl;
+//     }
+//     i++;
+// }
+
+// return tuple_list;
+// }
+
+
+
+void SpringSimulator::getGraph(std::vector<Particle*> particles, std::string filename){
+  //  std::vector<std::tuple<Point, Point>> tuple_list;
+
+   // traverse the graph
+   std::set<Particle*> visited;
+
+   auto start_particle = particles.front();
+
+   DSFUtil(start_particle, filename, visited);
+
+  //  for (const auto &particle : particles){
+
+  //   const bool is_visited = visited.find(particle) != visited.end();
+
+  //   if(!is_visited){
+  //    visited.insert(particle);
+  //   }
+
+  //   // Search neighbors
+  //   auto springs = particle -> springs();
+
+  //   for(Spring* spring:springs){
+  //     auto p1 = spring -> particle1();
+  //     auto p2 = spring -> particle2();
+
+  //     const bool p1_visited = visited.find(p1) != visited.end();
+  //     const bool p2_visited = visited.find(p2) != visited.end();
+
+  //     if(!p1_visited && !p2_visited){
+  //       // never gonna happen
+  //     }
+      
+  //     if (!p1_visited || !p2_visited){
+  //       // write p1 -> p2
+  //     }
+
+  //     if (!p1_visited){
+  //       // DFS (p1)
+  //     }
+  //     if (!p2_visited){
+  //       // DFS (p2)
+  //     }
+
+  //   }
+
+
+
+  //  }
+
+    }
+
+void SpringSimulator::DSFUtil(Particle* particle, std::string filename, std::set<Particle*>& visited){
+  auto springs = particle -> springs();
+
+  const bool is_visited = visited.find(particle) != visited.end();
+
+  if(is_visited){
+    return;
+  }
+
+  if(!is_visited){
+    visited.insert(particle);
+  }
+
+  for(Spring* spring:springs){
+    auto p1 = spring -> particle1();
+    auto p2 = spring -> particle2();
+
+    const bool p1_visited = visited.find(p1) != visited.end();
+    const bool p2_visited = visited.find(p2) != visited.end();
+
+    if(!p1_visited && !p2_visited){
+      // never gonna happen
+    }
+    
+    if (!p1_visited || !p2_visited){
+      SpringSimulator::saveParticleState(p1->point(), p2->point(), filename);
+      // write p1 -> p2
+    }
+
+    if (!p1_visited){
+      SpringSimulator::DSFUtil(p1, filename, visited);
+    }
+    if (!p2_visited){
+      SpringSimulator::DSFUtil(p2, filename, visited);
+    }
+
+
+  }
+
+}
+
+
+void SpringSimulator::saveParticleState(Point point1, Point point2, string fileName){
+
+  std::ofstream myfile;
+  myfile.open(fileName, std::ios_base::app);
+
+  myfile << point1.x << ", " << point1.y << endl;
+  myfile << point2.x << ", " << point2.y << endl;
+  myfile << "|" << endl;
+
+
+
+  // for (auto tpl : tupleList){
+
+  // myfile << std::get<0>(std::get<0>(tpl)) << ", " << std::get<1>(std::get<0>(tpl)) << ";" << endl;
+  // myfile << get<0>(get<1>(tpl)) << ", " << get<1>(get<1>(tpl)) << ";" << endl;
+  // myfile << "|" << endl;
+  // }
+}
+
+void SpringSimulator::saveAction(Point point1, Point point2, string fileName){
+  std::ofstream myfile;
+  myfile.open(fileName, std::ios_base::app);
+
+  myfile << "action" << endl;
+  myfile << point1.x << ", " << point1.y << endl;
+  myfile << point2.x << ", " << point2.y << endl;
+  myfile << "action_end" << endl;
+
+}
+

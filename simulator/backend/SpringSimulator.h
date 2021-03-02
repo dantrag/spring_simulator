@@ -10,6 +10,8 @@
 #include "backend/SimulatorSettings.h"
 #include "backend/Particle.h"
 
+using namespace std;
+
 class SpringSimulator {
  public:
   SpringSimulator();
@@ -42,6 +44,8 @@ class SpringSimulator {
 
   // heating/cooling operations
   void runLinearPasses(const std::vector<Point>& points);
+  void runLinearPass(const Point& start, const Point& finish);
+
   void relaxHeat();
 
   const std::set<Spring*>& recentlyAddedSprings() const { return recently_added_springs_; }
@@ -52,11 +56,23 @@ class SpringSimulator {
 
   const std::vector<Particle*>& particles() const { return particles_; }
 
+  // Stuff i added
+  // std::vector<std::tuple<std::tuple<double, double>, std::tuple<double, double>>> getGraph(std::vector<Particle*> particles);
+
+  void getGraph(std::vector<Particle*> particles, std::string fileName);
+
+  void DSFUtil(Particle* particle, std::string filename, std::set<Particle*>& visited);
+
+  void saveParticleState(Point point1, Point point2, std::string filename);
+  void saveAction(Point point1, Point point2, std::string filename);
+  // void saveParticleState(std::vector<std::tuple<std::tuple<double, double>, std::tuple<double, double>>> tupleList, string fileName);
+  //void saveImageState(string fileName);
+
+
  protected:
   double defaultInitializationInterval() const;
   void initializeField(InitializationGrid mode, Point center, double width, double height, double interval,
                        std::function<bool(double, double)> valid_point);
-  void runLinearPass(const Point& start, const Point& finish);
 
   Spring* checkAndAddSpring(Particle* p1, Particle* p2);
 
