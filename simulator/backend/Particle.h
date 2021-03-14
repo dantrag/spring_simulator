@@ -39,7 +39,8 @@ class Particle {
   void setMovable(bool movable) { movable_ = movable; }
 
   void addSpring(Spring* spring) { springs_.push_back(spring); }
-  const std::vector<Spring*>& springs() const { return springs_; }
+  // const std::vector<Spring*>& springs() const { return springs_; }
+  const std::vector<Spring*> springs() const { return springs_; }
   void removeString(Spring* spring);
 
   void setSettings(SimulatorSettings* settings) { settings_ = settings; }

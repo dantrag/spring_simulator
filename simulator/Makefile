@@ -420,7 +420,8 @@ main.o: main.cpp ui/mainwindow.h \
 		backend/Particle.h \
 		backend/SpringSimulatorState.h \
 		backend/ParticleState.h \
-		backend/SpringState.h
+		backend/SpringState.h \
+		backend/Spring.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 Particle.o: backend/Particle.cpp backend/Particle.h \

@@ -10,8 +10,6 @@
 #include "backend/SimulatorSettings.h"
 #include "backend/Particle.h"
 
-using namespace std;
-
 class SpringSimulator
 {
 public:
@@ -38,6 +36,8 @@ public:
   void initializeFromPixelArray(const std::vector<std::vector<int>> &rgb_array, double scale,
                                 std::function<bool(int)> add_pixel,
                                 InitializationGrid mode = InitializationGrid::kHexagonal);
+  void initializeFromFileName(const std::string fileName);
+
 #ifdef QT_CORE_LIB
   void initializeFromImage();
 #endif
@@ -49,6 +49,7 @@ public:
 
   // heating/cooling operations
   void runLinearPasses(const std::vector<Point> &points);
+  void runLinearPass(const Point &start, const Point &finish);
 
   void relaxHeat();
 
@@ -72,12 +73,11 @@ public:
   void DSFUtil(Particle *particle, std::string filename, std::set<Particle *> &visited);
 
   void saveParticleState(Point point1, Point point2, std::string filename);
-  void saveAction(Point point1, Point point2, std::string filename);
+  void saveAction(Point point1, Point point2, Point midpoint, std::string filename);
   // void saveParticleState(std::vector<std::tuple<std::tuple<double, double>, std::tuple<double, double>>> tupleList, string fileName);
   //void saveImageState(string fileName);
 
 protected:
-  void runLinearPass(const Point &start, const Point &finish);
   double defaultInitializationInterval() const;
   void initializeField(InitializationGrid mode, Point center, double width, double height, double interval,
                        std::function<bool(double, double)> valid_point);
