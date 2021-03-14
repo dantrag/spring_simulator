@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     string saved_states_dir = "saved_states";
     mkdir(saved_states_dir.c_str(), 0777);
-    
+
     for (int i = 0; i < trials; ++i)
     {
       simulator->initializeCircle(Point(0, 0), range);

@@ -56,3 +56,7 @@ compile_commands.json
 builds/debug*
 object_script.*
 builds/*/Makefile
+.vscode/
+spring_nn/figures/
+spring_nn/__pycache__/
+spring_nn/.ipynb_checkpoints/
