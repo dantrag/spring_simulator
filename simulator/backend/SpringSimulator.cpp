@@ -18,6 +18,31 @@ SpringSimulator::SpringSimulator() {
   settings_ = new SimulatorSettings();
 }
 
+SpringSimulator::SpringSimulator(const SpringSimulator* simulator)
+    : SpringSimulator() {
+  std::unordered_map<Particle*, Particle*> particle_mapping;
+  for (const auto& particle : simulator->particles()) {
+    auto new_particle = new Particle(particle);
+    particle_mapping[particle] = new_particle;
+    particles_.push_back(new_particle);
+  }
+
+  std::unordered_map<Spring*, Spring*> spring_mapping;
+  for (const auto& particle : simulator->particles()) {
+    for (const auto& spring : particle->springs()) {
+      if (!spring_mapping.count(spring)) {
+        spring_mapping[spring] = new Spring(particle_mapping[particle],
+                                            particle_mapping[spring->otherEnd(particle)],
+                                            spring->length(),
+                                            spring->settings());
+      }
+    }
+  }
+  time_ = simulator->getTime();
+  log_ << simulator->log();
+  settings_ = simulator->settings();
+}
+
 #ifdef QT_CORE_LIB
 SpringSimulator::SpringSimulator(QString settings_file) {
   settings_ = new SimulatorSettings();

@@ -29,6 +29,7 @@ class Spring {
   void updateForce();
 
   void setSettings(SimulatorSettings* settings) { settings_ = settings; }
+  SimulatorSettings* settings() { return settings_; }
 
  private:
   // equilibrium length

@@ -13,11 +13,12 @@
 class SpringSimulator {
  public:
   SpringSimulator();
+  SpringSimulator(const SpringSimulator* simulator);
   #ifdef QT_CORE_LIB
   SpringSimulator(QString settings_file);
   #endif
 
-  SimulatorSettings* settings() { return settings_; }
+  SimulatorSettings* settings() const { return settings_; }
 
   enum class InitializationGrid {
     kHexagonal = 0,
