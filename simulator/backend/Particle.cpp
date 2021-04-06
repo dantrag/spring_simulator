@@ -7,12 +7,13 @@
 struct Line {
   Line() {}
   Line(const Point& p1, const Point& p2) {
-    a = 1;
-    if (p1.x == p2.x) {
-      b = 0;
-      c = -p1.x;
+    if (p1.y == p2.y) {
+      a = 0;
+      b = 1;
+      c = -p1.y;
     } else {
-      b = - a * (p2.x - p1.x) / (p2.y - p1.y);
+      a = 1;
+      b = -a * (p2.x - p1.x) / (p2.y - p1.y);
       c = -a * p1.x - b * p1.y;
     }
   }
@@ -26,12 +27,20 @@ double distance(double x1, double y1, double x2, double y2) {
   return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
+double distance2(double x1, double y1, double x2, double y2) {
+  return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+}
+
 double distance(const Point& p, double x, double y) {
   return std::sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y));
 }
 
 double distance(const Point& p1, const Point& p2) {
   return distance(p1.x, p1.y, p2.x, p2.y);
+}
+
+double distance2(const Point& p1, const Point& p2) {
+  return distance2(p1.x, p1.y, p2.x, p2.y);
 }
 
 double distance(const Particle* p, double x, double y) {
@@ -88,13 +97,30 @@ bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const 
      double Dy = l1.c * l2.a - l1.a * l2.c;
      double x = Dx / D;
      double y = Dy / D;
+     bool in_first = false;
+     bool in_second = false;
      if (fabs(l1.b) < 1e-5) {
        // l1 is vertical
-       return (y - p1.y) * (y - p2.y) < 0;
+       in_first = (y - p1.y) * (y - p2.y) < 0;
      } else {
-       return (x - p1.x) * (x - p2.x) < 0;
+       in_first = (x - p1.x) * (x - p2.x) < 0;
      }
+     if (fabs(l2.b) < 1e-5) {
+       // l2 is vertical
+       in_second = (y - p3.y) * (y - p4.y) < 0;
+     } else {
+       in_second = (x - p3.x) * (x - p4.x) < 0;
+     }
+     return in_first && in_second;
    }
+}
+
+Particle::Particle(const Particle* particle) : settings_(particle->settings_) {
+  x_ = particle->x();
+  y_ = particle->y();
+  molten_ = particle->isMolten();
+  movable_ = particle->isMovable();
+  melting_timeout_ = particle->meltingTimeout();
 }
 
 void Particle::removeString(Spring* spring) {

@@ -16,7 +16,9 @@ struct Point {
 
 class Particle {
  public:
+  Particle() {}
   Particle(double x, double y, SimulatorSettings* settings) : x_(x), y_(y), settings_(settings) {}
+  Particle(const Particle* particle);
   ~Particle();
 
   Point point() const { return Point(x_, y_); }
@@ -43,6 +45,7 @@ class Particle {
   void removeString(Spring* spring);
 
   void setSettings(SimulatorSettings* settings) { settings_ = settings; }
+  const SimulatorSettings* settings() { return settings_; }
 
  protected:
   double x_ = 0;
@@ -60,8 +63,10 @@ class Particle {
 };
 
 double distance(double x1, double y1, double x2, double y2);
+double distance2(double x1, double y1, double x2, double y2);
 double distance(const Point& p, double x, double y);
 double distance(const Point& p1, const Point& p2);
+double distance2(const Point& p1, const Point& p2);
 double distance(const Particle* p, double x, double y);
 double distance(const Particle* p1, const Particle* p2);
 double distance(const Particle* p1, const Particle* p2, const Particle* p3);
