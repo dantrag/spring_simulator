@@ -87,8 +87,8 @@ bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const 
      if (fabs(l2.c / l2.b - l1.c / l1.b) >= 1e-5) {
        return false;
      } else {
-       return (std::min(std::max(p1.x, p2.x), std::max(p3.y, p4.x)) >
-               std::max(std::min(p1.x, p2.x), std::min(p3.y, p4.x)));
+       return (std::min(std::max(p1.x, p2.x), std::max(p3.x, p4.x)) >
+               std::max(std::min(p1.x, p2.x), std::min(p3.x, p4.x)));
      }
    } else {
      // intersection point

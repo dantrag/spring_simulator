@@ -7,7 +7,7 @@ void SimulatorSettings::loadFromFile(QString filename) {
   molten_particle_default_radius_ = file_settings.value("Particle/MoltenDefaultRadius", 2.0).toDouble();
   molten_particle_cooldown_time_ = file_settings.value("Particle/CooldownTime", 20).toInt();
 
-  spring_default_stiffness_ = file_settings.value("Spring/DeafultStiffness", 0.01).toDouble();
+  spring_default_stiffness_ = file_settings.value("Spring/DefaultStiffness", 0.01).toDouble();
   spring_default_length_ = file_settings.value("Spring/DefaultLength", 5.5).toDouble();
   spring_connection_threshold_ = file_settings.value("Spring/ConnectionThreshold", 1.0).toDouble();
   spring_disconnection_threshold_ = file_settings.value("Spring/DisconnectionThreshold", 1.3).toDouble();
@@ -25,7 +25,7 @@ void SimulatorSettings::saveToFile(QString filename) {
   file_settings.setValue("Particle/MoltenDefaultRadius", molten_particle_default_radius_);
   file_settings.setValue("Particle/CooldownTime", molten_particle_cooldown_time_);
 
-  file_settings.setValue("Spring/DeafultStiffness", spring_default_stiffness_);
+  file_settings.setValue("Spring/DefaultStiffness", spring_default_stiffness_);
   file_settings.setValue("Spring/DefaultLength", spring_default_length_);
   file_settings.setValue("Spring/ConnectionThreshold", spring_connection_threshold_);
   file_settings.setValue("Spring/DisconnectionThreshold", spring_disconnection_threshold_);
