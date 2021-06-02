@@ -9,9 +9,30 @@ class Spring;
 
 struct Point {
   Point(double X, double Y) : x(X), y(Y) {}
+  operator== (const Point& other) {
+    return x == other.x && y == other.y;
+  }
 
   double x = 0.0;
   double y = 0.0;
+};
+
+struct Line {
+  Line() {}
+  Line(const Point& p1, const Point& p2) {
+    a = 1;
+    if (p1.x == p2.x) {
+      b = 0;
+      c = -a * p1.x;
+    } else {
+      b = - a * (p2.x - p1.x) / (p2.y - p1.y);
+      c = -a * p1.x - b * p1.y;
+    }
+  }
+
+  double a = 0.0;
+  double b = 0.0;
+  double c = 0.0;
 };
 
 class Particle {

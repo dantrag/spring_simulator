@@ -4,25 +4,6 @@
 
 #include "Spring.h"
 
-struct Line {
-  Line() {}
-  Line(const Point& p1, const Point& p2) {
-    if (p1.y == p2.y) {
-      a = 0;
-      b = 1;
-      c = -p1.y;
-    } else {
-      a = 1;
-      b = -a * (p2.x - p1.x) / (p2.y - p1.y);
-      c = -a * p1.x - b * p1.y;
-    }
-  }
-
-  double a = 0.0;
-  double b = 0.0;
-  double c = 0.0;
-};
-
 double distance(double x1, double y1, double x2, double y2) {
   return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
@@ -66,7 +47,27 @@ double crossProduct(const Point& p1, const Point& p2, const Point& p3) {
   return (p2.x - p1.x) * (p3.y - p1.y) - (p3.x - p1.x) * (p2.y - p1.y);
 }
 
+inline double area(const Point& a, const Point& b, const Point& c) {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+inline bool intersect_1(double a, double b, double c, double d) {
+  if (a > b) std::swap(a, b);
+  if (c > d) std::swap(c, d);
+  return std::max(a, c) <= std::min(b, d);
+}
+
+int sign(double x) {
+  if (std::abs(x) <= 1e-5) return 0;
+  if (x < 0) return -1; else return 1;
+}
+
 bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const Point& p4) {
+  return intersect_1(p1.x, p2.x, p3.x, p4.x)
+    && intersect_1 (p1.y, p2.y, p3.y, p4.y)
+    && sign(area(p1, p2, p3)) * sign(area(p1, p2, p4)) <= 0
+    && sign(area(p3, p4, p1)) * sign(area(p3, p4, p2)) <= 0;
+
   // not accounting for the three-on-a-line cases
   /*
    bool o1 = crossProduct(p1, p2, p3) > 0.0;
@@ -77,17 +78,17 @@ bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const 
    return (o1 != o2) && (o3 != o4);*/
    Line l1(p1, p2), l2(p3, p4);
 
-   if (fabs(l1.a * l2.b - l2.a * l1.b) < 1e-5) {
+   if (fabs(l1.a * l2.b - l2.a * l1.b) < 1e-9) {
      // parallel
-     if (fabs(l1.b) < 1e-5) {
+     if (fabs(l1.b) < 1e-9) {
        // vertical
-       return (std::min(std::max(p1.y, p2.y), std::max(p3.y, p4.y)) >
+       return (std::min(std::max(p1.y, p2.y), std::max(p3.y, p4.y)) >=
                std::max(std::min(p1.y, p2.y), std::min(p3.y, p4.y)));
      }
-     if (fabs(l2.c / l2.b - l1.c / l1.b) >= 1e-5) {
+     if (fabs(l2.c / l2.b - l1.c / l1.b) >= 1e-9) {
        return false;
      } else {
-       return (std::min(std::max(p1.x, p2.x), std::max(p3.x, p4.x)) >
+       return (std::min(std::max(p1.x, p2.x), std::max(p3.x, p4.x)) >=
                std::max(std::min(p1.x, p2.x), std::min(p3.x, p4.x)));
      }
    } else {
@@ -99,19 +100,19 @@ bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const 
      double y = Dy / D;
      bool in_first = false;
      bool in_second = false;
-     if (fabs(l1.b) < 1e-5) {
+     if (fabs(l1.b) < 1e-9) {
        // l1 is vertical
        in_first = (y - p1.y) * (y - p2.y) < 0;
      } else {
        in_first = (x - p1.x) * (x - p2.x) < 0;
      }
-     if (fabs(l2.b) < 1e-5) {
+     if (fabs(l2.b) < 1e-9) {
        // l2 is vertical
        in_second = (y - p3.y) * (y - p4.y) < 0;
      } else {
        in_second = (x - p3.x) * (x - p4.x) < 0;
      }
-     return in_first && in_second;
+     return (in_first && in_second);
    }
 }
 
