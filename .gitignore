@@ -55,6 +55,7 @@ compile_commands.json
 !builds/*/*
 !builds/*/*/*
 builds/debug*
+builds/release*/*
 builds/nongui/*/*
 object_script.*
 builds/*/Makefile
