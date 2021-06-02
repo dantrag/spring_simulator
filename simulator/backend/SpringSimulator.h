@@ -9,6 +9,7 @@
 
 #include "backend/SimulatorSettings.h"
 #include "backend/Particle.h"
+#include "backend/Shape.h"
 
 class SpringSimulator {
  public:
@@ -32,6 +33,8 @@ class SpringSimulator {
   void initializeFromPixelArray(const std::vector<std::vector<int>>& rgb_array, double scale,
                                 std::function<bool(int)> add_pixel,
                                 InitializationGrid mode = InitializationGrid::kHexagonal);
+  void initializeFromShape(const Shape& shape, double scale = 1.0,
+                           InitializationGrid mode = InitializationGrid::kHexagonal);
   #ifdef QT_CORE_LIB
   void initializeFromImage();
   #endif
@@ -40,6 +43,7 @@ class SpringSimulator {
 
   int getTime() const { return time_; }
   void incrementTime() { time_++; }
+  double scale() const { return scale_; }
 
   // heating/cooling operations
   void runLinearPasses(const std::vector<Point>& points);
@@ -49,7 +53,7 @@ class SpringSimulator {
   const std::set<Spring*>& recentlyDeletedSprings() const { return recently_deleted_springs_; }
   void clearRecent() { recently_added_springs_.clear(); recently_deleted_springs_.clear(); }
 
-  const std::vector<Point> fieldContour() const;
+  Shape fieldContour() const;
 
   const std::vector<Particle*>& particles() const { return particles_; }
 
@@ -65,8 +69,17 @@ class SpringSimulator {
   std::set<Spring*> recently_added_springs_;
   std::set<Spring*> recently_deleted_springs_;
   int time_ = 0;
+  double scale_ = 1.0;
   SimulatorSettings* settings_;
   std::stringstream log_;
 };
+
+Shape samplingContour(const Shape& contour,
+                      const std::vector<std::pair<double, double>>& vectors,
+                      double margin);
+
+std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
+                                double entry_margin, double exit_margin,
+                                int samples = 10, int repeats = 1, int angular_resolution = 60);
 
 #endif // SPRINGSIMULATOR_H

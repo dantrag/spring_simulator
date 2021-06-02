@@ -187,248 +187,31 @@ void MainWindow::runPasses() {
   updateFieldUI();
 }
 
-double interior_area(const std::vector<Point>& closed_curve) {
-  double s = 0.0;
-  int n = static_cast<int>(closed_curve.size());
-  for (int i = 0; i < n; ++i) {
-    s += (closed_curve[i].x - closed_curve[(i + 1) % n].x) *
-         (closed_curve[i].y + closed_curve[(i + 1) % n].y);
-  }
-  return std::abs(s) / 2;
-}
-
-Point centroid(const std::vector<Point>& closed_curve) {
-  Point center(0.0, 0.0);
-  int n = static_cast<int>(closed_curve.size());
-  if (n) {
-    for (auto& point : closed_curve) {
-      center.x += point.x;
-      center.y += point.y;
-    }
-    center.x /= n;
-    center.y /= n;
-  }
-  return center;
-}
-
-struct Line {
-  Line() {}
-  Line(const Point& p1, const Point& p2) {
-    a = 1;
-    if (p1.x == p2.x) {
-      b = 0;
-      c = -p1.x;
-    } else {
-      b = - a * (p2.x - p1.x) / (p2.y - p1.y);
-      c = -a * p1.x - b * p1.y;
-    }
-  }
-
-  double a = 0.0;
-  double b = 0.0;
-  double c = 0.0;
-};
-
-bool isInside(const Point& point, const std::vector<Point>& curve) {
-  int intersections = 0;
-  int n = static_cast<int>(curve.size());
-  if (n < 3) return false;
-  double max_x = curve[0].x;
-  double max_y = curve[0].y;
-  for (int i = 0; i < n; ++i) {
-    max_x = std::max(max_x, curve[i].x);
-    max_y = std::max(max_y, curve[i].y);
-  }
-  // create a ray from the point, make sure it does not hit a vertex
-  Point infinity(max_x + 100.0, max_y + 100.0);
-  for (int i = 0; i < n; ++i) {
-    const auto& p1 = curve[i];
-    const auto& p2 = curve[(i + 1) % n];
-    Line line(p1, p2);
-    if (segmentsIntersect(p1, p2, point, infinity)) intersections++;
-  }
-  return (intersections & 1);
-}
-
-double curveLength(const std::vector<Point>& curve) {
-  double length = 0.0;
-  int n = static_cast<int>(curve.size());
-  for (int i = 0; i < n; ++i) {
-    length += distance(curve[i], curve[(i + 1) % n]);
-  }
-  return length;
-}
-
-std::vector<std::vector<Point>> generatePasses(const std::vector<Point>& contour, double margin, int how_many) {
-  auto center = centroid(contour);
-  std::vector<std::pair<double, double>> radius_vectors;
-  for (int i = 0; i < 20; ++i) {
-    radius_vectors.push_back(std::make_pair(margin * std::cos(2 * M_PI / 20 * i),
-                                            margin * std::sin(2 * M_PI / 20 * i)));
-  }
-
-  std::vector<Point> sampling_contour;
-  for (const auto& point : contour) {
-    double separation_from_shape = -1;
-    Point best_sampling_point(0.0, 0.0);
-    for (const auto& radius : radius_vectors) {
-      Point sampling_point(point.x + radius.first,
-                           point.y + radius.second);
-      if (isInside(sampling_point, contour)) continue;
-      double separation = std::numeric_limits<double>::max();
-      for (const auto& contour_point : contour) {
-        separation = std::min(distance(sampling_point, contour_point), separation);
-      }
-      if (separation > separation_from_shape && separation != std::numeric_limits<double>::max()) {
-        best_sampling_point = sampling_point;
-        separation_from_shape = separation;
-      }
-    }
-    if (separation_from_shape > 0) sampling_contour.push_back(best_sampling_point);
-  }
-
-  double curve_length = curveLength(sampling_contour);
-  int n = static_cast<int>(sampling_contour.size());
-
-  std::vector<std::vector<Point>> passes;
-  while (how_many--) {
-    passes.push_back({});
-    double percentile = static_cast<double>(std::rand()) / RAND_MAX;
-    double current_length = 0.0;
-    for (int i = 0; i < n; ++i) {
-      const auto& p1 = sampling_contour[i];
-      const auto& p2 = sampling_contour[(i + 1) % n];
-      auto segment_length = distance(p1, p2);
-      current_length += segment_length;
-      if (percentile * curve_length <= current_length) {
-        double segment_prefix = (percentile * curve_length - (current_length - segment_length)) / segment_length;
-        passes.rbegin()->push_back(Point(p1.x + (p2.x - p1.x) * segment_prefix,
-                                         p1.y + (p2.y - p1.y) * segment_prefix));
-        break;
-      }
-    }
-    passes.rbegin()->push_back(center);
-    double second_percentile = 0.0;
-    int tries = 100;
-    do {
-      second_percentile = static_cast<double>(std::rand()) / RAND_MAX;
-    } while (std::abs(percentile - second_percentile) * curve_length <= margin * 2 && (tries-- > 0));
-    current_length = 0.0;
-    for (int i = 0; i < n; ++i) {
-      const auto& p1 = sampling_contour[i];
-      const auto& p2 = sampling_contour[(i + 1) % n];
-      auto segment_length = distance(p1, p2);
-      current_length += segment_length;
-      if (second_percentile * curve_length <= current_length) {
-        double segment_prefix = (second_percentile * curve_length - (current_length - segment_length)) / segment_length;
-        passes.rbegin()->push_back(Point(p1.x + (p2.x - p1.x) * segment_prefix,
-                                         p1.y + (p2.y - p1.y) * segment_prefix));
-        break;
-      }
-    }
-    if (static_cast<int>(passes.rbegin()->size()) < 3) passes.pop_back();
-  }
-  return passes;
-}
-
-double compareShapes(const std::vector<Point>& shape1, const std::vector<Point>& shape2, bool hausdorff) {
-  double length1 = curveLength(shape1);
-  double length2 = curveLength(shape2);
-  std::vector<Point> sampled1, sampled2;
-  const int sample_points1 = 100;
-  int n = static_cast<int>(shape1.size());
-  for (int i = 0; i < sample_points1; ++i) {
-    double current_length = 0.0;
-    double percentile = double(i) / sample_points1;
-    for (int j = 0; j < n; ++j) {
-      const auto& p1 = shape1[j];
-      const auto& p2 = shape1[(j + 1) % n];
-      auto segment_length = distance(p1, p2);
-      current_length += segment_length;
-      if (percentile * length1 <= current_length) {
-        double segment_prefix = (percentile * length1 - (current_length - segment_length)) / segment_length;
-        sampled1.push_back(Point(p1.x + (p2.x - p1.x) * segment_prefix,
-                                 p1.y + (p2.y - p1.y) * segment_prefix));
-        break;
-      }
-    }
-  }
-  const int sample_points2 = hausdorff ? curveLength(shape2) / curveLength(shape1) * sample_points1
-                                       : sample_points1;
-  n = static_cast<int>(shape2.size());
-  for (int i = 0; i < sample_points2; ++i) {
-    double current_length = 0.0;
-    double percentile = double(i) / sample_points2;
-    for (int j = 0; j < n; ++j) {
-      const auto& p1 = shape2[j];
-      const auto& p2 = shape2[(j + 1) % n];
-      auto segment_length = distance(p1, p2);
-      current_length += segment_length;
-      if (percentile * length2 <= current_length) {
-        double segment_prefix = (percentile * length2 - (current_length - segment_length)) / segment_length;
-        sampled2.push_back(Point(p1.x + (p2.x - p1.x) * segment_prefix,
-                                 p1.y + (p2.y - p1.y) * segment_prefix));
-        break;
-      }
-    }
-  }
-  // align two sets of points
-  int closest_to_point0 = 0;
-  for (int i = 1; i < static_cast<int>(sampled2.size()); ++i) {
-    if (distance2(sampled1[0], sampled2[i]) < distance2(sampled1[0], sampled2[closest_to_point0]))
-      closest_to_point0 = i;
-  }
-  std::rotate(sampled2.begin(), sampled2.begin() + closest_to_point0, sampled2.end());
-
-  double diff = 0.0;
-  if (hausdorff) {
-    for (auto p1 : sampled1) {
-      double dist = std::numeric_limits<double>::max();
-      for (auto p2 : sampled2) {
-        dist = std::min(dist, distance2(p1, p2));
-      }
-      diff = std::max(diff, dist);
-    }
-    for (auto p1 : sampled2) {
-      double dist = std::numeric_limits<double>::max();
-      for (auto p2 : sampled1) {
-        dist = std::min(dist, distance2(p1, p2));
-      }
-      diff = std::max(diff, dist);
-    }
-  } else {
-    for (int i = 0; i < static_cast<int>(sampled1.size()) &&
-                    i < static_cast<int>(sampled2.size()); ++i) {
-      diff += distance2(sampled1[i], sampled2[i]);
-    }
-  }
-  return std::sqrt(diff);
-}
-
 void MainWindow::makeTriangle() {
-  for (int k = 0; k < 20; ++k) {
+  /*
+  auto contour = sim_->fieldContour();
+  for (int i = 0; i < 1000; ++i) {
+    double x = ((rand() % 1000 - 500) / 500.1) * 100;
+    double y = ((rand() % 1000 - 500) / 500.1) * 100;
+    ui_->graphicsView->scene()->addEllipse(x-2,y-2,4,4,QPen(contour.contains(Point(x, y)) ? Qt::blue : Qt::red));
+  }
+  return;*/
+
+  for (int k = 0; k < 5; ++k) {
     auto contour = sim_->fieldContour();
-    auto area = interior_area(contour);
+    auto area = contour.area();
     auto side = std::sqrt(area * 4 / std::sqrt(3));
-    auto shape_center = centroid(contour);
     Point p1(0.0, 0.0);
     Point p2(side, 0.0);
     Point p3(side / 2, side * std::sqrt(3) / 2);
-    std::vector<Point> triangle = {p1, p2, p3};
-    auto triangle_center = centroid(triangle);
-    for (auto& triangle_vertex : triangle) {
-      triangle_vertex.x -= (triangle_center.x - shape_center.x);
-      triangle_vertex.y -= (triangle_center.y - shape_center.y);
-    }
-    for (int i = 0; i < 3; ++i)
+    Shape triangle({p1, p2, p3});
+    /*for (int i = 0; i < 3; ++i)
       ui_->graphicsView->scene()->addLine(triangle[i].x, triangle[i].y,
                                           triangle[(i + 1) % 3].x, triangle[(i + 1) % 3].y,
                                           QPen(Qt::gray));
-
-    auto passes = generatePasses(contour, sim_->settings()->heaterSize(), 20);
-    if (passes.empty()) break;
-    auto best_pass = *passes.begin();
-    double best_diff = std::numeric_limits<double>::max();
+    */
+    int repeats = 4;
+    auto best_pass = predictMoves(sim_, triangle, sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
     std::stringstream log_;
     //log_ << "triangle = [(" << p1.x << " " << p1.y << "), (" << p2.x << " " << p2.y << "), (" << p3.x << " " << p3.y << ")];" << std::endl;
     //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
@@ -438,6 +221,7 @@ void MainWindow::makeTriangle() {
     //log_ << "];" << std::endl;
     //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
     //log_.str(std::string());
+    /*
     int x = 0;
     for (auto& pass : passes) {
       SpringSimulator test_sim(sim_);
@@ -463,16 +247,24 @@ void MainWindow::makeTriangle() {
       //log_ << "  diff: " << diff << std::endl;
     }
     //log_ << "best diff: " << best_diff;
+    */
     int n = best_pass.size();
     for (int i = 0; i < n - 1; ++i) {
       ui_->graphicsView->scene()->addLine(best_pass[i].x, best_pass[i].y,
                                           best_pass[(i + 1) % n].x, best_pass[(i + 1) % n].y,
-                                          QPen(i ? Qt::red : Qt::blue));
+                                          QPen(Qt::blue));
     }
-    sim_->runLinearPasses(best_pass);
+    QString filename = QString("move %1.png").arg(k);
+    QImage image(QRect(-200, -200, 400, 400).size(), QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    ui_->graphicsView->scene()->render(&painter);
+    image.save(filename);
+    for (int i = 0; i < repeats; ++i) sim_->runLinearPasses(best_pass);
     addNewState();
+    updateFieldUI();
   }
-  updateFieldUI();
 }
 
 void MainWindow::updateFieldUI() {
@@ -648,7 +440,7 @@ void MainWindow::displayPasses(bool show) {
 void MainWindow::displayContour(bool show) {
   if (show) {
     double width = sim_->settings()->particleDefaultRadius() * 2;
-    auto contour = sim_->fieldContour();
+    auto contour = sim_->fieldContour().points();
     auto count = static_cast<int>(contour.size());
     for (int i = 0; i < count; ++i) {
       auto line = ui_->graphicsView->scene()->addLine(contour[i].x, contour[i].y,

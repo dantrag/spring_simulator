@@ -7,6 +7,10 @@
 #include <queue>
 #include <chrono>
 
+//temp
+#include <iostream>
+#include <sstream>
+
 #include "backend/Spring.h"
 
 double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start) {
@@ -137,6 +141,7 @@ void SpringSimulator::initializeRectangle(Point lefttop, Point rightbottom, Init
 
 void SpringSimulator::initializeFromPixelArray(const std::vector<std::vector<int>>& rgb_array, double scale,
                                                std::function<bool(int)> add_pixel, InitializationGrid mode) {
+  scale_ = scale;
   int height = static_cast<int>(rgb_array.size());
   int width = 0;
   std::vector<std::vector<bool>> include;
@@ -153,6 +158,38 @@ void SpringSimulator::initializeFromPixelArray(const std::vector<std::vector<int
     auto pixel_x = static_cast<int>(round(x / scale));
     if (pixel_x >= static_cast<int>(include[pixel_y].size())) return false;
     return static_cast<bool>(include[pixel_y][pixel_x]);
+  });
+}
+
+void SpringSimulator::initializeFromShape(const Shape& shape, double scale, InitializationGrid mode) {
+  scale_ = scale;
+  auto points = shape.points();
+  Shape new_shape(points);
+  double min_x = points[0].x;
+  double max_x = points[0].x;
+  double min_y = points[0].y;
+  double max_y = points[0].y;
+  for (const auto& point : points) {
+    min_x = std::min(min_x, point.x);
+    max_x = std::max(max_x, point.x);
+    min_y = std::min(min_y, point.y);
+    max_y = std::max(max_y, point.y);
+  }
+
+  // ensure that the shape is in the positive quadrant
+  if (min_x < 0 || min_y < 0) {
+    Point center = shape.centroid();
+    if (min_x < 0) center.x -= min_x;
+    if (min_y < 0) center.y -= min_y;
+    new_shape.moveTo(center);
+  }
+  auto interval = defaultInitializationInterval();
+  initializeField(mode, Point(max_x * scale / 2,
+                              max_y * scale / 2),
+                        max_x * scale,
+                        max_y * scale, interval,
+                        [&](double x, double y) {
+    return new_shape.contains(Point(x / scale, y / scale));
   });
 }
 
@@ -548,7 +585,7 @@ bool findCycle(VertexType* current, VertexType* parent,
   return false;
 }
 
-const std::vector<Point> SpringSimulator::fieldContour() const {
+Shape SpringSimulator::fieldContour() const {
   // threshold of what is considered to be a cycle lying inside the material
   const int max_inner_cycle_size = 4;
 
@@ -654,7 +691,7 @@ const std::vector<Point> SpringSimulator::fieldContour() const {
 
   std::vector<Point> contour = {};
   for (auto p : largest_cycle) contour.push_back(p->point());
-  return contour;
+  return Shape(contour);
 }
 
 void SpringSimulator::clear() {
@@ -663,4 +700,90 @@ void SpringSimulator::clear() {
     delete p;
   }
   particles_.clear();
+}
+
+Shape samplingContour(const Shape& contour,
+                      const std::vector<std::pair<double, double>>& vectors,
+                      double margin) {
+  std::vector<Point> sampling_contour;
+  for (const auto& point : contour.points()) {
+    double separation_from_shape = -1.0;
+    Point best_sampling_point(0.0, 0.0);
+    for (const auto& radius : vectors) {
+      Point sampling_point(point.x + radius.first * margin,
+                           point.y + radius.second * margin);
+      bool point_is_inside = contour.contains(sampling_point);
+      if ((margin > 0) == point_is_inside) continue;
+
+      double separation = std::numeric_limits<double>::max();
+      for (const auto& contour_point : contour.points()) {
+        separation = std::min(distance(sampling_point, contour_point), separation);
+      }
+      if (separation > separation_from_shape && separation != std::numeric_limits<double>::max()) {
+        best_sampling_point = sampling_point;
+        separation_from_shape = separation;
+      }
+    }
+    if (separation_from_shape > 0) sampling_contour.push_back(best_sampling_point);
+  }
+  return Shape(sampling_contour);
+}
+
+std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
+                                double entry_margin, double exit_margin,
+                                int samples, int repeats, int angular_resolution) {
+  const auto current_shape = simulator->fieldContour();
+  auto current_area = current_shape.area();
+  auto current_center = current_shape.centroid();
+  target.moveTo(current_center);
+  target.scaleTo(current_area);
+
+  std::vector<std::pair<double, double>> vectors;
+  for (int i = 0; i < angular_resolution; ++i) {
+    vectors.push_back(std::make_pair(std::cos(2 * M_PI / angular_resolution * i),
+                                     std::sin(2 * M_PI / angular_resolution * i)));
+  }
+
+  auto sampling_entry_contour = samplingContour(current_shape, vectors, entry_margin);
+  auto sampling_exit_contour = samplingContour(current_shape, vectors, exit_margin);
+
+  std::vector<std::vector<Point>> passes;
+  while (samples--) {
+    auto entry = sampling_entry_contour.sampleBoundary();
+    int tries = 100;
+    auto exit = sampling_exit_contour.sampleBoundary();
+    while (tries--) {
+      if (distance2(entry, exit) > (entry_margin + exit_margin) * (entry_margin + exit_margin)) break;
+    }
+
+    std::vector<Point> pass;
+    pass.push_back(entry);
+    pass.push_back(current_center);
+    pass.push_back(exit);
+    passes.push_back(pass);
+  }
+
+  auto best_pass = *passes.begin();
+  double best_distance = std::numeric_limits<double>::max();
+
+  for (const auto pass : passes) {
+    std::cout << "Pass " << pass[0].x << " " << pass[0].y << " "
+                         << pass[1].x << " " << pass[1].y << " "
+                         << pass[2].x << " " << pass[2].y << " ";
+    SpringSimulator test_simulator(simulator);
+    for (int i = 0; i < repeats; ++i) {
+      test_simulator.runLinearPasses(pass);
+    }
+    auto new_shape = test_simulator.fieldContour();
+    std::stringstream ss; ss << pass[0].x << "_" << pass[0].y << "_result.csv";
+    new_shape.saveToFile(ss.str());
+    double distance = new_shape.distanceTo(target);
+    std::cout << "distance is " << distance << std::endl;
+    if (distance < best_distance) {
+      best_distance = distance;
+      best_pass = pass;
+    }
+  }
+  std::cout << "Best pass starts at " << best_pass[0].x << " " << best_pass[0].y << std::endl;
+  return best_pass;
 }
