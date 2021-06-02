@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #ifdef QT_CORE_LIB
 #include <QApplication>
@@ -9,6 +10,8 @@
 #include "ui/mainwindow.h"
 #endif
 
+#include "backend/Particle.h"
+#include "backend/Shape.h"
 #include "backend/SpringSimulator.h"
 
 #ifndef QT_CORE_LIB
@@ -73,32 +76,56 @@ int main(int argc, char* argv[]) {
     }
 
     std::string command = command_argument.getValue();
-    std::string input_file = input_argument.getValue();
+    std::string input_filename = input_argument.getValue();
 
-    if (command == "init") {
-      try {
-        std::vector<std::vector<int>> pixel_array;
-        std::string current_path = argv[0];
-        current_path = current_path.substr(0, current_path.find_last_of("\\/"));
-        pngToArray(input_file, pixel_array, current_path);
-        if (pixel_array.empty() || pixel_array[0].empty()) {
-          throw std::invalid_argument("");
-        }
-        if (pixel_array[0][0] != 0) {
-          for (auto& row : pixel_array) {
-            for (auto& pixel : row) {
-              pixel = 255 - pixel;
-            }
+    if (!input_filename.empty()) {
+      auto extension = input_filename.substr(input_filename.find_last_of(".") + 1, std::string::npos);
+      std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+      if (extension == "png") {
+        try {
+          std::vector<std::vector<int>> pixel_array;
+          std::string current_path = argv[0];
+          current_path = current_path.substr(0, current_path.find_last_of("\\/"));
+          pngToArray(input_filename, pixel_array, current_path);
+          if (pixel_array.empty() || pixel_array[0].empty()) {
+            throw std::invalid_argument("");
           }
+
+          simulator->initializeFromPixelArray(pixel_array, 1.0, [](int pixel) { return pixel > 0; });
+        } catch (...) {
+          std::cerr << "Error: cannot read pixel array from the input file" << std::endl;
         }
-        simulator->initializeFromPixelArray(pixel_array, 1.0, [](int pixel) { return pixel > 0; });
-      } catch (...) {
-        std::cerr << "Error: cannot read pixel array from the input file" << std::endl;
+      } else if (extension == "csv") {
+        Shape initial_shape(input_filename);
+        simulator->initializeFromShape(initial_shape, 0.25);
+      } else if (extension == "xml") {
+        // todo: initialize from xml
+      } else {
+        std::cerr << "Error: unknown input file format (PNG, CSV and XML allowed)" << std::endl;
       }
-    } else if (command == "pass") {
-      // todo: run linear pass
-    } else if (command == "predict") {
-      // todo: run prediction
+    } else {
+      std::cerr << "Error: no input file specified (PNG, CSV or XML) (use -i)" << std::endl;
+    }
+    if (simulator->particles().empty()) {
+      std::cerr << "Error: could not initialize simulator, no particles created" << std::endl;
+    } else {
+      if (command == "pass") {
+        // todo: run linear pass
+      } else if (command == "predict") {
+        std::string target_filename = target_argument.getValue();
+        if (!target_filename.empty()) {
+          std::string output_filename = output_argument.getValue();
+          if (!output_filename.empty()) {
+            Shape target_shape(target_filename);
+            auto moves = predictMoves(simulator, target_shape, 10, 10);
+            Shape(moves).saveToFile(output_filename);
+          } else {
+            std::cerr << "Error: no output filename provided (use -o)" << std::endl;
+          }
+        } else {
+          std::cerr << "Error: no target shape file provided (use -t)" << std::endl;
+        }
+      }
     }
   } catch (TCLAP::ArgException &e) {
     std::cerr << "Error: " << e.error() << " for argument " << e.argId() << std::endl;
