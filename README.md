@@ -85,7 +85,7 @@ GUI is mostly self-explanatory. The workflow is as follows. Adjust the simulator
 
 #### non-GUI
 
-Make sure `make` and `g++` are installed. For Windows, use can use [Cygwin](https://www.cygwin.com/). Then run `make` in the root folder. This should create an executable in the _./builds/nongui_ folder.
+First, make sure `make` and `g++` are installed (`sudo apt-get install make g++`). For Windows, use can use [Cygwin](https://www.cygwin.com/). Then run `make` in the root of the repository. This should create an executable in the _./builds/nongui_ folder.
 
 #### GUI
 
