@@ -89,4 +89,4 @@ First, make sure `make` and `g++` are installed (`sudo apt-get install make g++`
 
 #### GUI
 
-On the top of `make` and `g++`, you need to have `Qt` installed, for example, via 'apt-get install qt5-default'. Go to _./simulator_, run `qmake` and then `make`. This should create an executable
+On the top of `make` and `g++`, you need to have `Qt` installed, for example, via 'apt-get install qt5-default'. Go to _./simulator_, run `qmake` and then `make`. This should create an executable in the same folder.
