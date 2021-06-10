@@ -9,7 +9,7 @@ class Spring;
 
 struct Point {
   Point(double X, double Y) : x(X), y(Y) {}
-  operator== (const Point& other) {
+  bool operator== (const Point& other) {
     return x == other.x && y == other.y;
   }
 
