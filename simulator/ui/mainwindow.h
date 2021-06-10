@@ -39,15 +39,17 @@ private:
   void initializeUI();
   void updateFieldUI();
   void addNewState();
-  void restoreState(SpringSimulatorState* state);
+  void displayState(SpringSimulatorState* state);
   void decrementState();
   void incrementState();
+  void restoreCurrentState();
 
   void doHeat();
   void doCool();
   // each heater pass is a piecewise linear curve defined by a vector of points
   std::vector<std::vector<Point>> getPasses();
   void runPasses();
+  void makeTriangle();
 
   void changeBackground();
   void changeBackgroundOpacity(int value);

@@ -9,6 +9,7 @@
 *.so.*
 *.dll
 *.dylib
+*.d
 
 # Qt-es
 object_script.*.Release
@@ -54,5 +55,7 @@ compile_commands.json
 !builds/*/*
 !builds/*/*/*
 builds/debug*
+builds/release*/*
+builds/nongui/*/*
 object_script.*
 builds/*/Makefile

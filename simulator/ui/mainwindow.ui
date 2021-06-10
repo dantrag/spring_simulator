@@ -450,6 +450,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="triangle_button">
+           <property name="text">
+            <string>Make a triangle</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QLabel" name="static1">
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Passes (x&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, y&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, ..., x&lt;span style=&quot; vertical-align:sub;&quot;&gt;n&lt;/span&gt;, y&lt;span style=&quot; vertical-align:sub;&quot;&gt;n&lt;/span&gt;):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -1026,6 +1033,13 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QPushButton" name="restore_state_button">
+         <property name="text">
+          <string>Restore this state</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="static45">

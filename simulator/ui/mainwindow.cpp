@@ -5,6 +5,7 @@
 #include <set>
 #include <iostream>
 #include <exception>
+#include <sstream>
 
 #include <QDesktopWidget>
 #include <QGraphicsEllipseItem>
@@ -40,6 +41,10 @@ void MainWindow::clearUI() {
 void MainWindow::addNewState() {
   current_sim_state_ = new SpringSimulatorState(sim_, static_cast<int>(sim_states_.size()));
   sim_states_.push_back(current_sim_state_);
+}
+
+void MainWindow::restoreCurrentState() {
+  //
 }
 
 void MainWindow::initializeUI() {
@@ -182,6 +187,86 @@ void MainWindow::runPasses() {
   updateFieldUI();
 }
 
+void MainWindow::makeTriangle() {
+  /*
+  auto contour = sim_->fieldContour();
+  for (int i = 0; i < 1000; ++i) {
+    double x = ((rand() % 1000 - 500) / 500.1) * 100;
+    double y = ((rand() % 1000 - 500) / 500.1) * 100;
+    ui_->graphicsView->scene()->addEllipse(x-2,y-2,4,4,QPen(contour.contains(Point(x, y)) ? Qt::blue : Qt::red));
+  }
+  return;*/
+
+  for (int k = 0; k < 5; ++k) {
+    auto contour = sim_->fieldContour();
+    auto area = contour.area();
+    auto side = std::sqrt(area * 4 / std::sqrt(3));
+    Point p1(0.0, 0.0);
+    Point p2(side, 0.0);
+    Point p3(side / 2, side * std::sqrt(3) / 2);
+    Shape triangle({p1, p2, p3});
+    /*for (int i = 0; i < 3; ++i)
+      ui_->graphicsView->scene()->addLine(triangle[i].x, triangle[i].y,
+                                          triangle[(i + 1) % 3].x, triangle[(i + 1) % 3].y,
+                                          QPen(Qt::gray));
+    */
+    int repeats = 4;
+    auto best_pass = predictMoves(sim_, triangle, sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
+    std::stringstream log_;
+    //log_ << "triangle = [(" << p1.x << " " << p1.y << "), (" << p2.x << " " << p2.y << "), (" << p3.x << " " << p3.y << ")];" << std::endl;
+    //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
+    //log_.str(std::string());
+    //log_ << "contour = [";
+    //for (auto point: contour) log_ << "(" << point.x << " " << point.y << "), ";
+    //log_ << "];" << std::endl;
+    //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
+    //log_.str(std::string());
+    /*
+    int x = 0;
+    for (auto& pass : passes) {
+      SpringSimulator test_sim(sim_);
+      test_sim.runLinearPasses(pass);
+      x++;
+
+      //int n = pass.size();
+      //for (int i = 0; i < n - 1; ++i)
+      //  ui_->graphicsView->scene()->addLine(pass[i].x, pass[i].y, pass[(i + 1) % n].x, pass[(i + 1) % n].y, QPen(QColor::fromHslF((double(x) / passes.size()) * 0.8, 0.95, 0.5)));
+
+      auto new_contour = test_sim.fieldContour();
+      double diff = compareShapes(triangle, new_contour, false);
+      if (diff < best_diff) {
+        best_diff = diff;
+        best_pass = pass;
+      }
+
+      //log_ << "Candidate: ";
+      //for (auto point: new_contour) log_ << "(" << point.x << " " << point.y << "), ";
+      //log_ << "];" << std::endl;
+      //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
+      //log_.str(std::string());
+      //log_ << "  diff: " << diff << std::endl;
+    }
+    //log_ << "best diff: " << best_diff;
+    */
+    int n = best_pass.size();
+    for (int i = 0; i < n - 1; ++i) {
+      ui_->graphicsView->scene()->addLine(best_pass[i].x, best_pass[i].y,
+                                          best_pass[(i + 1) % n].x, best_pass[(i + 1) % n].y,
+                                          QPen(Qt::blue));
+    }
+    QString filename = QString("move %1.png").arg(k);
+    QImage image(QRect(-200, -200, 400, 400).size(), QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    ui_->graphicsView->scene()->render(&painter);
+    image.save(filename);
+    for (int i = 0; i < repeats; ++i) sim_->runLinearPasses(best_pass);
+    addNewState();
+    updateFieldUI();
+  }
+}
+
 void MainWindow::updateFieldUI() {
   clearUI();
 
@@ -214,7 +299,7 @@ void MainWindow::updateFieldUI() {
   ui_->log_text_edit->ensureCursorVisible();
 }
 
-void MainWindow::restoreState(SpringSimulatorState* state) {
+void MainWindow::displayState(SpringSimulatorState* state) {
   current_sim_state_ = state;
   updateFieldUI();
 }
@@ -223,7 +308,7 @@ void MainWindow::decrementState() {
   auto iterator = std::find(sim_states_.begin(), sim_states_.end(), current_sim_state_);
   if (iterator != sim_states_.end() && iterator != sim_states_.begin()) {
     iterator--;
-    restoreState(*iterator);
+    displayState(*iterator);
   }
 }
 
@@ -231,7 +316,7 @@ void MainWindow::incrementState() {
   auto iterator = std::find(sim_states_.begin(), sim_states_.end(), current_sim_state_);
   if (iterator != sim_states_.end() && *iterator != *sim_states_.rbegin()) {
     iterator++;
-    restoreState(*iterator);
+    displayState(*iterator);
   }
 }
 
@@ -354,8 +439,8 @@ void MainWindow::displayPasses(bool show) {
 
 void MainWindow::displayContour(bool show) {
   if (show) {
-    double width = sim_->settings()->particleDefaultRadius();
-    auto contour = sim_->fieldContour();
+    double width = sim_->settings()->particleDefaultRadius() * 2;
+    auto contour = sim_->fieldContour().points();
     auto count = static_cast<int>(contour.size());
     for (int i = 0; i < count; ++i) {
       auto line = ui_->graphicsView->scene()->addLine(contour[i].x, contour[i].y,
@@ -468,6 +553,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->change_bkg_button, &QPushButton::clicked, this, &MainWindow::changeBackground);
   connect(ui_->previous_state_button, &QToolButton::clicked, this, &MainWindow::decrementState);
   connect(ui_->next_state_button, &QToolButton::clicked, this, &MainWindow::incrementState);
+  connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
+  connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
   connectSettingsSignals();
 
   ui_->init_mode_button_group->setId(ui_->init_hexagonal_button,

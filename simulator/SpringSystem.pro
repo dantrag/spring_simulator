@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     backend/Particle.cpp \
     backend/ParticleState.cpp \
+    backend/Shape.cpp \
     backend/SimulatorSettings.cpp \
     backend/Spring.cpp \
     backend/SpringSimulator.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
 HEADERS += \
     backend/Particle.h \
     backend/ParticleState.h \
+    backend/Shape.h \
     backend/SimulatorSettings.h \
     backend/Spring.h \
     backend/SpringSimulator.h \
