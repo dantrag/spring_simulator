@@ -775,10 +775,10 @@ std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
       test_simulator.runLinearPasses(pass);
     }
     auto new_shape = test_simulator.fieldContour();
-    std::stringstream ss; ss << pass[0].x << "_" << pass[0].y << "_result.csv";
-    new_shape.saveToFile(ss.str());
     double distance = new_shape.distanceTo(target);
     std::cout << "distance is " << distance << std::endl;
+    std::stringstream ss; ss << pass[0].x << "_" << pass[0].y << "_dist_" << distance << ".csv";
+    new_shape.saveToFile(ss.str());
     if (distance < best_distance) {
       best_distance = distance;
       best_pass = pass;

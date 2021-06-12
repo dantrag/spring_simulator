@@ -197,7 +197,7 @@ void MainWindow::makeTriangle() {
   }
   return;*/
 
-  for (int k = 0; k < 5; ++k) {
+  for (int k = 0; k < 15; ++k) {
     auto contour = sim_->fieldContour();
     auto area = contour.area();
     auto side = std::sqrt(area * 4 / std::sqrt(3));
@@ -210,7 +210,7 @@ void MainWindow::makeTriangle() {
                                           triangle[(i + 1) % 3].x, triangle[(i + 1) % 3].y,
                                           QPen(Qt::gray));
     */
-    int repeats = 4;
+    int repeats = 3;
     auto best_pass = predictMoves(sim_, triangle, sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
     std::stringstream log_;
     //log_ << "triangle = [(" << p1.x << " " << p1.y << "), (" << p2.x << " " << p2.y << "), (" << p3.x << " " << p3.y << ")];" << std::endl;
@@ -254,7 +254,7 @@ void MainWindow::makeTriangle() {
                                           best_pass[(i + 1) % n].x, best_pass[(i + 1) % n].y,
                                           QPen(Qt::blue));
     }
-    QString filename = QString("move %1.png").arg(k);
+    QString filename = QString("move %1_%2_%3_%4_%5.png").arg(k).arg(best_pass[0].x).arg(best_pass[0].y).arg(best_pass[2].x).arg(best_pass[2].y);
     QImage image(QRect(-200, -200, 400, 400).size(), QImage::Format_ARGB32);
     image.fill(Qt::transparent);
     QPainter painter(&image);
