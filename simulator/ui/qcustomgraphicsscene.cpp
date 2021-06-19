@@ -7,7 +7,7 @@ void QCustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
   if (selection)
     selection->setRect(event->scenePos().x(), event->scenePos().y(), 0, 0);
   else {
-    selection = addRect(event->scenePos().x(), event->scenePos().y(), 0, 0, QPen(QBrush(Qt::darkBlue), 3));
+    selection = addRect(event->scenePos().x(), event->scenePos().y(), 0, 0, QPen(QBrush(Qt::darkBlue), 1));
     selection->setZValue(30);
   }
   update();

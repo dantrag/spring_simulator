@@ -19,7 +19,7 @@
 
 void pngToArray(std::string filename, std::vector<std::vector<int>>& pixel_array, std::string current_path) {
   std::string array_filename = filename + ".array";
-  std::string command = "python " + current_path + "/png_to_array.py " + filename + " " + array_filename;
+  std::string command = "python " + current_path + "/mask_to_array.py " + filename + " " + array_filename;
   std::system(command.c_str());
 
   std::ifstream array_file;
