@@ -16,27 +16,39 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    backend/Actuator.cpp \
+    backend/ElasticSimulator.cpp \
+    backend/Heater.cpp \
+    backend/InelasticSimulator.cpp \
     backend/Particle.cpp \
     backend/ParticleState.cpp \
+    backend/Pusher.cpp \
     backend/Shape.cpp \
     backend/SimulatorSettings.cpp \
     backend/Spring.cpp \
     backend/SpringSimulator.cpp \
     backend/SpringSimulatorState.cpp \
     backend/SpringState.cpp \
+    backend/WaxSimulator.cpp \
     main.cpp \
     ui/mainwindow.cpp \
     ui/qcustomgraphicsscene.cpp
 
 HEADERS += \
+    backend/Actuator.h \
+    backend/ElasticSimulator.h \
+    backend/Heater.h \
+    backend/InelasticSimulator.h \
     backend/Particle.h \
     backend/ParticleState.h \
+    backend/Pusher.h \
     backend/Shape.h \
     backend/SimulatorSettings.h \
     backend/Spring.h \
     backend/SpringSimulator.h \
     backend/SpringSimulatorState.h \
     backend/SpringState.h \
+    backend/WaxSimulator.h \
     ui/mainwindow.h \
     ui/qcustomgraphicsscene.h
 

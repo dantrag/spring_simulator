@@ -5,18 +5,12 @@
 #include <map>
 #include <algorithm>
 #include <queue>
-#include <chrono>
 
 //temp
 #include <iostream>
 #include <sstream>
 
 #include "backend/Spring.h"
-
-double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start) {
-  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - start;
-  return duration.count() * 1000;
-}
 
 SpringSimulator::SpringSimulator() {
   settings_ = new SimulatorSettings();
@@ -53,6 +47,14 @@ SpringSimulator::SpringSimulator(QString settings_file) {
   settings_->loadFromFile(settings_file);
 }
 #endif
+
+SpringSimulator::SpringSimulator(SimulatorSettings* settings)
+    : settings_(settings) {}
+
+void SpringSimulator::incrementTime() {
+  time_++;
+  for (auto& actuator : actuators_) actuator->setTime(time_);
+}
 
 Spring* SpringSimulator::checkAndAddSpring(Particle *p1, Particle *p2) {
   if (p1 && p2) {
@@ -193,154 +195,19 @@ void SpringSimulator::initializeFromShape(const Shape& shape, double scale, Init
   });
 }
 
-void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
-                 std::set<Particle*>& neighbourhood) {
-  std::queue<Particle*> bfs_queue = {};
-  std::unordered_map<Particle*, int> depth = {};
-  bfs_queue.push(start);
-  depth[start] = 0;
-  while (!bfs_queue.empty()) {
-    auto p = bfs_queue.front();
-    bfs_queue.pop();
-    if (minimum_depth <= depth[p] && depth[p] <= maximum_depth) {
-      neighbourhood.insert(p);
-    }
-    if (depth[p] > maximum_depth) break;
-    for (auto s : p->springs()) {
-      auto next = s->otherEnd(p);
-      if (!depth.count(next)) {
-        bfs_queue.push(next);
-        depth[next] = depth[p] + 1;
-      }
-    }
-  }
-}
-
-// check if removal of the spring will create a long cycle (potential void)
-bool checkSpringRemovalAllowance(Spring* s, int min_cycle_length, int max_cycle_length,
-                                 std::vector<Particle*>& cycle, bool& fixable) {
-  std::set<Spring*> forbidden_springs = {s};
-  std::queue<Particle*> bfs_queue;
-  bfs_queue.push(s->particle1());
-  std::map<Particle*, Spring*> link_to_previous = {};
-  link_to_previous[s->particle1()] = nullptr;
-  std::map<Particle*, int> depth = {};
-  depth[s->particle1()] = 0;
-
-  while (!bfs_queue.empty()) {
-    auto current = bfs_queue.front();
-    bfs_queue.pop();
-    for (auto adjacent_spring : current->springs()) {
-      if (!forbidden_springs.count(adjacent_spring)) {
-        auto next = adjacent_spring->otherEnd(current);
-        if (!link_to_previous.count(next)) {
-          bfs_queue.push(next);
-          link_to_previous[next] = adjacent_spring;
-          depth[next] = depth[current] + 1;
-          if (next == s->particle2() || depth[next] > max_cycle_length / 2) {
-            while (!bfs_queue.empty()) bfs_queue.pop();
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  if (!depth.count(s->particle2())) {
-    // particles became disjointed or too long cycle forms, so removal of the spring is not possible
-    fixable = false;
-    return false;
-  }
-
-  auto current = s->particle2();
-  while (current != s->particle1()) {
-    cycle.push_back(current);
-    forbidden_springs.insert(link_to_previous[current]);
-    current = link_to_previous[current]->otherEnd(current);
-  }
-  std::reverse(cycle.begin(), cycle.end());
-  int half_cycle_size = depth[s->particle2()];
-
-  bfs_queue.push(s->particle1());
-  link_to_previous.clear();
-  depth.clear();
-  depth[s->particle1()] = 0;
-  link_to_previous[s->particle1()] = nullptr;
-
-  while (!bfs_queue.empty()) {
-    auto current = bfs_queue.front();
-    bfs_queue.pop();
-    for (auto adjacent_spring : current->springs()) {
-      if (!forbidden_springs.count(adjacent_spring)) {
-        auto next = adjacent_spring->otherEnd(current);
-        if (!link_to_previous.count(next)) {
-          bfs_queue.push(next);
-          link_to_previous[next] = adjacent_spring;
-          depth[next] = depth[current] + 1;
-          if (next == s->particle2() || depth[next] + half_cycle_size > max_cycle_length) {
-            while (!bfs_queue.empty()) bfs_queue.pop();
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  if (!depth.count(s->particle2())) {
-    // only one path between the ends of the spring, no cycle formed
-    // or (very unlikely) the second path is too long ("creating a crack")
-    fixable = false;
-    if (half_cycle_size <= max_cycle_length / 2 && s->actualLength() / s->length() > 1.6)
-      return true;
-    else
-      return false;
-  }
-
-  // otherwise we have found a long cycle! but is it minimal?
-
-  current = s->particle2();
-  while (current != s->particle1()) {
-    forbidden_springs.insert(link_to_previous[current]);
-    current = link_to_previous[current]->otherEnd(current);
-    cycle.push_back(current);
-  }
-
-  fixable = true;
-
-  // try to shrink the found cycle - there can be at most one edge between two "sides" of the cycle,
-  // according to our design where we add 1 edge that might intersect s
-
-  for (int i = 0; i < half_cycle_size - 1; ++i) {
-    for (int j = half_cycle_size; j < static_cast<int>(cycle.size()) - 1; ++j) {
-      for (auto s : cycle[i]->springs()) {
-        if (s->otherEnd(cycle[i]) == cycle[j]) {
-          // we can split the cycle
-          int sub_cycle_size1 = j - i + 1;
-          int sub_cycle_size2 = static_cast<int>(cycle.size()) - sub_cycle_size1 + 2;
-          if (sub_cycle_size1 < min_cycle_length && sub_cycle_size2 < min_cycle_length) {
-            return true;
-          }
-        }
-      }
-    }
-  }
-
-  return (depth[s->particle2()] + half_cycle_size < min_cycle_length);
-}
-
-void SpringSimulator::relaxHeat() {
+void SpringSimulator::relax() {
   double max_displacement = 0;
   int iteration_count = 0;
-  std::vector<Particle*> movable_particles;
+  movable_particles_.clear();
   for (auto p : particles_)
-    if (p->isMovable()) movable_particles.push_back(p);
+    if (p->isMovable()) movable_particles_.push_back(p);
 
-  log_ << movable_particles.size() << " movable particles\n";
+  log_ << movable_particles_.size() << " movable particles\n";
   auto timer = std::chrono::steady_clock::now();
 
   do {
     max_displacement = 0;
-    for (auto p : movable_particles) {
+    for (auto p : movable_particles_) {
       double x_displacement = 0.0;
       double y_displacement = 0.0;
       double max_allowable_displacement = settings_->springDefaultLength() / 4;
@@ -383,111 +250,15 @@ void SpringSimulator::relaxHeat() {
       p->setDisplacement(Point(x_displacement, y_displacement));
     }
 
-    for (auto p : movable_particles) {
+    for (auto p : movable_particles_) {
       p->applyDisplacement();
     }
 
-    // delete too long springs
     if (iteration_count % 50 == 0) {
-      auto spring_comparator = [](Spring* s1, Spring* s2) { return s1->actualLength() / s1->length() >
-                                                                   s2->actualLength() / s2->length(); };
-      std::set<Spring*, decltype(spring_comparator)> sorted_springs(spring_comparator);
-      for (auto p : movable_particles) {
-        for (auto s : p->springs()) {
-          if (s != nullptr && s->actualLength() / s->length() > settings_->springDisconnectionThreshold())
-            sorted_springs.insert(s);
-        }
-      }
-
-      const int min_cycle_length = 4;
-      const int max_cycle_length = 4;
-      for (auto s : sorted_springs) {
-        // check if removal of the spring will create no leaves/isolated nodes
-        if (s->particle1()->springs().size() <= 2) continue;
-        if (s->particle2()->springs().size() <= 2) continue;
-
-        // check if removal of the spring will create no long cycles (potential voids)
-        std::vector<Particle*> cycle = {}, temp_cycle = {};
-        bool can_fix = false;
-        bool can_remove = checkSpringRemovalAllowance(s, min_cycle_length, max_cycle_length, cycle, can_fix);
-        if (!can_remove && can_fix) {
-          // if a long cycle is created, can it be fixed with adding a shorter spring?
-          Spring* new_spring = nullptr;
-          for (auto p1 : cycle) {
-            for (auto p2 : cycle) {
-              if (p1 >= p2) continue;
-              if (p1 == s->particle1() && p2 == s->particle2()) continue;
-              if (p1 == s->particle2() && p2 == s->particle1()) continue;
-              new_spring = checkAndAddSpring(p1, p2);
-              if (new_spring) {
-                if (new_spring->actualLength() / new_spring->length() < s->actualLength() / s->length() &&
-                    checkSpringRemovalAllowance(s, min_cycle_length, max_cycle_length, temp_cycle, can_fix)) {
-                  // can eliminate the formed long cycle with a shorter spring, keep it
-                  recently_added_springs_.insert(new_spring);
-                  break;
-                } else {
-                  p1->removeString(new_spring);
-                  p2->removeString(new_spring);
-                  delete new_spring;
-                  new_spring = nullptr;
-                }
-                temp_cycle.clear();
-              }
-            }
-            if (new_spring != nullptr) break;
-          }
-          if (new_spring != nullptr) can_remove = true;
-        }
-
-        if (can_remove) {
-          s->particle1()->removeString(s);
-          s->particle2()->removeString(s);
-          if (recently_added_springs_.count(s))
-            recently_added_springs_.erase(s);
-          else
-            recently_deleted_springs_.insert(s);
-          delete s;
-        }
-      }
+      updateConnectivity();
     }
 
-    // create new springs between close particles - but make sure there are no overlaps
-    if (iteration_count % 50 == 0)
-    for (auto p : movable_particles) {
-      std::set<Particle*> new_partners = {};
-      particleBFS(p, 2, 4, new_partners);
-      std::set<Particle*> neighbourhood = new_partners;
-      particleBFS(p, 1, 1, neighbourhood);
-      for (auto partner : new_partners) {
-        if (distance(p, partner) - p->radius() - partner->radius() <
-            settings_->springDefaultLength() * settings_->springConnectionThreshold()) {
-          // check if new spring will intersect with some other
-          bool intersect = false;
-          for (auto other : neighbourhood) {
-            if (other != partner) {
-              for (auto spring : other->springs()) {
-                if (spring->otherEnd(other) != partner &&
-                    spring->otherEnd(other) != p) {
-                  // check intersection
-                  if (segmentsIntersect(p->point(), partner->point(),
-                                        other->point(), spring->otherEnd(other)->point())) {
-                    intersect = true;
-                    break;
-                  }
-                }
-              }
-            }
-            if (intersect) break;
-          }
-          if (!intersect) {
-            auto spring = checkAndAddSpring(p, partner);
-            if (spring) recently_added_springs_.insert(spring);
-          }
-        }
-      }
-    }
-
-    for (auto p : movable_particles) {
+    for (auto p : movable_particles_) {
       for (auto s : p->springs()) s->updateForce();
     }
 
@@ -495,68 +266,70 @@ void SpringSimulator::relaxHeat() {
   } while (max_displacement > settings_->relaxationConvergenceLimit() &&
            iteration_count < settings_->relaxationIterationLimit());
 
-  for (auto p : movable_particles) {
-    if (!p->isMolten()) p->setMovable(false);
-  }
-
   log_ << iteration_count << " steps in " << stopwatch(timer) << " ms\n";
 }
 
-void SpringSimulator::runLinearPass(const Point& start, const Point& finish) {
+void SpringSimulator::runLinearPass(Actuator* actuator, const Point& start, const Point& finish) {
   double path = distance(start, finish);
-  int ticks = path / settings_->heaterSpeed() + 1;
+  int ticks = static_cast<int>(std::floor(path / actuator->speed()));
   for (int i = 0; i < ticks; ++i) {
-    double x = start.x + (finish.x - start.x) / path * settings_->heaterSpeed() * i;
-    double y = start.y + (finish.y - start.y) / path * settings_->heaterSpeed() * i;
-    // cool timed out particles
+    double x = start.x + (finish.x - start.x) / path * actuator->speed() * i;
+    double y = start.y + (finish.y - start.y) / path * actuator->speed() * i;
+    actuator->setPosition(Point(x, y));
+
     for (auto p : particles_) {
-      if (p->meltingTimeout() > 0 && p->meltingTimeout() <= time_) {
-        p->setMolten(false);
-        p->setMovable(true);
+      for (auto a : actuators_) {
+        if (a->enabled()) a->preprocessParticle(p);
       }
     }
-    // heat around x, y
+
     for (auto p : particles_) {
-      if (distance(p, x, y) <= settings_->heaterSize()) {
-        p->setMolten(true);
-        p->setMeltingTimeout(time_ + settings_->moltenParticleCooldownTime());
-        p->setMovable(true);
+      for (auto a : actuators_) {
+        if (a->enabled()) a->processParticle(p);
       }
     }
 
     for (auto p : particles_) {
       for (auto s : p->springs()) s->updateForce();
     }
-    relaxHeat();
+
+    relax();
 
     for (auto p : particles_) {
-      if (!p->isMolten()) p->setMovable(false);
+      for (auto a : actuators_) {
+        if (a->enabled()) a->postprocessParticle(p);
+      }
     }
 
     incrementTime();
   }
 }
 
+void SpringSimulator::runLinearPasses(Actuator* actuator, const std::vector<Point>& points) {
+  if (!actuator->enabled()) actuator->enable();
 
-void SpringSimulator::runLinearPasses(const std::vector<Point>& points) {
   auto total_timer = std::chrono::steady_clock::now();
   for (size_t i = 0; i < points.size() - 1; ++i) {
     auto timer = std::chrono::steady_clock::now();
-    runLinearPass(points[i], points[i + 1]);
+    runLinearPass(actuator, points[i], points[i + 1]);
     log_ << "Linear pass #" << i + 1 << " ran in " << stopwatch(timer) << " ms\n";
   }
 
-  // after-pass cooldown
-  for (auto p : particles_) {
-    if (p->isMolten()) {
-      p->setMolten(false);
-      p->setMovable(true);
+  // reset particles' states changed during these passes
+  for (const auto& a : actuators_) {
+    if (a->enabled()) {
+      a->resetParticles(particles_);
     }
   }
+
   for (auto p : particles_) {
     for (auto s : p->springs()) s->updateForce();
   }
-  relaxHeat();
+
+  relax();
+
+  actuator->disable();
+
   log_ << "Total time: " << stopwatch(total_timer) << " ms\n";
 }
 
@@ -702,37 +475,10 @@ void SpringSimulator::clear() {
   particles_.clear();
 }
 
-Shape samplingContour(const Shape& contour,
-                      const std::vector<std::pair<double, double>>& vectors,
-                      double margin) {
-  std::vector<Point> sampling_contour;
-  for (const auto& point : contour.points()) {
-    double separation_from_shape = -1.0;
-    Point best_sampling_point(0.0, 0.0);
-    for (const auto& radius : vectors) {
-      Point sampling_point(point.x + radius.first * margin,
-                           point.y + radius.second * margin);
-      bool point_is_inside = contour.contains(sampling_point);
-      if ((margin > 0) == point_is_inside) continue;
-
-      double separation = std::numeric_limits<double>::max();
-      for (const auto& contour_point : contour.points()) {
-        separation = std::min(distance(sampling_point, contour_point), separation);
-      }
-      if (separation > separation_from_shape && separation != std::numeric_limits<double>::max()) {
-        best_sampling_point = sampling_point;
-        separation_from_shape = separation;
-      }
-    }
-    if (separation_from_shape > 0) sampling_contour.push_back(best_sampling_point);
-  }
-  return Shape(sampling_contour);
-}
-
-std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
-                                double entry_margin, double exit_margin,
-                                int samples, int repeats, int angular_resolution) {
-  const auto current_shape = simulator->fieldContour();
+std::vector<Point> SpringSimulator::predictMoves(Shape target, Actuator* actuator,
+                                                 double entry_margin, double exit_margin,
+                                                 int samples, int repeats, int angular_resolution) {
+  const auto current_shape = fieldContour();
   auto current_area = current_shape.area();
   auto current_center = current_shape.centroid();
   target.moveTo(current_center);
@@ -744,8 +490,8 @@ std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
                                      std::sin(2 * M_PI / angular_resolution * i)));
   }
 
-  auto sampling_entry_contour = samplingContour(current_shape, vectors, entry_margin);
-  auto sampling_exit_contour = samplingContour(current_shape, vectors, exit_margin);
+  auto sampling_entry_contour = current_shape.samplingContour(vectors, entry_margin);
+  auto sampling_exit_contour = current_shape.samplingContour(vectors, exit_margin);
 
   std::vector<std::vector<Point>> passes;
   while (samples--) {
@@ -770,9 +516,9 @@ std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
     std::cout << "Pass " << pass[0].x << " " << pass[0].y << " "
                          << pass[1].x << " " << pass[1].y << " "
                          << pass[2].x << " " << pass[2].y << " ";
-    SpringSimulator test_simulator(simulator);
+    SpringSimulator test_simulator(this);
     for (int i = 0; i < repeats; ++i) {
-      test_simulator.runLinearPasses(pass);
+      test_simulator.runLinearPasses(actuator, pass);
     }
     auto new_shape = test_simulator.fieldContour();
     std::stringstream ss; ss << pass[0].x << "_" << pass[0].y << "_result.csv";
@@ -786,4 +532,13 @@ std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
   }
   std::cout << "Best pass starts at " << best_pass[0].x << " " << best_pass[0].y << std::endl;
   return best_pass;
+}
+
+SpringSimulator::~SpringSimulator() {
+  clear();
+}
+
+double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start) {
+  std::chrono::duration<double> duration = std::chrono::steady_clock::now() - start;
+  return duration.count() * 1000;
 }

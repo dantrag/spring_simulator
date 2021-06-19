@@ -11,6 +11,8 @@
 
 #include "backend/SpringSimulator.h"
 #include "backend/SpringSimulatorState.h"
+#include "backend/Heater.h"
+#include "backend/Pusher.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -28,11 +30,22 @@ public:
   void setSimulator(SpringSimulator* simulator) { sim_ = simulator; }
 
 private:
+  enum class SimulatorType {
+    kElastic = 0,
+    kInelastic,
+  };
+
+  enum class ActuatorType {
+    kHeater = 0,
+    kPusher,
+  };
+
   Ui::MainWindow* ui_;
   std::deque<State*> states;
   std::deque<State*>::iterator current_state;
 
   void clearUI();
+  void recreateSimulator();
   void initializeFieldCircle();
   void initializeFieldRectangle();
   void initializeFieldImage();
@@ -48,6 +61,7 @@ private:
   void doCool();
   // each heater pass is a piecewise linear curve defined by a vector of points
   std::vector<std::vector<Point>> getPasses();
+  Actuator* currentActuator();
   void runPasses();
   void makeTriangle();
 
@@ -68,9 +82,12 @@ private:
   SpringSimulatorState* current_sim_state_ = nullptr;
 
   std::vector<std::vector<QGraphicsItem*>> passes_ui_;
+
   std::vector<QGraphicsItem*> contour_ui_;
   QGraphicsPixmapItem* bkg_image_ui_ = nullptr;
 
-  SpringSimulator* sim_;
+  Heater* heater_ = nullptr;
+  Pusher* pusher_ = nullptr;
+  SpringSimulator* sim_ = nullptr;
 };
 #endif // MAINWINDOW_H

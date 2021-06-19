@@ -15,6 +15,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include "backend/ElasticSimulator.h"
+#include "backend/WaxSimulator.h"
 #include "backend/Spring.h"
 #include "ui/qcustomgraphicsscene.h"
 
@@ -47,6 +49,42 @@ void MainWindow::restoreCurrentState() {
   //
 }
 
+void MainWindow::recreateSimulator() {
+  auto settings = sim_->settings();
+  delete sim_;
+  auto simulator_type = static_cast<SimulatorType>(ui_->simulator_type_button_group->checkedId());
+  switch (simulator_type) {
+    case SimulatorType::kElastic: {
+      sim_ = new ElasticSimulator(settings);
+      break;
+    }
+    case SimulatorType::kInelastic: {
+      sim_ = new WaxSimulator(settings);
+      break;
+    }
+    default: {
+      // should not happen, raise a warning!
+      sim_ = nullptr;
+    }
+  }
+  if (heater_) {
+    delete heater_;
+    heater_ = nullptr;
+  }
+  if (pusher_) {
+    delete pusher_;
+    pusher_ = nullptr;
+  }
+  if (sim_) {
+    heater_ = new Heater();
+    heater_->setSize(sim_->settings()->heaterSize());
+    pusher_ = new Pusher();
+    pusher_->setSpeed(1);
+    sim_->addActuator(heater_);
+    sim_->addActuator(pusher_);
+  }
+}
+
 void MainWindow::initializeUI() {
   addNewState();
 
@@ -61,7 +99,7 @@ void MainWindow::initializeUI() {
 
 void MainWindow::initializeFieldCircle() {
   clearUI();
-  sim_->clear();
+  recreateSimulator();
 
   double x = ui_->init_circle_x_spinbox->value();
   double y = ui_->init_circle_y_spinbox->value();
@@ -73,7 +111,10 @@ void MainWindow::initializeFieldCircle() {
 
 void MainWindow::initializeFieldRectangle() {
   clearUI();
-  sim_->clear();
+  recreateSimulator();
+
+  sim_ = new SpringSimulator();
+
 
   double left = ui_->init_rect_left_spinbox->value();
   double top = ui_->init_rect_top_spinbox->value();
@@ -100,10 +141,10 @@ void MainWindow::initializeFieldImage() {
 
       if (!rgb_data.empty()) {
         clearUI();
-        sim_->clear();
+        recreateSimulator();
         auto mode = static_cast<SpringSimulator::InitializationGrid>(ui_->init_mode_button_group->checkedId());
         sim_->initializeFromPixelArray(rgb_data, 1.0, [](int rgb) {
-          return qGray(static_cast<QRgb>(rgb)) < 128;
+          return qGray(static_cast<QRgb>(rgb)) > 128;
         }, mode);
 
         initializeUI();
@@ -134,7 +175,7 @@ void MainWindow::doHeat() {
     for (auto s : p->springs()) s->updateForce();
   }
 
-  sim_->relaxHeat();
+  sim_->relax();
   addNewState();
   updateFieldUI();
 }
@@ -160,7 +201,7 @@ void MainWindow::doCool() {
     for (auto s : p->springs()) s->updateForce();
   }
 
-  sim_->relaxHeat();
+  sim_->relax();
   addNewState();
   updateFieldUI();
 }
@@ -177,10 +218,26 @@ std::vector<std::vector<Point>> MainWindow::getPasses() {
   return points;
 }
 
+Actuator* MainWindow::currentActuator() {
+  auto actuator_type = static_cast<ActuatorType>(ui_->actuator_button_group->checkedId());
+  switch (actuator_type) {
+    case ActuatorType::kHeater: {
+      return heater_;
+    }
+    case ActuatorType::kPusher: {
+      return pusher_;
+    }
+    default: {
+      // should not happen
+      return nullptr;
+    }
+  }
+}
+
 void MainWindow::runPasses() {
   auto passes = getPasses();
   for (auto& pass : passes) {
-    sim_->runLinearPasses(pass);
+    sim_->runLinearPasses(currentActuator(), pass);
     addNewState();
   }
 
@@ -211,7 +268,7 @@ void MainWindow::makeTriangle() {
                                           QPen(Qt::gray));
     */
     int repeats = 4;
-    auto best_pass = predictMoves(sim_, triangle, sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
+    auto best_pass = sim_->predictMoves(triangle, currentActuator(), sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
     std::stringstream log_;
     //log_ << "triangle = [(" << p1.x << " " << p1.y << "), (" << p2.x << " " << p2.y << "), (" << p3.x << " " << p3.y << ")];" << std::endl;
     //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
@@ -261,7 +318,7 @@ void MainWindow::makeTriangle() {
     painter.setRenderHint(QPainter::Antialiasing);
     ui_->graphicsView->scene()->render(&painter);
     image.save(filename);
-    for (int i = 0; i < repeats; ++i) sim_->runLinearPasses(best_pass);
+    for (int i = 0; i < repeats; ++i) sim_->runLinearPasses(currentActuator(), best_pass);
     addNewState();
     updateFieldUI();
   }
@@ -562,6 +619,18 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   ui_->init_mode_button_group->setId(ui_->init_square_button,
                                      static_cast<int>(SpringSimulator::InitializationGrid::kSquare));
   ui_->init_hexagonal_button->setChecked(true);
+
+  ui_->simulator_type_button_group->setId(ui_->inelastic_button,
+                                     static_cast<int>(SimulatorType::kInelastic));
+  ui_->simulator_type_button_group->setId(ui_->elastic_button,
+                                     static_cast<int>(SimulatorType::kElastic));
+  ui_->inelastic_button->setChecked(true);
+
+  ui_->actuator_button_group->setId(ui_->heater_button,
+                                     static_cast<int>(ActuatorType::kHeater));
+  ui_->actuator_button_group->setId(ui_->pusher_button,
+                                     static_cast<int>(ActuatorType::kPusher));
+  ui_->heater_button->setChecked(true);
 
   auto screen = QApplication::screenAt(this->pos());
   if (screen) {

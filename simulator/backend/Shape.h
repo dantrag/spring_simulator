@@ -29,6 +29,9 @@ class Shape {
 
   double distanceTo(const Shape& other, int samples = 100, bool hausdorff = false) const;
 
+  Shape samplingContour(const std::vector<std::pair<double, double>>& vectors,
+                        double margin) const;
+
   void saveToFile(std::string filename) const;
 
  private:

@@ -203,3 +203,29 @@ void Shape::saveToFile(std::string filename) const {
   }
   output_file.close();
 }
+
+Shape Shape::samplingContour(const std::vector<std::pair<double, double>>& vectors,
+                             double margin) const {
+  std::vector<Point> sampling_contour;
+  for (const auto& point : this->points()) {
+    double separation_from_shape = -1.0;
+    Point best_sampling_point(0.0, 0.0);
+    for (const auto& radius : vectors) {
+      Point sampling_point(point.x + radius.first * margin,
+                           point.y + radius.second * margin);
+      bool point_is_inside = this->contains(sampling_point);
+      if ((margin > 0) == point_is_inside) continue;
+
+      double separation = std::numeric_limits<double>::max();
+      for (const auto& contour_point : this->points()) {
+        separation = std::min(distance(sampling_point, contour_point), separation);
+      }
+      if (separation > separation_from_shape && separation != std::numeric_limits<double>::max()) {
+        best_sampling_point = sampling_point;
+        separation_from_shape = separation;
+      }
+    }
+    if (separation_from_shape > 0) sampling_contour.push_back(best_sampling_point);
+  }
+  return Shape(sampling_contour);
+}

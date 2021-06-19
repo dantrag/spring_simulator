@@ -6,20 +6,23 @@
 #include <set>
 #include <vector>
 #include <functional>
+#include <chrono>
 
 #include "backend/SimulatorSettings.h"
 #include "backend/Particle.h"
 #include "backend/Shape.h"
+#include "backend/Actuator.h"
 
 class SpringSimulator {
  public:
+  // Initialization
   SpringSimulator();
   SpringSimulator(const SpringSimulator* simulator);
+  SpringSimulator(SimulatorSettings* settings);
   #ifdef QT_CORE_LIB
   SpringSimulator(QString settings_file);
   #endif
-
-  SimulatorSettings* settings() const { return settings_; }
+  virtual ~SpringSimulator();
 
   enum class InitializationGrid {
     kHexagonal = 0,
@@ -38,16 +41,20 @@ class SpringSimulator {
   #ifdef QT_CORE_LIB
   void initializeFromImage();
   #endif
-  void clear();
-  std::string log() const { return log_.str(); };
 
-  int getTime() const { return time_; }
-  void incrementTime() { time_++; }
+  // Publicly accesible variables
+  SimulatorSettings* settings() const { return settings_; }
+  std::string log() const { return log_.str(); }
+
+  const std::vector<Particle*>& particles() const { return particles_; }
+  const std::vector<Actuator*>& actuators() const { return actuators_; }
+
   double scale() const { return scale_; }
 
-  // heating/cooling operations
-  void runLinearPasses(const std::vector<Point>& points);
-  void relaxHeat();
+  int getTime() const { return time_; }
+  void incrementTime();
+
+  void addActuator(Actuator* actuator) { actuators_.push_back(actuator); }
 
   const std::set<Spring*>& recentlyAddedSprings() const { return recently_added_springs_; }
   const std::set<Spring*>& recentlyDeletedSprings() const { return recently_deleted_springs_; }
@@ -55,31 +62,34 @@ class SpringSimulator {
 
   Shape fieldContour() const;
 
-  const std::vector<Particle*>& particles() const { return particles_; }
+  // Operation
+  void runLinearPasses(Actuator* actuator, const std::vector<Point>& points);
+  void relax();
+  void clear();
+  std::vector<Point> predictMoves(Shape target, Actuator* actuator,
+                                  double entry_margin, double exit_margin,
+                                  int samples = 10, int repeats = 1, int angular_resolution = 60);
 
  protected:
   double defaultInitializationInterval() const;
   void initializeField(InitializationGrid mode, Point center, double width, double height, double interval,
                        std::function<bool(double, double)> valid_point);
-  void runLinearPass(const Point& start, const Point& finish);
+  void runLinearPass(Actuator* actuator, const Point& start, const Point& finish);
 
   Spring* checkAndAddSpring(Particle* p1, Particle* p2);
+  virtual void updateConnectivity() {}
 
   std::vector<Particle*> particles_;
+  std::vector<Particle*> movable_particles_;
   std::set<Spring*> recently_added_springs_;
   std::set<Spring*> recently_deleted_springs_;
+  std::vector<Actuator*> actuators_;
   int time_ = 0;
   double scale_ = 1.0;
   SimulatorSettings* settings_;
   std::stringstream log_;
 };
 
-Shape samplingContour(const Shape& contour,
-                      const std::vector<std::pair<double, double>>& vectors,
-                      double margin);
-
-std::vector<Point> predictMoves(const SpringSimulator* simulator, Shape target,
-                                double entry_margin, double exit_margin,
-                                int samples = 10, int repeats = 1, int angular_resolution = 60);
+double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start);
 
 #endif // SPRINGSIMULATOR_H
