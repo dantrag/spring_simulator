@@ -1,13 +1,15 @@
 #ifndef QCUSTOMGRAPHICSSCENE_H
 #define QCUSTOMGRAPHICSSCENE_H
 
+#include <vector>
+
 #include <QGraphicsScene>
 #include <QGraphicsRectItem>
 
 class QCustomGraphicsScene : public QGraphicsScene {
   Q_OBJECT
 public:
-  QCustomGraphicsScene(QObject* parent) : QGraphicsScene(parent) {}
+  QCustomGraphicsScene(QObject* parent);
 
   enum MouseMode {
     kSelection = 0,
@@ -42,15 +44,26 @@ public:
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
 
+  void clearField();
+
+  QRectF fieldBoundingRect();
+
 signals:
   void drawingFinished();
+  void mouseMoved(double x, double y);
 
 private:
+  void createAxes();
+
   MouseMode mode = MouseMode::kSelection;
   bool drawing_now = false;
 
   QGraphicsRectItem* selection = nullptr;
   QGraphicsLineItem* pass = nullptr;
+  QGraphicsLineItem* x_axis = nullptr;
+  QGraphicsLineItem* y_axis = nullptr;
+  std::vector<QGraphicsLineItem*> ticks = {};
+  std::vector<QGraphicsTextItem*> labels = {};
 };
 
 #endif // QCUSTOMGRAPHICSSCENE_H

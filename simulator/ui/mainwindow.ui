@@ -16,7 +16,11 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="layout7" stretch="4,1,1,1">
     <item>
-     <widget class="QGraphicsView" name="graphicsView"/>
+     <widget class="QGraphicsView" name="graphicsView">
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <layout class="QVBoxLayout" name="layout1">
@@ -466,7 +470,7 @@
          <item>
           <widget class="QPlainTextEdit" name="passes_text_edit">
            <property name="plainText">
-            <string>0 -300 0 0 300 0</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -1177,8 +1181,8 @@
  <connections/>
  <buttongroups>
   <buttongroup name="init_mode_button_group"/>
-  <buttongroup name="simulator_type_button_group"/>
   <buttongroup name="actuator_button_group"/>
   <buttongroup name="drawing_mode_button_group"/>
+  <buttongroup name="simulator_type_button_group"/>
  </buttongroups>
 </ui>

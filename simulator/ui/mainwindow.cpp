@@ -38,7 +38,7 @@ void MainWindow::clearUI() {
   delete bkg_image_ui_;
   bkg_image_ui_ = nullptr;
 
-  ui_->graphicsView->scene()->clear();
+  dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->clearField();
 }
 
 void MainWindow::addNewState() {
@@ -89,6 +89,10 @@ void MainWindow::recreateSimulator() {
 void MainWindow::createScene() {
   auto scene = new QCustomGraphicsScene(ui_->graphicsView);
 
+  connect(scene, &QCustomGraphicsScene::mouseMoved, [this](double x, double y) {
+    coordinates_label->setText(QString("X: %1  Y: %2").arg(x, 0, 'f', 0)
+                                                      .arg(y, 0, 'f', 0));
+  });
   connect(scene, &QCustomGraphicsScene::drawingFinished, [this]() {
     auto current_scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
     if (current_scene->currentMode() == QCustomGraphicsScene::MouseMode::kPassDrawing) {
@@ -423,7 +427,9 @@ void MainWindow::updateZoom() {
 }
 
 void MainWindow::fitToView() {
-  ui_->graphicsView->fitInView(ui_->graphicsView->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
+  ui_->graphicsView->fitInView(
+        dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->fieldBoundingRect(),
+        Qt::KeepAspectRatio);
   ui_->zoom_slider->setValue(int(ui_->graphicsView->matrix().m11() * 100));
   updateZoom();
 }
@@ -609,6 +615,10 @@ void MainWindow::connectSettingsSignals() {
 MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow), sim_(simulator) {
   ui_->setupUi(this);
+
+  coordinates_label = new QLabel(this);
+  coordinates_label->setText("X: ---  Y: ---");
+  ui_->statusbar->addPermanentWidget(coordinates_label);
 
   ui_->init_mode_button_group->setId(ui_->init_hexagonal_button,
                                      static_cast<int>(SpringSimulator::InitializationGrid::kHexagonal));

@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
+#include <QLabel>
 
 #include "backend/SpringSimulator.h"
 #include "backend/SpringSimulatorState.h"
@@ -86,6 +87,7 @@ private:
 
   std::vector<QGraphicsItem*> contour_ui_;
   QGraphicsPixmapItem* bkg_image_ui_ = nullptr;
+  QLabel* coordinates_label = nullptr;
 
   Heater* heater_ = nullptr;
   Pusher* pusher_ = nullptr;
