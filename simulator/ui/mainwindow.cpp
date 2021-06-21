@@ -14,6 +14,7 @@
 #include <QScreen>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QButtonGroup>
 
 #include "backend/ElasticSimulator.h"
 #include "backend/WaxSimulator.h"
@@ -85,11 +86,29 @@ void MainWindow::recreateSimulator() {
   }
 }
 
+void MainWindow::createScene() {
+  auto scene = new QCustomGraphicsScene(ui_->graphicsView);
+
+  connect(scene, &QCustomGraphicsScene::drawingFinished, [this]() {
+    auto current_scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
+    if (current_scene->currentMode() == QCustomGraphicsScene::MouseMode::kPassDrawing) {
+      auto line = current_scene->getPass();
+      ui_->passes_text_edit->appendPlainText(QString("%1 %2 %3 %4").arg(line.x1(), 0, 'f', 0)
+                                                                   .arg(line.y1(), 0, 'f', 0)
+                                                                   .arg(line.x2(), 0, 'f', 0)
+                                                                   .arg(line.y2(), 0, 'f', 0));
+      current_scene->releasePass();
+    }
+  });
+  scene->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId()));
+  ui_->graphicsView->setScene(scene);
+}
+
 void MainWindow::initializeUI() {
   addNewState();
 
   delete ui_->graphicsView->scene();
-  ui_->graphicsView->setScene(new QCustomGraphicsScene(ui_->graphicsView));
+  createScene();
   updateFieldUI();
 
   if (ui_->show_passes_checkbox->isChecked()) displayPasses();
@@ -582,13 +601,40 @@ void MainWindow::connectSettingsSignals() {
           [&](double value) { sim_->settings()->setHeaterSize(value); });
   connect(ui_->heater_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           [&](double value) { sim_->settings()->setHeaterSpeed(value); });
+
+  connect(ui_->drawing_mode_button_group, static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
+          [&](int) { dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId())); });
 }
 
 MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow), sim_(simulator) {
   ui_->setupUi(this);
 
-  ui_->graphicsView->setScene(new QCustomGraphicsScene(ui_->graphicsView));
+  ui_->init_mode_button_group->setId(ui_->init_hexagonal_button,
+                                     static_cast<int>(SpringSimulator::InitializationGrid::kHexagonal));
+  ui_->init_mode_button_group->setId(ui_->init_square_button,
+                                     static_cast<int>(SpringSimulator::InitializationGrid::kSquare));
+  ui_->init_hexagonal_button->setChecked(true);
+
+  ui_->simulator_type_button_group->setId(ui_->inelastic_button,
+                                     static_cast<int>(SimulatorType::kInelastic));
+  ui_->simulator_type_button_group->setId(ui_->elastic_button,
+                                     static_cast<int>(SimulatorType::kElastic));
+  ui_->inelastic_button->setChecked(true);
+
+  ui_->actuator_button_group->setId(ui_->heater_button,
+                                     static_cast<int>(ActuatorType::kHeater));
+  ui_->actuator_button_group->setId(ui_->pusher_button,
+                                     static_cast<int>(ActuatorType::kPusher));
+  ui_->heater_button->setChecked(true);
+
+  ui_->drawing_mode_button_group->setId(ui_->selection_button,
+                                     static_cast<int>(QCustomGraphicsScene::MouseMode::kSelection));
+  ui_->drawing_mode_button_group->setId(ui_->pass_drawing_button,
+                                     static_cast<int>(QCustomGraphicsScene::MouseMode::kPassDrawing));
+  ui_->selection_button->setChecked(true);
+
+  createScene();
 
   populateSettings();
 
@@ -613,24 +659,6 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
   connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
   connectSettingsSignals();
-
-  ui_->init_mode_button_group->setId(ui_->init_hexagonal_button,
-                                     static_cast<int>(SpringSimulator::InitializationGrid::kHexagonal));
-  ui_->init_mode_button_group->setId(ui_->init_square_button,
-                                     static_cast<int>(SpringSimulator::InitializationGrid::kSquare));
-  ui_->init_hexagonal_button->setChecked(true);
-
-  ui_->simulator_type_button_group->setId(ui_->inelastic_button,
-                                     static_cast<int>(SimulatorType::kInelastic));
-  ui_->simulator_type_button_group->setId(ui_->elastic_button,
-                                     static_cast<int>(SimulatorType::kElastic));
-  ui_->inelastic_button->setChecked(true);
-
-  ui_->actuator_button_group->setId(ui_->heater_button,
-                                     static_cast<int>(ActuatorType::kHeater));
-  ui_->actuator_button_group->setId(ui_->pusher_button,
-                                     static_cast<int>(ActuatorType::kPusher));
-  ui_->heater_button->setChecked(true);
 
   auto screen = QApplication::screenAt(this->pos());
   if (screen) {

@@ -1047,6 +1047,35 @@
         </layout>
        </item>
        <item>
+        <widget class="QGroupBox" name="static51">
+         <property name="title">
+          <string>Drawing mode</string>
+         </property>
+         <layout class="QVBoxLayout" name="layout36">
+          <item>
+           <widget class="QRadioButton" name="selection_button">
+            <property name="text">
+             <string>Selection</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">drawing_mode_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="pass_drawing_button">
+            <property name="text">
+             <string>Pass drawing</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">drawing_mode_button_group</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="show_contour_checkbox">
          <property name="text">
           <string>Display contour</string>
@@ -1150,5 +1179,6 @@
   <buttongroup name="init_mode_button_group"/>
   <buttongroup name="simulator_type_button_group"/>
   <buttongroup name="actuator_button_group"/>
+  <buttongroup name="drawing_mode_button_group"/>
  </buttongroups>
 </ui>

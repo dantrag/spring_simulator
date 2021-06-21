@@ -51,6 +51,7 @@ private:
   void initializeFieldImage();
   void initializeUI();
   void updateFieldUI();
+  void createScene();
   void addNewState();
   void displayState(SpringSimulatorState* state);
   void decrementState();
