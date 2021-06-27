@@ -34,6 +34,13 @@ void MainWindow::clearUI() {
   }
   spring_ui_.clear();
 
+  for (auto contour_item : contour_ui_) if (contour_item) {
+    ui_->graphicsView->scene()->removeItem(contour_item);
+    delete contour_item;
+  }
+  contour_ui_.clear();
+  ui_->show_contour_checkbox->setChecked(false);
+
   if (bkg_image_ui_) ui_->graphicsView->scene()->removeItem(bkg_image_ui_);
   delete bkg_image_ui_;
   bkg_image_ui_ = nullptr;
@@ -358,7 +365,7 @@ void MainWindow::updateFieldUI() {
                                                                p->y() - p->radius(),
                                                                2 * p->radius(),
                                                                2 * p->radius(),
-                                                               QPen(Qt::darkRed), QBrush(Qt::darkRed));
+                                                               QPen(Qt::darkBlue), QBrush(Qt::darkBlue));
       particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
                                                      .arg(p->y(), 0, 'f', 0));
       particle_ui_[p]->setZValue(20);
