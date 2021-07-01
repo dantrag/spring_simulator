@@ -217,6 +217,7 @@ void SpringSimulator::relax() {
         double delta_y = s->otherEnd(p)->y() - p->y();
         if (s->force() > 0) delta_x = -delta_x, delta_y = -delta_y;
         double delta_module = std::sqrt(delta_x * delta_x + delta_y * delta_y);
+        neighbours.insert(s->otherEnd(p));
         // make sure not to divide by [close to] zero
         if (delta_module < 1e-5) continue;
         delta_x /= delta_module;
@@ -227,7 +228,6 @@ void SpringSimulator::relax() {
         y_displacement += delta_y;
 
         max_allowable_displacement = std::min(max_allowable_displacement, s->actualLength() / 4);
-        neighbours.insert(s->otherEnd(p));
       }
       for (auto neighbour : neighbours) {
         for (auto neighbour_spring : neighbour->springs()) {

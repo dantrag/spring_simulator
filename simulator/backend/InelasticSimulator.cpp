@@ -12,29 +12,6 @@
 
 #include "backend/Spring.h"
 
-void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
-                 std::set<Particle*>& neighbourhood) {
-  std::queue<Particle*> bfs_queue = {};
-  std::unordered_map<Particle*, int> depth = {};
-  bfs_queue.push(start);
-  depth[start] = 0;
-  while (!bfs_queue.empty()) {
-    auto p = bfs_queue.front();
-    bfs_queue.pop();
-    if (minimum_depth <= depth[p] && depth[p] <= maximum_depth) {
-      neighbourhood.insert(p);
-    }
-    if (depth[p] > maximum_depth) break;
-    for (auto s : p->springs()) {
-      auto next = s->otherEnd(p);
-      if (!depth.count(next)) {
-        bfs_queue.push(next);
-        depth[next] = depth[p] + 1;
-      }
-    }
-  }
-}
-
 // check if removal of the spring will create a long cycle (potential void)
 bool checkSpringRemovalAllowance(Spring* s, int min_cycle_length, int max_cycle_length,
                                  std::vector<Particle*>& cycle, bool& fixable) {
@@ -213,9 +190,9 @@ void InelasticSimulator::updateConnectivity() {
 
   // create new springs between close particles - but make sure there are no overlaps
   for (auto p : movable_particles_) {
-    std::set<Particle*> new_partners = {};
+    std::unordered_set<Particle*> new_partners = {};
     particleBFS(p, 2, 4, new_partners);
-    std::set<Particle*> neighbourhood = new_partners;
+    std::unordered_set<Particle*> neighbourhood = new_partners;
     particleBFS(p, 1, 1, neighbourhood);
     for (auto partner : new_partners) {
       if (distance(p, partner) - p->radius() - partner->radius() <

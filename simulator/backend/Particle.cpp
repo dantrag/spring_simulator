@@ -1,6 +1,9 @@
 #include "Particle.h"
 
 #include <cmath>
+#include <queue>
+#include <unordered_map>
+#include <iostream>
 
 #include "Spring.h"
 
@@ -36,11 +39,24 @@ double distance(const Particle* p1, const Particle* p2, const Particle* p3) {
   return distance(p1->point(), p2->point(), p3->point());
 }
 
-double distance(const Point& p1, const Point& p2, const Point& p3) {
-  Line l(p2, p3);
-  double distance_to_line = std::abs(l.a * p1.x + l.b * p1.y + l.c) /
-                            std::sqrt(l.a * l.a + l.b * l.b + l.c * l.c);
-  return std::min(distance_to_line, std::min(distance(p1, p2), distance(p1, p3)));
+double distance(const Point& p1, const Point& p2, const Point& p3, bool segment) {
+  if (distance(p2, p3) < 1e-5) return distance(p1, p2);
+  if (segment) {
+    // calculate distance to segment
+    auto segment_length_squared = distance2(p2, p3);
+    auto dot_product = ((p1.x - p2.x) * (p3.x - p2.x) + (p1.y - p2.y) * (p3.y - p2.y));
+    auto projection_fraction = std::max(0.0, std::min(1.0,
+                                                      dot_product / segment_length_squared));
+    Point projection(p2.x + projection_fraction * (p3.x - p2.x),
+                     p2.y + projection_fraction * (p3.y - p2.y));
+    return distance(p1, projection);
+  } else {
+    // calculate distance to line
+    Line l(p2, p3);
+    double distance_to_line = std::abs(l.a * p1.x + l.b * p1.y + l.c) /
+                              std::sqrt(l.a * l.a + l.b * l.b + l.c * l.c);
+    return distance_to_line;
+  }
 }
 
 double crossProduct(const Point& p1, const Point& p2, const Point& p3) {
@@ -63,6 +79,15 @@ int sign(double x) {
 }
 
 bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const Point& p4) {
+  std::cout << p1.x << " " << p1.y << " "
+               << p2.x << " " << p2.y << " "
+                  << p3.x << " " << p3.y << " "
+                  << p4.x << " " << p4.y << " ";
+  if (intersect_1(p1.x, p2.x, p3.x, p4.x)
+    && intersect_1 (p1.y, p2.y, p3.y, p4.y)
+    && sign(area(p1, p2, p3)) * sign(area(p1, p2, p4)) <= 0
+    && sign(area(p3, p4, p1)) * sign(area(p3, p4, p2)) <= 0) std::cout << " intersect";
+  std::cout << std::endl;
   return intersect_1(p1.x, p2.x, p3.x, p4.x)
     && intersect_1 (p1.y, p2.y, p3.y, p4.y)
     && sign(area(p1, p2, p3)) * sign(area(p1, p2, p4)) <= 0
@@ -143,5 +168,28 @@ Particle::~Particle() {
   for (auto s : springs_) {
     s->otherEnd(this)->removeString(s);
     delete s;
+  }
+}
+
+void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
+                 std::unordered_set<Particle*>& neighbourhood) {
+  std::queue<Particle*> bfs_queue = {};
+  std::unordered_map<Particle*, int> depth = {};
+  bfs_queue.push(start);
+  depth[start] = 0;
+  while (!bfs_queue.empty()) {
+    auto p = bfs_queue.front();
+    bfs_queue.pop();
+    if (minimum_depth <= depth[p] && depth[p] <= maximum_depth) {
+      neighbourhood.insert(p);
+    }
+    if (depth[p] > maximum_depth) break;
+    for (auto s : p->springs()) {
+      auto next = s->otherEnd(p);
+      if (!depth.count(next)) {
+        bfs_queue.push(next);
+        depth[next] = depth[p] + 1;
+      }
+    }
   }
 }

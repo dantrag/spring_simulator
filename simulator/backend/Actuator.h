@@ -11,8 +11,8 @@ class Actuator {
   virtual ~Actuator() {}
 
   bool enabled() const { return on_; }
-  void enable() { on_ = true; }
-  void disable() { on_ = false; }
+  virtual void enable() { on_ = true; }
+  virtual void disable() { on_ = false; }
 
   double speed() const { return speed_; }
   void setSpeed(double speed) { speed_ = speed; }

@@ -2,6 +2,7 @@
 #define PARTICLE_H
 
 #include <vector>
+#include <unordered_set>
 
 #include "backend/SimulatorSettings.h"
 
@@ -66,7 +67,7 @@ class Particle {
   void removeString(Spring* spring);
 
   void setSettings(SimulatorSettings* settings) { settings_ = settings; }
-  const SimulatorSettings* settings() { return settings_; }
+  const SimulatorSettings* settings() const { return settings_; }
 
  protected:
   double x_ = 0;
@@ -91,8 +92,11 @@ double distance2(const Point& p1, const Point& p2);
 double distance(const Particle* p, double x, double y);
 double distance(const Particle* p1, const Particle* p2);
 double distance(const Particle* p1, const Particle* p2, const Particle* p3);
-double distance(const Point& p1, const Point& p2, const Point& p3);
+double distance(const Point& p1, const Point& p2, const Point& p3, bool segment = true);
 double crossProduct(const Point& p1, const Point& p2, const Point& p3);
 bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const Point& p4);
+
+void particleBFS(Particle* start, int minimum_depth, int maximum_depth,
+                 std::unordered_set<Particle*>& neighbourhood);
 
 #endif // PARTICLE_H

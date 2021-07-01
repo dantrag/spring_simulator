@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>636</width>
-    <height>838</height>
+    <height>931</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -138,7 +138,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>154</width>
+              <width>168</width>
               <height>170</height>
              </rect>
             </property>
@@ -971,6 +971,56 @@
              </widget>
             </item>
            </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="static52">
+         <property name="title">
+          <string>Pusher</string>
+         </property>
+         <layout class="QVBoxLayout" name="layout37">
+          <item>
+           <layout class="QHBoxLayout" name="layout39">
+            <item>
+             <widget class="QLabel" name="static53">
+              <property name="text">
+               <string>Speed:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="pusher_speed_spinbox">
+              <property name="decimals">
+               <number>1</number>
+              </property>
+              <property name="minimum">
+               <double>0.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>999.000000000000000</double>
+              </property>
+              <property name="value">
+               <double>2.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="static54">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;tick&lt;span style=&quot; vertical-align:super;&quot;&gt;-1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="allow_spring_crossing">
+            <property name="text">
+             <string>Allow spring crossing</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

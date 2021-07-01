@@ -17,6 +17,8 @@ void SimulatorSettings::loadFromFile(QString filename) {
 
   heater_speed_ = file_settings.value("Heater/Speed", 2.0).toDouble();
   heater_size_ = file_settings.value("Heater/Size", 20.0).toDouble();
+
+  pusher_speed_ = file_settings.value("Pusher/Speed", 2.0).toDouble();
 }
 
 void SimulatorSettings::saveToFile(QString filename) {
@@ -35,5 +37,7 @@ void SimulatorSettings::saveToFile(QString filename) {
 
   file_settings.setValue("Heater/Speed", heater_speed_);
   file_settings.setValue("Heater/Size", heater_size_);
+
+  file_settings.setValue("Pusher/Speed", pusher_speed_);
 }
 #endif

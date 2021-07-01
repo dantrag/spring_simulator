@@ -86,8 +86,9 @@ void MainWindow::recreateSimulator() {
   if (sim_) {
     heater_ = new Heater();
     heater_->setSize(sim_->settings()->heaterSize());
+    heater_->setSpeed(sim_->settings()->heaterSpeed());
     pusher_ = new Pusher();
-    pusher_->setSpeed(1);
+    pusher_->setSpeed(sim_->settings()->pusherSpeed());
     sim_->addActuator(heater_);
     sim_->addActuator(pusher_);
   }
@@ -589,6 +590,8 @@ void MainWindow::populateSettings() {
 
   ui_->heater_size_spinbox->setValue(sim_->settings()->heaterSize());
   ui_->heater_speed_spinbox->setValue(sim_->settings()->heaterSpeed());
+
+  ui_->pusher_speed_spinbox->setValue(sim_->settings()->pusherSpeed());
 }
 
 void MainWindow::connectSettingsSignals() {
@@ -614,6 +617,8 @@ void MainWindow::connectSettingsSignals() {
           [&](double value) { sim_->settings()->setHeaterSize(value); });
   connect(ui_->heater_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           [&](double value) { sim_->settings()->setHeaterSpeed(value); });
+  connect(ui_->pusher_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+          [&](double value) { sim_->settings()->setPusherSpeed(value); });
 
   connect(ui_->drawing_mode_button_group, static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
           [&](int) { dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId())); });

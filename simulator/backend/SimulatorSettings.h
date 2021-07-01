@@ -41,6 +41,9 @@ class SimulatorSettings {
   double heaterSize() const { return heater_size_; }
   void setHeaterSize(double size) { heater_size_ = size; }
 
+  double pusherSpeed() const { return pusher_speed_; }
+  void setPusherSpeed(double speed) { pusher_speed_ = speed; }
+
   #ifdef QT_CORE_LIB
   void loadFromFile(QString filename);
   void saveToFile(QString filename);
@@ -61,6 +64,8 @@ class SimulatorSettings {
 
   double heater_speed_ = 2.0;
   double heater_size_ = 20.0;
+
+  double pusher_speed_ = 2.0;
 };
 
 #endif // SIMULATORSETTINGS_H
