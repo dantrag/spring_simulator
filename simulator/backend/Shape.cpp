@@ -6,6 +6,8 @@
 #include <fstream>
 #include <algorithm>
 
+#include "backend/Path.h"
+
 Shape::Shape(const std::vector<Point>& points)
   : points_(points), n_(static_cast<int>(points.size())) {}
 
@@ -56,14 +58,9 @@ bool Shape::contains(const Point& point) const {
   return (intersections & 1);
 }
 
-double Shape::length() const {
-  double length = 0.0;
-  for (int i = 0; i < n_; ++i) {
-    auto& p1 = points_[i];
-    auto& p2 = points_[(i + 1) % n_];
-    length += distance(p1, p2);
-  }
-  return length;
+double Shape::perimeter() const {
+  Path boundary(points_, true);
+  return boundary.length();
 }
 
 double Shape::area(bool oriented) const {
@@ -121,26 +118,14 @@ void Shape::scaleBy(double scale) {
   }
 }
 
-Point Shape::sampleBoundary(double percentile) const {
-  double length = this->length();
-  double cumulative_length = 0.0;
-  for (int i = 0; i < n_; ++i) {
-    const auto& p1 = points_[i];
-    const auto& p2 = points_[(i + 1) % n_];
-    auto segment_length = distance(p1, p2);
-    cumulative_length += segment_length;
-    if (percentile * length <= cumulative_length) {
-      double segment_prefix = (percentile * length - (cumulative_length - segment_length)) / segment_length;
-      return Point(p1.x + (p2.x - p1.x) * segment_prefix,
-                   p1.y + (p2.y - p1.y) * segment_prefix);
-    }
-  }
-  return *points_.rbegin();
+Point Shape::sampleBoundary(double fraction) const {
+  Path boundary(points_, true);
+  return boundary.sampleFraction(fraction);
 }
 
 Point Shape::sampleBoundary() const {
-  double percentile = static_cast<double>(std::rand()) / RAND_MAX;
-  return this->sampleBoundary(percentile);
+  double fraction = static_cast<double>(std::rand()) / RAND_MAX;
+  return this->sampleBoundary(fraction);
 }
 
 double Shape::distanceTo(const Shape& other, int samples, bool hausdorff) const {
@@ -150,7 +135,7 @@ double Shape::distanceTo(const Shape& other, int samples, bool hausdorff) const 
     sampled1.push_back(this->sampleBoundary(double(i) / sample_points1));
   }
 
-  const int sample_points2 = hausdorff ? other.length() / this->length() * sample_points1
+  const int sample_points2 = hausdorff ? other.perimeter() / this->perimeter() * sample_points1
                                        : sample_points1;
   std::vector<Point> sampled2;
   for (int i = 0; i < sample_points2; ++i) {

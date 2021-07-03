@@ -22,6 +22,7 @@ SOURCES += \
     backend/InelasticSimulator.cpp \
     backend/Particle.cpp \
     backend/ParticleState.cpp \
+    backend/Path.cpp \
     backend/Pusher.cpp \
     backend/Shape.cpp \
     backend/SimulatorSettings.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     backend/InelasticSimulator.h \
     backend/Particle.h \
     backend/ParticleState.h \
+    backend/Path.h \
     backend/Pusher.h \
     backend/Shape.h \
     backend/SimulatorSettings.h \

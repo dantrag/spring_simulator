@@ -15,7 +15,7 @@ class Shape {
 
   bool contains(const Point& point) const;
 
-  double length() const;
+  double perimeter() const;
   double area(bool oriented = false) const;
   Point centroid() const;
   bool clockwise() const;
@@ -25,7 +25,7 @@ class Shape {
   void scaleBy(double scale);
 
   Point sampleBoundary() const;
-  Point sampleBoundary(double percentile) const;
+  Point sampleBoundary(double fraction) const;
 
   double distanceTo(const Shape& other, int samples = 100, bool hausdorff = false) const;
 
