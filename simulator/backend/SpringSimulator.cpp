@@ -269,13 +269,28 @@ void SpringSimulator::relax() {
   log_ << iteration_count << " steps in " << stopwatch(timer) << " ms\n";
 }
 
-void SpringSimulator::runLinearPass(Actuator* actuator, const Point& start, const Point& finish) {
-  double path = distance(start, finish);
-  int ticks = static_cast<int>(std::floor(path / actuator->speed()));
-  for (int i = 0; i < ticks; ++i) {
-    double x = start.x + (finish.x - start.x) / path * actuator->speed() * i;
-    double y = start.y + (finish.y - start.y) / path * actuator->speed() * i;
-    actuator->setPosition(Point(x, y));
+void SpringSimulator::runLinearPasses() {
+  auto total_timer = std::chrono::steady_clock::now();
+
+  std::unordered_map<Actuator*, int> ticks;
+  int total_ticks = 0;
+  for (auto actuator : actuators_) {
+    if (actuator->enabled()) {
+      ticks[actuator] = static_cast<int>(std::floor(actuator->path().length() / actuator->speed()));
+      total_ticks = std::max(total_ticks, ticks[actuator]);
+    }
+  }
+  for (int tick = 0; tick <= total_ticks; ++tick) {
+    for (auto actuator : actuators_) {
+      if (actuator->enabled()) {
+        if (tick > ticks[actuator]) actuator->disable();
+      }
+    }
+    for (auto actuator : actuators_) {
+      if (actuator->enabled()) {
+        actuator->setPathAdvancement(actuator->speed() * tick);
+      }
+    }
 
     for (auto p : particles_) {
       for (auto a : actuators_) {
@@ -303,17 +318,7 @@ void SpringSimulator::runLinearPass(Actuator* actuator, const Point& start, cons
 
     incrementTime();
   }
-}
 
-void SpringSimulator::runLinearPasses(Actuator* actuator, const std::vector<Point>& points) {
-  if (!actuator->enabled()) actuator->enable();
-
-  auto total_timer = std::chrono::steady_clock::now();
-  for (size_t i = 0; i < points.size() - 1; ++i) {
-    auto timer = std::chrono::steady_clock::now();
-    runLinearPass(actuator, points[i], points[i + 1]);
-    log_ << "Linear pass #" << i + 1 << " ran in " << stopwatch(timer) << " ms\n";
-  }
 
   // reset particles' states changed during these passes
   for (const auto& a : actuators_) {
@@ -328,7 +333,7 @@ void SpringSimulator::runLinearPasses(Actuator* actuator, const std::vector<Poin
 
   relax();
 
-  actuator->disable();
+  for (auto actuator : actuators_) actuator->disable();
 
   log_ << "Total time: " << stopwatch(total_timer) << " ms\n";
 }
@@ -475,9 +480,9 @@ void SpringSimulator::clear() {
   particles_.clear();
 }
 
-std::vector<Point> SpringSimulator::predictMoves(Shape target, Actuator* actuator,
-                                                 double entry_margin, double exit_margin,
-                                                 int samples, int repeats, int angular_resolution) {
+Path SpringSimulator::predictMoves(Shape target, Actuator* actuator,
+                                   double entry_margin, double exit_margin,
+                                   int samples, int repeats, int angular_resolution) {
   const auto current_shape = fieldContour();
   auto current_area = current_shape.area();
   auto current_center = current_shape.centroid();
@@ -493,7 +498,7 @@ std::vector<Point> SpringSimulator::predictMoves(Shape target, Actuator* actuato
   auto sampling_entry_contour = current_shape.samplingContour(vectors, entry_margin);
   auto sampling_exit_contour = current_shape.samplingContour(vectors, exit_margin);
 
-  std::vector<std::vector<Point>> passes;
+  std::vector<Path> passes;
   while (samples--) {
     auto entry = sampling_entry_contour.sampleBoundary();
     int tries = 100;
@@ -506,22 +511,24 @@ std::vector<Point> SpringSimulator::predictMoves(Shape target, Actuator* actuato
     pass.push_back(entry);
     pass.push_back(current_center);
     pass.push_back(exit);
-    passes.push_back(pass);
+    passes.push_back(Path(pass));
   }
 
   auto best_pass = *passes.begin();
   double best_distance = std::numeric_limits<double>::max();
 
   for (const auto pass : passes) {
-    std::cout << "Pass " << pass[0].x << " " << pass[0].y << " "
-                         << pass[1].x << " " << pass[1].y << " "
-                         << pass[2].x << " " << pass[2].y << " ";
+    std::cout << "Pass " << pass.toString();
     SpringSimulator test_simulator(this);
+    test_simulator.removeAllActuators();
+    test_simulator.addActuator(actuator);
+    actuator->setPath(pass);
+    actuator->enable();
     for (int i = 0; i < repeats; ++i) {
-      test_simulator.runLinearPasses(actuator, pass);
+      test_simulator.runLinearPasses();
     }
     auto new_shape = test_simulator.fieldContour();
-    std::stringstream ss; ss << pass[0].x << "_" << pass[0].y << "_result.csv";
+    std::stringstream ss; ss << pass.toString() << "_result.csv";
     new_shape.saveToFile(ss.str());
     double distance = new_shape.distanceTo(target);
     std::cout << "distance is " << distance << std::endl;
@@ -530,7 +537,7 @@ std::vector<Point> SpringSimulator::predictMoves(Shape target, Actuator* actuato
       best_pass = pass;
     }
   }
-  std::cout << "Best pass starts at " << best_pass[0].x << " " << best_pass[0].y << std::endl;
+  std::cout << "Best pass is " << best_pass.toString() << std::endl;
   return best_pass;
 }
 

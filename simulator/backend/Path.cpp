@@ -1,6 +1,8 @@
 #include "backend/Path.h"
 
-double Path::length() {
+#include <sstream>
+
+double Path::length() const {
   if (n_ == 0) return 0.0;
 
   double length = 0.0;
@@ -15,7 +17,7 @@ double Path::length() {
   return length;
 }
 
-Point Path::sampleFraction(double fraction) {
+Point Path::sampleFraction(double fraction) const {
   if (n_ == 0) return Point(0, 0);
 
   auto length = this->length();
@@ -32,4 +34,15 @@ Point Path::sampleFraction(double fraction) {
     }
   }
   return *points_.rbegin();
+}
+
+std::string Path::toString() const {
+  std::stringstream stringstream;
+  stringstream.precision(1);
+  for (const auto& point : points_) {
+    stringstream << point.x << " " << point.y << " ";
+  }
+  auto string = stringstream.str();
+  string.erase(string.size() - 1);
+  return string;
 }

@@ -10,6 +10,7 @@
 
 #include "backend/SimulatorSettings.h"
 #include "backend/Particle.h"
+#include "backend/Path.h"
 #include "backend/Shape.h"
 #include "backend/Actuator.h"
 
@@ -55,6 +56,8 @@ class SpringSimulator {
   void incrementTime();
 
   void addActuator(Actuator* actuator) { actuators_.push_back(actuator); }
+  void removeActuator(Actuator* actuator) { std::remove(actuators_.begin(), actuators_.end(), actuator); }
+  void removeAllActuators() { actuators_.clear(); }
 
   const std::set<Spring*>& recentlyAddedSprings() const { return recently_added_springs_; }
   const std::set<Spring*>& recentlyDeletedSprings() const { return recently_deleted_springs_; }
@@ -63,18 +66,17 @@ class SpringSimulator {
   Shape fieldContour() const;
 
   // Operation
-  void runLinearPasses(Actuator* actuator, const std::vector<Point>& points);
+  void runLinearPasses();
   void relax();
   void clear();
-  std::vector<Point> predictMoves(Shape target, Actuator* actuator,
-                                  double entry_margin, double exit_margin,
-                                  int samples = 10, int repeats = 1, int angular_resolution = 60);
+  Path predictMoves(Shape target, Actuator* actuator,
+                    double entry_margin, double exit_margin,
+                    int samples = 10, int repeats = 1, int angular_resolution = 60);
 
  protected:
   double defaultInitializationInterval() const;
   void initializeField(InitializationGrid mode, Point center, double width, double height, double interval,
                        std::function<bool(double, double)> valid_point);
-  void runLinearPass(Actuator* actuator, const Point& start, const Point& finish);
 
   Spring* checkAndAddSpring(Particle* p1, Particle* p2);
   virtual void updateConnectivity() {}

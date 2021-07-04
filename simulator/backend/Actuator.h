@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "backend/Particle.h"
+#include "backend/Path.h"
 
 class Actuator {
  public:
@@ -19,7 +20,10 @@ class Actuator {
   void setTime(int time) { time_ = time; }
 
   Point position() const { return position_; }
-  void setPosition(const Point& position) { position_ = position; }
+  void setPathAdvancement(double cumulative_length);
+
+  const Path& path() { return path_; }
+  void setPath(Path path) { path_ = path; setPathAdvancement(0.0); }
 
   virtual void preprocessParticle(Particle* particle) = 0;
   virtual void processParticle(Particle* particle) = 0;
@@ -32,6 +36,7 @@ class Actuator {
   double speed_ = 1.0;
   int time_ = 0;
   Point position_ = Point(0.0, 0.0);
+  Path path_;
 };
 
 #endif // ACTUATOR_H
