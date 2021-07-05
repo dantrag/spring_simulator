@@ -2,15 +2,12 @@
 
 #include "backend/Spring.h"
 
-Pusher::Pusher()
-    : Actuator() {
-  capture_particle_ = std::move([&](const Particle* particle) {
-    if (isFirmGrip() && !gripping_in_progress_) {
-      return current_grip.count(particle) > 0;
-    } else {
-      return distance(position_, particle->point()) < particle->settings()->springDefaultLength() / 2;
-    }
-  });
+bool Pusher::isParticleCaptured(Particle* particle) {
+  if (isFirmGrip() && !gripping_in_progress_) {
+    return current_grip.count(particle) > 0;
+  } else {
+    return capture_particle_check_(particle);
+  }
 }
 
 void Pusher::enable() {
@@ -24,7 +21,7 @@ void Pusher::preprocessParticle(Particle* particle) {
 
 void Pusher::processParticle(Particle* particle) {
   // move particles, captured by the pusher, and freeze them
-  if (capture_particle_(particle)) {
+  if (isParticleCaptured(particle)) {
     if (isFirmGrip() && gripping_in_progress_) {
       // if this is the first time after pusher was enabled,
       // grip this particle firmly (until it is released)

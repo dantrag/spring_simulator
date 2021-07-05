@@ -5,10 +5,13 @@
 
 #include "backend/Particle.h"
 #include "backend/Path.h"
+#include "backend/Shape.h"
+
+typedef std::function<bool(const Particle*)> ActuatorCaptureFunction;
 
 class Actuator {
  public:
-  Actuator() {}
+  Actuator();
   virtual ~Actuator() {}
 
   bool enabled() const { return on_; }
@@ -22,8 +25,17 @@ class Actuator {
   Point position() const { return position_; }
   void setPathAdvancement(double cumulative_length);
 
+  // overrides the capture based on Shape! use carefully
+  void setCapture(ActuatorCaptureFunction function) { capture_particle_check_ = std::move(function); }
+
   const Path& path() { return path_; }
   void setPath(Path path) { path_ = path; setPathAdvancement(0.0); }
+
+  const Shape& shape() { return shape_; }
+  void setShape(Shape shape);
+
+  double orientation() { return orientation_; }
+  void setOrientation(double orientation) { orientation_ = orientation; }
 
   virtual void preprocessParticle(Particle* particle) = 0;
   virtual void processParticle(Particle* particle) = 0;
@@ -35,8 +47,13 @@ class Actuator {
   bool on_ = false;
   double speed_ = 1.0;
   int time_ = 0;
+
   Point position_ = Point(0.0, 0.0);
   Path path_;
+
+  double orientation_ = 0.0;
+  Shape shape_ = Shape({Point(0.0, 0.0)});
+  ActuatorCaptureFunction capture_particle_check_;
 };
 
 #endif // ACTUATOR_H

@@ -6,12 +6,8 @@
 
 #include "backend/Actuator.h"
 
-typedef std::function<bool(const Particle*)> CaptureFunction;
-
 class Pusher : public Actuator {
  public:
-  Pusher();
-
   void enable() override;
 
   void preprocessParticle(Particle* particle) override;
@@ -19,8 +15,6 @@ class Pusher : public Actuator {
   void postprocessParticle(Particle* particle) override;
 
   void resetParticles(std::vector<Particle*>& particles) override;
-
-  void setCapture(CaptureFunction function) { capture_particle_ = std::move(function); }
 
   bool isSpringCrossingAllowed() { return spring_crossing_allowed_; }
   void setSpringCrossing(bool allowed) { spring_crossing_allowed_ = allowed; }
@@ -31,7 +25,7 @@ class Pusher : public Actuator {
   void setFirmGrip(bool firm) { firm_grip_ = firm; }
 
  private:
-  CaptureFunction capture_particle_;
+  bool isParticleCaptured(Particle* particle);
 
   bool spring_crossing_allowed_ = false;
   bool firm_grip_ = true;

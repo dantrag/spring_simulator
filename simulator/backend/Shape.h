@@ -8,6 +8,7 @@
 class Shape {
  public:
   Shape(const std::vector<Point>& points);
+  Shape(const Shape& shape);
   Shape(std::string filename);
 
   const std::vector<Point> points() const { return points_; }
@@ -23,6 +24,7 @@ class Shape {
   void moveTo(const Point& new_center);
   void scaleTo(double new_area);
   void scaleBy(double scale);
+  void rotateBy(double angle);
 
   Point sampleBoundary() const;
   Point sampleBoundary(double fraction) const;

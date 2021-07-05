@@ -11,6 +11,9 @@
 Shape::Shape(const std::vector<Point>& points)
   : points_(points), n_(static_cast<int>(points.size())) {}
 
+Shape::Shape(const Shape& shape)
+  : Shape(shape.points()) {}
+
 Shape::Shape(std::string filename) {
   std::ifstream shape_file;
   shape_file.open(filename);
@@ -115,6 +118,16 @@ void Shape::scaleBy(double scale) {
   for (auto& point : points_) {
     point.x = center.x + (point.x - center.x) * scale;
     point.y = center.y + (point.y - center.y) * scale;
+  }
+}
+
+void Shape::rotateBy(double angle) {
+  auto center = this->centroid();
+  for (auto& point : points_) {
+    auto x = point.x;
+    auto y = point.y;
+    point.x = center.x + (x - center.x) * std::cos(angle) - (y - center.y) * std::sin(angle);
+    point.y = center.y + (x - center.x) * std::sin(angle) + (y - center.y) * std::cos(angle);
   }
 }
 
