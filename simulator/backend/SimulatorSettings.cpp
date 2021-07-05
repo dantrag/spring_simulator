@@ -15,10 +15,8 @@ void SimulatorSettings::loadFromFile(QString filename) {
   relaxation_iteration_limit_ = file_settings.value("Relaxation/IterationLimit", 2000).toInt();
   relaxation_convergence_limit_ = file_settings.value("Relaxation/ConvergenceLimit", 0.001).toDouble();
 
-  heater_speed_ = file_settings.value("Heater/Speed", 2.0).toDouble();
+  actuator_speed_ = file_settings.value("Actuator/Speed", 2.0).toDouble();
   heater_size_ = file_settings.value("Heater/Size", 20.0).toDouble();
-
-  pusher_speed_ = file_settings.value("Pusher/Speed", 2.0).toDouble();
 }
 
 void SimulatorSettings::saveToFile(QString filename) {
@@ -35,9 +33,7 @@ void SimulatorSettings::saveToFile(QString filename) {
   file_settings.setValue("Relaxation/IterationLimit", relaxation_iteration_limit_);
   file_settings.setValue("Relaxation/ConvergenceLimit", relaxation_convergence_limit_);
 
-  file_settings.setValue("Heater/Speed", heater_speed_);
+  file_settings.setValue("Actuator/Speed", actuator_speed_);
   file_settings.setValue("Heater/Size", heater_size_);
-
-  file_settings.setValue("Pusher/Speed", pusher_speed_);
 }
 #endif

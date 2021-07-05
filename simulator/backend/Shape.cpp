@@ -66,6 +66,16 @@ double Shape::perimeter() const {
   return boundary.length();
 }
 
+double Shape::diameter() const {
+  double diameter = 0.0;
+  for (int i = 0; i < n_ - 1; ++i) {
+    for (int j = i + 1; j < n_; ++j) {
+      diameter = std::max(diameter, distance(points_[i], points_[j]));
+    }
+  }
+  return diameter;
+}
+
 double Shape::area(bool oriented) const {
   double a = 0.0;
   for (int i = 0; i < n_; ++i) {

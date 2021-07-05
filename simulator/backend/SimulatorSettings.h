@@ -36,13 +36,10 @@ class SimulatorSettings {
   double relaxationConvergenceLimit() const { return relaxation_convergence_limit_; }
   void setRelaxationConvergenceLimit(double limit) { relaxation_convergence_limit_ = limit; }
 
-  double heaterSpeed() const { return heater_speed_; }
-  void setHeaterSpeed(double speed) { heater_speed_ = speed; }
+  double actuatorSpeed() const { return actuator_speed_; }
+  void setActuatorSpeed(double speed) { actuator_speed_ = speed; }
   double heaterSize() const { return heater_size_; }
   void setHeaterSize(double size) { heater_size_ = size; }
-
-  double pusherSpeed() const { return pusher_speed_; }
-  void setPusherSpeed(double speed) { pusher_speed_ = speed; }
 
   #ifdef QT_CORE_LIB
   void loadFromFile(QString filename);
@@ -62,10 +59,8 @@ class SimulatorSettings {
   int relaxation_iteration_limit_ = 2000;
   double relaxation_convergence_limit_ = 0.001;
 
-  double heater_speed_ = 2.0;
+  double actuator_speed_ = 2.0;
   double heater_size_ = 20.0;
-
-  double pusher_speed_ = 2.0;
 };
 
 #endif // SIMULATORSETTINGS_H

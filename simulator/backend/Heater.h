@@ -16,6 +16,8 @@ class Heater : public Actuator {
   double size() { return size_; }
   void setSize(double size) { size_ = size; }
 
+  std::string generic_name() const override { return "Heater"; }
+
  private:
   double size_ = 0.0;
 };

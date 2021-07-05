@@ -33,6 +33,7 @@ SOURCES += \
     backend/WaxSimulator.cpp \
     main.cpp \
     ui/mainwindow.cpp \
+    ui/qactuatorwidget.cpp \
     ui/qcustomgraphicsscene.cpp
 
 HEADERS += \
@@ -52,10 +53,12 @@ HEADERS += \
     backend/SpringState.h \
     backend/WaxSimulator.h \
     ui/mainwindow.h \
+    ui/qactuatorwidget.h \
     ui/qcustomgraphicsscene.h
 
 FORMS += \
-    ui/mainwindow.ui
+    ui/mainwindow.ui \
+    ui/qactuatorwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

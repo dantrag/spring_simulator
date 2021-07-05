@@ -6,6 +6,7 @@
 #include <iostream>
 #include <exception>
 #include <sstream>
+#include <unordered_set>
 
 #include <QDesktopWidget>
 #include <QGraphicsEllipseItem>
@@ -86,9 +87,9 @@ void MainWindow::recreateSimulator() {
   if (sim_) {
     heater_ = new Heater();
     heater_->setSize(sim_->settings()->heaterSize());
-    heater_->setSpeed(sim_->settings()->heaterSpeed());
+    heater_->setSpeed(sim_->settings()->actuatorSpeed());
     pusher_ = new Pusher();
-    pusher_->setSpeed(sim_->settings()->pusherSpeed());
+    pusher_->setSpeed(sim_->settings()->actuatorSpeed());
     sim_->addActuator(heater_);
     sim_->addActuator(pusher_);
   }
@@ -249,28 +250,13 @@ std::vector<std::vector<Point>> MainWindow::getPasses() {
   return points;
 }
 
-Actuator* MainWindow::currentActuator() {
-  auto actuator_type = static_cast<ActuatorType>(ui_->actuator_button_group->checkedId());
-  switch (actuator_type) {
-    case ActuatorType::kHeater: {
-      return heater_;
-    }
-    case ActuatorType::kPusher: {
-      return pusher_;
-    }
-    default: {
-      // should not happen
-      return nullptr;
-    }
-  }
-}
-
 void MainWindow::runPasses() {
   auto passes = getPasses();
-  for (auto& pass : passes) {
-    sim_->runLinearPasses(currentActuator(), pass);
-    addNewState();
+  for (auto actuator : actuators) {
+    actuator->setEnabled(actuator_widgets[actuator]->isActuatorEnabled());
   }
+  sim_->runLinearPasses();
+  addNewState();
 
   updateFieldUI();
 }
@@ -299,7 +285,29 @@ void MainWindow::makeTriangle() {
                                           QPen(Qt::gray));
     */
     int repeats = 4;
-    auto best_pass = sim_->predictMoves(triangle, currentActuator(), sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
+
+    int active_actuators_count = 0;
+    Actuator* active_actuator = nullptr;
+    for (auto actuator : actuators) {
+      if (actuator->enabled()) {
+        active_actuator = actuator;
+        active_actuators_count++;
+      }
+    }
+    if (active_actuators_count == 0) {
+      QMessageBox message_box;
+      message_box.critical(this, "Error", "No active actuators! Enable one to use it for a prediction.");
+      return;
+    }
+    if (active_actuators_count > 1) {
+      QMessageBox message_box;
+      message_box.critical(this, "Error", "Too many active actuators! Enable only one to use it for a prediction.");
+      return;
+    }
+    auto actuator_state = active_actuator->saveState();
+    auto best_pass = sim_->predictMoves(triangle, active_actuator, sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
+    active_actuator->loadState(actuator_state);
+
     std::stringstream log_;
     //log_ << "triangle = [(" << p1.x << " " << p1.y << "), (" << p2.x << " " << p2.y << "), (" << p3.x << " " << p3.y << ")];" << std::endl;
     //ui_->passes_text_edit->insertPlainText(QString::fromStdString(log_.str()));
@@ -336,10 +344,11 @@ void MainWindow::makeTriangle() {
     }
     //log_ << "best diff: " << best_diff;
     */
-    int n = best_pass.size();
+    auto points = best_pass.points();
+    int n = points.size();
     for (int i = 0; i < n - 1; ++i) {
-      ui_->graphicsView->scene()->addLine(best_pass[i].x, best_pass[i].y,
-                                          best_pass[(i + 1) % n].x, best_pass[(i + 1) % n].y,
+      ui_->graphicsView->scene()->addLine(points[i].x, points[i].y,
+                                          points[i + 1].x, points[i + 1].y,
                                           QPen(Qt::blue));
     }
     QString filename = QString("move %1.png").arg(k);
@@ -349,7 +358,9 @@ void MainWindow::makeTriangle() {
     painter.setRenderHint(QPainter::Antialiasing);
     ui_->graphicsView->scene()->render(&painter);
     image.save(filename);
-    for (int i = 0; i < repeats; ++i) sim_->runLinearPasses(currentActuator(), best_pass);
+
+    active_actuator->enable();
+    for (int i = 0; i < repeats; ++i) sim_->runLinearPasses();
     addNewState();
     updateFieldUI();
   }
@@ -589,9 +600,9 @@ void MainWindow::populateSettings() {
   ui_->relaxation_convergence_spinbox->setValue(sim_->settings()->relaxationConvergenceLimit());
 
   ui_->heater_size_spinbox->setValue(sim_->settings()->heaterSize());
-  ui_->heater_speed_spinbox->setValue(sim_->settings()->heaterSpeed());
+  ui_->heater_speed_spinbox->setValue(sim_->settings()->actuatorSpeed());
 
-  ui_->pusher_speed_spinbox->setValue(sim_->settings()->pusherSpeed());
+  ui_->pusher_speed_spinbox->setValue(sim_->settings()->actuatorSpeed());
 }
 
 void MainWindow::connectSettingsSignals() {
@@ -616,17 +627,118 @@ void MainWindow::connectSettingsSignals() {
   connect(ui_->heater_size_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
           [&](double value) { sim_->settings()->setHeaterSize(value); });
   connect(ui_->heater_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-          [&](double value) { sim_->settings()->setHeaterSpeed(value); });
+          [&](double value) { sim_->settings()->setActuatorSpeed(value); });
   connect(ui_->pusher_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-          [&](double value) { sim_->settings()->setPusherSpeed(value); });
+          [&](double value) { sim_->settings()->setActuatorSpeed(value); });
 
   connect(ui_->drawing_mode_button_group, static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
           [&](int) { dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId())); });
 }
 
+void MainWindow::addActuator() {
+  if (sim_ == nullptr) return;
+
+  auto actuator_type = static_cast<ActuatorType>(ui_->actuator_type_list->currentIndex());
+
+  Actuator* actuator = nullptr;
+  switch (actuator_type) {
+    case ActuatorType::kHeater: {
+      actuator = new Heater();
+      break;
+    }
+    case ActuatorType::kPusher: {
+      actuator = new Pusher();
+      break;
+    }
+  }
+  if (actuator == nullptr) return;
+
+  auto actuator_widget = new QActuatorWidget(ui_->actuator_list,
+                                             sim_->settings()->actuatorSpeed(),
+                                             actuator_type == ActuatorType::kPusher);
+  actuator->setShape(actuator_widget->getShape());
+  connect(actuator_widget, &QActuatorWidget::actuatorGeometryChanged, this, [actuator_widget, this]() {
+    widget_to_actuator[actuator_widget]->setShape(actuator_widget->getShape());
+    widget_to_actuator[actuator_widget]->setOrientation(actuator_widget->getOrientation());
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorSpeedChanged, this, [&]() {
+    widget_to_actuator[actuator_widget]->setSpeed(actuator_widget->getSpeed());
+    // save last change as a general setting for an actuator speed
+    sim_->settings()->setActuatorSpeed(actuator_widget->getSpeed());
+  });
+
+  sim_->addActuator(actuator);
+  actuators.push_back(actuator);
+  actuator_widgets[actuator] = actuator_widget;
+  widget_to_actuator[actuator_widget] = actuator;
+
+  // find an available unqiue name for a new actuator
+  std::unordered_set<QString> taken_names;
+  for (int index = 0; index < ui_->actuator_list->count(); ++ index)
+    taken_names.insert(ui_->actuator_list->itemText(index));
+
+  for (int i = 1; i < 100; ++i) {
+    auto new_name = QString("%1-%2").arg(QString::fromStdString(actuator->generic_name()))
+                                    .arg(i);
+    if (!taken_names.count(new_name)) {
+      actuator->setName(new_name.toStdString());
+      break;
+    }
+  }
+
+  // addition should be kept after actuator data structures are populated,
+  // as it triggers their update immediately via Qt signalling
+  ui_->actuator_list->addItem(actuator_widget, QString::fromStdString(actuator->name()));
+  if (actuators.size() == 1) {
+    // remove empty placeholder
+    ui_->actuator_list->removeItem(ui_->actuator_list->indexOf(actuator_placeholder));
+  }
+}
+
+void MainWindow::removeActuator() {
+  auto actuator_widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
+  if (ui_->actuator_list->count() == 1) {
+    // add an empty placeholder
+    ui_->actuator_list->addItem(actuator_placeholder, QString("No actuators added"));
+  }
+  ui_->actuator_list->removeItem(ui_->actuator_list->indexOf(actuator_widget));
+
+  auto actuator = widget_to_actuator[actuator_widget];
+  sim_->removeActuator(actuator);
+  actuators.erase(std::find(actuators.begin(), actuators.end(), actuator));
+  actuator_widgets.erase(actuator);
+  widget_to_actuator.erase(actuator_widget);
+  delete actuator;
+  delete actuator_widget;
+}
+
 MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow), sim_(simulator) {
   ui_->setupUi(this);
+
+  actuator_placeholder = ui_->actuator_placeholder_widget;
+  for (int index = 0; index < kActuatorTypeCount; ++index) {
+    QString actuator_name = "Unknown actuator";
+    switch (static_cast<ActuatorType>(index)) {
+      case ActuatorType::kHeater: {
+        actuator_name = "Heater";
+        break;
+      }
+      case ActuatorType::kPusher: {
+        actuator_name = "Pusher";
+        break;
+      }
+      default: {
+        // should not happen
+      }
+    }
+
+    ui_->actuator_type_list->addItem(actuator_name);
+  }
+  connect(ui_->actuator_list, &QToolBox::currentChanged, [&](int index) {
+    auto current_widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->widget(index));
+    current_widget->updatePreview();
+  });
 
   coordinates_label = new QLabel(this);
   coordinates_label->setText("X: ---  Y: ---");
@@ -643,12 +755,6 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   ui_->simulator_type_button_group->setId(ui_->elastic_button,
                                      static_cast<int>(SimulatorType::kElastic));
   ui_->inelastic_button->setChecked(true);
-
-  ui_->actuator_button_group->setId(ui_->heater_button,
-                                     static_cast<int>(ActuatorType::kHeater));
-  ui_->actuator_button_group->setId(ui_->pusher_button,
-                                     static_cast<int>(ActuatorType::kPusher));
-  ui_->heater_button->setChecked(true);
 
   ui_->drawing_mode_button_group->setId(ui_->selection_button,
                                      static_cast<int>(QCustomGraphicsScene::MouseMode::kSelection));
@@ -680,6 +786,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->next_state_button, &QToolButton::clicked, this, &MainWindow::incrementState);
   connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
   connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
+  connect(ui_->add_actuator_button, &QToolButton::clicked, this, &MainWindow::addActuator);
+  connect(ui_->remove_actuator_button, &QToolButton::clicked, this, &MainWindow::removeActuator);
   connectSettingsSignals();
 
   auto screen = QApplication::screenAt(this->pos());

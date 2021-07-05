@@ -15,6 +15,8 @@
 #include "backend/Heater.h"
 #include "backend/Pusher.h"
 
+#include "ui/qactuatorwidget.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -41,6 +43,8 @@ private:
     kPusher,
   };
 
+  static const int kActuatorTypeCount = 2;
+
   Ui::MainWindow* ui_;
   std::deque<State*> states;
   std::deque<State*>::iterator current_state;
@@ -63,7 +67,8 @@ private:
   void doCool();
   // each heater pass is a piecewise linear curve defined by a vector of points
   std::vector<std::vector<Point>> getPasses();
-  Actuator* currentActuator();
+  void addActuator();
+  void removeActuator();
   void runPasses();
   void makeTriangle();
 
@@ -77,6 +82,11 @@ private:
   void connectSettingsSignals();
   void displayPasses(bool show = true);
   void displayContour(bool show = true);
+
+  QWidget* actuator_placeholder = nullptr;
+  std::vector<Actuator*> actuators;
+  std::unordered_map<Actuator*, QActuatorWidget*> actuator_widgets;
+  std::unordered_map<QActuatorWidget*, Actuator*> widget_to_actuator;
 
   std::unordered_map<ParticleState*, QGraphicsEllipseItem*> particle_ui_;
   std::unordered_map<SpringState*, QGraphicsLineItem*> spring_ui_;

@@ -17,6 +17,7 @@ class Shape {
   bool contains(const Point& point) const;
 
   double perimeter() const;
+  double diameter() const;
   double area(bool oriented = false) const;
   Point centroid() const;
   bool clockwise() const;

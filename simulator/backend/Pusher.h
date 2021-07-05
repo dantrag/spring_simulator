@@ -24,6 +24,8 @@ class Pusher : public Actuator {
   bool isFirmGrip() { return firm_grip_; }
   void setFirmGrip(bool firm) { firm_grip_ = firm; }
 
+  std::string generic_name() const override { return "Pusher"; }
+
  private:
   bool isParticleCaptured(Particle* particle);
 

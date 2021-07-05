@@ -36,6 +36,7 @@ SpringSimulator::SpringSimulator(const SpringSimulator* simulator)
       }
     }
   }
+
   time_ = simulator->getTime();
   log_ << simulator->log();
   settings_ = simulator->settings();
