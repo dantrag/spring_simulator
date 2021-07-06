@@ -65,8 +65,6 @@ private:
 
   void doHeat();
   void doCool();
-  // each heater pass is a piecewise linear curve defined by a vector of points
-  std::vector<std::vector<Point>> getPasses();
   void addActuator();
   void removeActuator();
   void runPasses();
@@ -99,8 +97,6 @@ private:
   QGraphicsPixmapItem* bkg_image_ui_ = nullptr;
   QLabel* coordinates_label = nullptr;
 
-  Heater* heater_ = nullptr;
-  Pusher* pusher_ = nullptr;
   SpringSimulator* sim_ = nullptr;
 };
 #endif // MAINWINDOW_H

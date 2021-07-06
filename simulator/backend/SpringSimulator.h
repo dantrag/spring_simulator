@@ -92,6 +92,8 @@ class SpringSimulator {
   std::stringstream log_;
 };
 
+Shape particlesContour(const std::vector<Particle*>& particles_);
+
 double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start);
 
 #endif // SPRINGSIMULATOR_H

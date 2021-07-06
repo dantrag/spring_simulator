@@ -26,6 +26,12 @@
      <layout class="QVBoxLayout" name="layout1">
       <item>
        <widget class="QGroupBox" name="static14">
+        <property name="sizeIncrement">
+         <size>
+          <width>0</width>
+          <height>50</height>
+         </size>
+        </property>
         <property name="title">
          <string>Simulator controls</string>
         </property>
@@ -47,7 +53,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>154</width>
+              <width>168</width>
               <height>139</height>
              </rect>
             </property>
@@ -138,7 +144,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>154</width>
+              <width>168</width>
               <height>170</height>
              </rect>
             </property>
@@ -456,21 +462,7 @@
          <item>
           <widget class="QPushButton" name="triangle_button">
            <property name="text">
-            <string>Make a triangle</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="static1">
-           <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Passes (x&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, y&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, ..., x&lt;span style=&quot; vertical-align:sub;&quot;&gt;n&lt;/span&gt;, y&lt;span style=&quot; vertical-align:sub;&quot;&gt;n&lt;/span&gt;):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPlainTextEdit" name="passes_text_edit">
-           <property name="plainText">
-            <string/>
+            <string>[Testing] Make a triangle</string>
            </property>
           </widget>
          </item>
@@ -484,7 +476,7 @@
          <item>
           <widget class="QPushButton" name="submit_passes_button">
            <property name="text">
-            <string>Submit passes</string>
+            <string>Submit</string>
            </property>
           </widget>
          </item>
@@ -508,7 +500,7 @@
               <x>0</x>
               <y>0</y>
               <width>168</width>
-              <height>68</height>
+              <height>119</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1269,8 +1261,8 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="simulator_type_button_group"/>
-  <buttongroup name="init_mode_button_group"/>
   <buttongroup name="drawing_mode_button_group"/>
+  <buttongroup name="init_mode_button_group"/>
+  <buttongroup name="simulator_type_button_group"/>
  </buttongroups>
 </ui>

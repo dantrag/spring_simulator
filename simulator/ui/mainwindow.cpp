@@ -76,22 +76,11 @@ void MainWindow::recreateSimulator() {
       sim_ = nullptr;
     }
   }
-  if (heater_) {
-    delete heater_;
-    heater_ = nullptr;
-  }
-  if (pusher_) {
-    delete pusher_;
-    pusher_ = nullptr;
-  }
+
   if (sim_) {
-    heater_ = new Heater();
-    heater_->setSize(sim_->settings()->heaterSize());
-    heater_->setSpeed(sim_->settings()->actuatorSpeed());
-    pusher_ = new Pusher();
-    pusher_->setSpeed(sim_->settings()->actuatorSpeed());
-    sim_->addActuator(heater_);
-    sim_->addActuator(pusher_);
+    for (auto actuator : actuators) {
+      sim_->addActuator(actuator);
+    }
   }
 }
 
@@ -106,9 +95,13 @@ void MainWindow::createScene() {
     auto current_scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
     if (current_scene->currentMode() == QCustomGraphicsScene::MouseMode::kPassDrawing) {
       auto line = current_scene->getPass();
-      auto widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
-      widget->addPath(Path({Point(line.x1(), line.y1()),
-                            Point(line.x2(), line.y2())}));
+      if (!actuators.empty()) {
+        auto widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
+        if (widget != nullptr) {
+          widget->addPass(Path({Point(line.x1(), line.y1()),
+                                Point(line.x2(), line.y2())}));
+        }
+      }
       current_scene->releasePass();
     }
   });
@@ -237,22 +230,10 @@ void MainWindow::doCool() {
   updateFieldUI();
 }
 
-std::vector<std::vector<Point>> MainWindow::getPasses() {
-  std::vector<std::vector<Point>> points;
-  QStringList lines = ui_->passes_text_edit->toPlainText().split('\n', QString::SkipEmptyParts);
-  for (QString line : lines) {
-    points.push_back(std::vector<Point>());
-    QStringList coordinates = line.split(' ', QString::SkipEmptyParts);
-    for (int i = 0; i < coordinates.count() / 2; ++i)
-      points.rbegin()->push_back(Point(coordinates[i * 2].toInt(), coordinates[i * 2 + 1].toInt()));
-  }
-  return points;
-}
-
 void MainWindow::runPasses() {
-  auto passes = getPasses();
   for (auto actuator : actuators) {
     actuator->setEnabled(actuator_widgets[actuator]->isActuatorEnabled());
+    actuator->setPath(actuator_widgets[actuator]->getPasses());
   }
   sim_->runLinearPasses();
   addNewState();
@@ -454,7 +435,7 @@ void MainWindow::fitToView() {
 
 void MainWindow::displayPasses(bool show) {
   if (show) {
-    auto passes = getPasses();
+    std::vector<std::vector<Point>> passes = {};//getPasses();
     auto color = static_cast<int>(Qt::red);
     double width = sim_->settings()->springDefaultLength() / 2;
     for (auto& pass : passes) {
@@ -538,9 +519,11 @@ void MainWindow::displayPasses(bool show) {
 }
 
 void MainWindow::displayContour(bool show) {
+  if (sim_ == nullptr) return;
+  if (current_sim_state_ == nullptr) return;
   if (show) {
     double width = sim_->settings()->particleDefaultRadius() * 2;
-    auto contour = sim_->fieldContour().points();
+    auto contour = current_sim_state_->fieldContour().points();
     auto count = static_cast<int>(contour.size());
     for (int i = 0; i < count; ++i) {
       auto line = ui_->graphicsView->scene()->addLine(contour[i].x, contour[i].y,
@@ -643,6 +626,8 @@ void MainWindow::addActuator() {
   switch (actuator_type) {
     case ActuatorType::kHeater: {
       actuator = new Heater();
+      // TODO: remove this when we all actuators can use Shape
+      dynamic_cast<Heater*>(actuator)->setSize(sim_->settings()->heaterSize());
       break;
     }
     case ActuatorType::kPusher: {
@@ -759,7 +744,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
                                      static_cast<int>(QCustomGraphicsScene::MouseMode::kSelection));
   ui_->drawing_mode_button_group->setId(ui_->pass_drawing_button,
                                      static_cast<int>(QCustomGraphicsScene::MouseMode::kPassDrawing));
-  ui_->selection_button->setChecked(true);
+  ui_->pass_drawing_button->setChecked(true);
 
   createScene();
 
@@ -777,7 +762,6 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->init_circle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldCircle);
   connect(ui_->init_rectangle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldRectangle);
   connect(ui_->init_select_image, &QPushButton::clicked, this, &MainWindow::initializeFieldImage);
-  connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, [&](){ ui_->show_passes_checkbox->setChecked(false); });
   connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
   connect(ui_->show_contour_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayContour);
   connect(ui_->change_bkg_button, &QPushButton::clicked, this, &MainWindow::changeBackground);

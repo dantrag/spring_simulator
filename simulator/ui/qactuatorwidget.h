@@ -24,7 +24,7 @@ class QActuatorWidget : public QWidget {
   double getOrientation();
   double getSpeed();
 
-  void addPath(const Path& path);
+  void addPass(const Path& path);
   Path getPasses();
 
 

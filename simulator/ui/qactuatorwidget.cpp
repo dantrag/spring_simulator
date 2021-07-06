@@ -50,7 +50,7 @@ double QActuatorWidget::getSpeed() {
   return ui_->speed_spinbox->value();
 }
 
-void QActuatorWidget::addPath(const Path& path) {
+void QActuatorWidget::addPass(const Path& path) {
   if (ui_->replace_toggle_button->isChecked()) {
     ui_->passes_text_edit->clear();
   }

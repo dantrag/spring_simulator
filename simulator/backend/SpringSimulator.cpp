@@ -365,6 +365,10 @@ bool findCycle(VertexType* current, VertexType* parent,
 }
 
 Shape SpringSimulator::fieldContour() const {
+  return particlesContour(particles_);
+}
+
+Shape particlesContour(const std::vector<Particle*>& particles_) {
   // threshold of what is considered to be a cycle lying inside the material
   const int max_inner_cycle_size = 4;
 

@@ -5,6 +5,7 @@
 
 #include "backend/ParticleState.h"
 #include "backend/SpringState.h"
+#include "backend/Shape.h"
 
 class SpringSimulator;
 
@@ -15,6 +16,8 @@ class SpringSimulatorState {
   const std::vector<ParticleState*>& particles() const { return particles_; }
   const std::vector<SpringState*>& springs() const { return springs_; }
   int id() const { return id_; }
+
+  Shape fieldContour();
 
  private:
   std::vector<ParticleState*> particles_;

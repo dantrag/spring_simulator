@@ -24,3 +24,25 @@ SpringSimulatorState::SpringSimulatorState(const SpringSimulator* simulator, int
     }
   }
 }
+
+Shape SpringSimulatorState::fieldContour() {
+  std::vector<Particle*> particles;
+  std::unordered_map<const ParticleState*, Particle*> state_to_particle;
+  for (auto p : particles_) {
+    auto particle = new Particle(p->x(), p->y(), nullptr);
+    state_to_particle[p] = particle;
+    particles.push_back(particle);
+  }
+
+  for (auto s : springs_) {
+    new Spring(state_to_particle[s->particle1()],
+               state_to_particle[s->particle2()],
+               s->equilibriumLength(),
+               nullptr);
+  }
+  auto shape = particlesContour(particles);
+  for (auto& p : particles) {
+    delete p;
+  }
+  return shape;
+}
