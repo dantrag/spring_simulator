@@ -23,9 +23,10 @@ void Actuator::setPathAdvancement(double cumulative_length) {
 
 void Actuator::setShape(Shape shape) {
   shape_ = shape;
-  capture_particle_check_ = std::move([&](const Particle* particle) {
+  capture_particle_check_ = std::move([shape, this](const Particle* particle) {
     Shape oriented_shape(shape);
     oriented_shape.rotateBy(orientation_);
+    oriented_shape.moveTo(position_);
     return oriented_shape.contains(particle->point());
   });
 }
