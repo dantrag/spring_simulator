@@ -639,6 +639,7 @@ void MainWindow::addActuator() {
 
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list,
                                              sim_->settings()->actuatorSpeed(),
+                                             actuators.empty(),
                                              actuator_type == ActuatorType::kPusher);
   actuator->setShape(actuator_widget->getShape());
   connect(actuator_widget, &QActuatorWidget::actuatorGeometryChanged, this, [actuator_widget, this]() {

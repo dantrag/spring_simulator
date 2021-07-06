@@ -8,12 +8,14 @@
 
 QActuatorWidget::QActuatorWidget(QWidget* parent,
                                  double speed,
+                                 bool enabled,
                                  bool show_spring_crossing_option)
     : QWidget(parent), ui_(new Ui::QActuatorWidget) {
   ui_->setupUi(this);
 
   ui_->allow_spring_crossing_checkbox->setVisible(show_spring_crossing_option);
   ui_->speed_spinbox->setValue(speed);
+  ui_->enabled_checkbox->setChecked(enabled);
 
   ui_->actuator_preview->setScene(new QGraphicsScene(ui_->actuator_preview));
 

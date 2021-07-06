@@ -16,6 +16,7 @@ class QActuatorWidget : public QWidget {
  public:
   explicit QActuatorWidget(QWidget* parent,
                            double speed,
+                           bool enabled,
                            bool show_spring_crossing_option = false);
   ~QActuatorWidget();
 
