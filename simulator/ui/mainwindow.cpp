@@ -106,10 +106,9 @@ void MainWindow::createScene() {
     auto current_scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
     if (current_scene->currentMode() == QCustomGraphicsScene::MouseMode::kPassDrawing) {
       auto line = current_scene->getPass();
-      ui_->passes_text_edit->appendPlainText(QString("%1 %2 %3 %4").arg(line.x1(), 0, 'f', 0)
-                                                                   .arg(line.y1(), 0, 'f', 0)
-                                                                   .arg(line.x2(), 0, 'f', 0)
-                                                                   .arg(line.y2(), 0, 'f', 0));
+      auto widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
+      widget->addPath(Path({Point(line.x1(), line.y1()),
+                            Point(line.x2(), line.y2())}));
       current_scene->releasePass();
     }
   });

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="clear">clear_icon.png</file>
+        <file alias="replace">replace_icon.png</file>
+    </qresource>
+</RCC>

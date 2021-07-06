@@ -20,6 +20,8 @@ QActuatorWidget::QActuatorWidget(QWidget* parent,
   connect(ui_->coordinates_line_edit, &QLineEdit::textChanged, this, &QActuatorWidget::updatePreview);
   connect(ui_->orientation_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::updatePreview);
   connect(ui_->speed_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::actuatorSpeedChanged);
+  connect(ui_->clear_button, &QToolButton::clicked, [&]() { ui_->passes_text_edit->clear(); });
+
   updatePreview();
 }
 
@@ -46,6 +48,33 @@ double QActuatorWidget::getOrientation() {
 
 double QActuatorWidget::getSpeed() {
   return ui_->speed_spinbox->value();
+}
+
+void QActuatorWidget::addPath(const Path& path) {
+  if (ui_->replace_toggle_button->isChecked()) {
+    ui_->passes_text_edit->clear();
+  }
+
+  QString string;
+  for (const auto& point : path.points()) {
+    string.append(QString("%1 %2 ").arg(point.x, 0, 'f', 0)
+                                   .arg(point.y, 0, 'f', 0));
+  }
+  string.remove(string.length() - 1, 1);
+  ui_->passes_text_edit->appendPlainText(string);
+}
+
+Path QActuatorWidget::getPasses() {
+  auto string = ui_->passes_text_edit->toPlainText().toStdString();
+  std::stringstream stream;
+  stream << string;
+  double x = 0.0;
+  double y = 0.0;
+  std::vector<Point> points;
+  while (stream >> x >> y) {
+    points.push_back(Point(x, y));
+  }
+  return Path(points);
 }
 
 void QActuatorWidget::updatePreview() {

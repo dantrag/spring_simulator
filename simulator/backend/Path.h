@@ -11,6 +11,8 @@ class Path {
   Path() {}
   Path(const std::vector<Point>& points, bool is_cyclic = false)
       : points_(points), is_cyclic_(is_cyclic), n_(static_cast<int>(points.size())) {}
+  Path(const std::vector<Point>&& points, bool is_cyclic = false)
+      : Path(points, is_cyclic) {}
 
   double length() const;
   const std::vector<Point> points() const { return points_; }

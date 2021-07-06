@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include <backend/Shape.h>
+#include <backend/Path.h>
 
 namespace Ui {
   class QActuatorWidget;
@@ -22,6 +23,10 @@ class QActuatorWidget : public QWidget {
   Shape getShape();
   double getOrientation();
   double getSpeed();
+
+  void addPath(const Path& path);
+  Path getPasses();
+
 
   void updatePreview();
 
