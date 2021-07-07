@@ -243,7 +243,13 @@ void MainWindow::runPasses() {
     actuator->setEnabled(actuator_widgets_[actuator]->isActuatorEnabled());
     actuator->setPath(actuator_widgets_[actuator]->getPasses());
   }
+
   sim_->runLinearPasses();
+
+  for (auto actuator : actuators_) {
+    actuator_widgets_[actuator]->setActuatorEnabled(actuator->enabled());
+  }
+
   addNewState();
 
   updateFieldUI();
@@ -351,6 +357,10 @@ void MainWindow::makeTriangle() {
     for (int i = 0; i < repeats; ++i) sim_->runLinearPasses();
     addNewState();
     updateFieldUI();
+  }
+
+  for (auto actuator : actuators_) {
+    actuator_widgets_[actuator]->setActuatorEnabled(actuator->enabled());
   }
 }
 

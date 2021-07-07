@@ -31,6 +31,10 @@ QActuatorWidget::QActuatorWidget(QWidget* parent,
   updatePreview();
 }
 
+void QActuatorWidget::setActuatorEnabled(bool enabled) {
+  ui_->enabled_checkbox->setChecked(enabled);
+}
+
 bool QActuatorWidget::isActuatorEnabled() {
   return ui_->enabled_checkbox->isChecked();
 }

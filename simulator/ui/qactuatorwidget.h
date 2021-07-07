@@ -22,7 +22,9 @@ class QActuatorWidget : public QWidget {
                            bool show_spring_crossing_option = false);
   ~QActuatorWidget();
 
+  void setActuatorEnabled(bool enabled);
   bool isActuatorEnabled();
+
   Shape getShape();
   double getOrientation();
   double getSpeed();
