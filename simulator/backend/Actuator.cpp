@@ -17,8 +17,17 @@ void Actuator::setEnabled(bool enabled) {
 }
 
 void Actuator::setPathAdvancement(double cumulative_length) {
-  position_ = path_.sampleFraction(cumulative_length / path_.length());
-  path_advancement_ = cumulative_length;
+  last_position_ = position_;
+  if (path_.length() > 1e-5) {
+    position_ = path_.sampleFraction(cumulative_length / path_.length());
+    path_advancement_ = cumulative_length;
+  } else {
+    if (path_.size() > 0)
+      position_ = path_.points()[0];
+    else
+      position_ = Point(0.0, 0.0);
+    path_advancement_ = 0.0;
+  }
 }
 
 void Actuator::setShape(Shape shape) {

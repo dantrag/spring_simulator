@@ -28,8 +28,8 @@ void Pusher::processParticle(Particle* particle) {
       current_grip.insert(particle);
     }
 
-    auto displacement = Point(position_.x - particle->x(),
-                              position_.y - particle->y());
+    auto displacement = Point(position_.x - last_position_.x,
+                              position_.y - last_position_.y);
 
     if (!isSpringCrossingAllowed()) {
       // if spring crossing is not allowed, check that the displacement

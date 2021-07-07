@@ -63,6 +63,7 @@ class Actuator {
   int time_ = 0;
 
   Point position_ = Point(0.0, 0.0);
+  Point last_position_ = Point(0.0, 0.0);
   Path path_;
   double path_advancement_ = 0.0;
 
