@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cmath>
 
+#include <cmath>
+
 #include <backend/Particle.h>
 
 QActuatorWidget::QActuatorWidget(QWidget* parent,
@@ -22,6 +24,8 @@ QActuatorWidget::QActuatorWidget(QWidget* parent,
   connect(ui_->coordinates_line_edit, &QLineEdit::textChanged, this, &QActuatorWidget::updatePreview);
   connect(ui_->orientation_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::updatePreview);
   connect(ui_->speed_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::actuatorSpeedChanged);
+  connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, this, &QActuatorWidget::actuatorPathChanged);
+  connect(ui_->enabled_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorEnabledChanged);
   connect(ui_->clear_button, &QToolButton::clicked, [&]() { ui_->passes_text_edit->clear(); });
 
   updatePreview();
@@ -53,17 +57,16 @@ double QActuatorWidget::getSpeed() {
 }
 
 void QActuatorWidget::addPass(const Path& path) {
-  if (ui_->replace_toggle_button->isChecked()) {
-    ui_->passes_text_edit->clear();
-  }
-
   QString string;
   for (const auto& point : path.points()) {
     string.append(QString("%1 %2 ").arg(point.x, 0, 'f', 0)
                                    .arg(point.y, 0, 'f', 0));
   }
   string.remove(string.length() - 1, 1);
-  ui_->passes_text_edit->appendPlainText(string);
+  if (ui_->replace_toggle_button->isChecked())
+    ui_->passes_text_edit->setPlainText(string);
+  else
+    ui_->passes_text_edit->appendPlainText(string);
 }
 
 Path QActuatorWidget::getPasses() {
@@ -83,12 +86,13 @@ void QActuatorWidget::updatePreview() {
   ui_->actuator_preview->scene()->clear();
 
   auto shape = this->getShape();
-  auto points = shape.points();
+  auto origin = shape.centroid();
+  auto view_size = shape.diameter() * 2;
+
   QPolygonF polygon;
-  for (auto point : points) {
+  for (auto point : shape.points()) {
     polygon << QPointF(point.x, point.y);
   }
-  auto origin = shape.centroid();
   polygon = QTransform().translate(origin.x, origin.y)
                         .rotateRadians(getOrientation())
                         .translate(-origin.x, -origin.y)
@@ -96,7 +100,6 @@ void QActuatorWidget::updatePreview() {
   ui_->actuator_preview->scene()->addPolygon(polygon,
                         QPen(QBrush(QColor::fromRgb(128, 37, 190)), 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin),
                         QBrush(QColor::fromRgb(192, 146, 223)));
-  auto view_size = shape.diameter() * 2;
   ui_->actuator_preview->setSceneRect(origin.x - view_size / 2, origin.y - view_size / 2,
                                       view_size, view_size);
   ui_->actuator_preview->centerOn(QPointF(origin.x, origin.y));

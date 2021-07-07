@@ -467,9 +467,9 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="show_passes_checkbox">
+          <widget class="QCheckBox" name="show_actuators_checkbox">
            <property name="text">
-            <string>Display passes</string>
+            <string>Display actuators</string>
            </property>
           </widget>
          </item>

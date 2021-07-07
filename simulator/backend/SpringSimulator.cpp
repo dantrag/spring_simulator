@@ -334,8 +334,6 @@ void SpringSimulator::runLinearPasses() {
 
   relax();
 
-  for (auto actuator : actuators_) actuator->disable();
-
   log_ << "Total time: " << stopwatch(total_timer) << " ms\n";
 }
 

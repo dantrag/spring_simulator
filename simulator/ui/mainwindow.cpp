@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include <QDesktopWidget>
+#include <QColor>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsLineItem>
 #include <QWindow>
@@ -22,8 +23,17 @@
 #include "backend/Spring.h"
 #include "ui/qcustomgraphicsscene.h"
 
+const std::vector<QColor> kColorPalette = {QColor::fromRgb(27, 158, 119),
+                                           QColor::fromRgb(217, 95, 2),
+                                           QColor::fromRgb(117, 112, 179),
+                                           QColor::fromRgb(231, 41, 138),
+                                           QColor::fromRgb(102, 166, 30),
+                                           QColor::fromRgb(230, 171, 2),
+                                           QColor::fromRgb(166, 118, 29)};
+
 void MainWindow::clearUI() {
-  displayPasses(false);
+  eraseActuators();
+
   for (auto p : particle_ui_) if (p.second) {
     ui_->graphicsView->scene()->removeItem(p.second);
     delete p.second;
@@ -78,7 +88,7 @@ void MainWindow::recreateSimulator() {
   }
 
   if (sim_) {
-    for (auto actuator : actuators) {
+    for (auto actuator : actuators_) {
       sim_->addActuator(actuator);
     }
   }
@@ -95,7 +105,7 @@ void MainWindow::createScene() {
     auto current_scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
     if (current_scene->currentMode() == QCustomGraphicsScene::MouseMode::kPassDrawing) {
       auto line = current_scene->getPass();
-      if (!actuators.empty()) {
+      if (!actuators_.empty()) {
         auto widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
         if (widget != nullptr) {
           widget->addPass(Path({Point(line.x1(), line.y1()),
@@ -115,8 +125,6 @@ void MainWindow::initializeUI() {
   delete ui_->graphicsView->scene();
   createScene();
   updateFieldUI();
-
-  if (ui_->show_passes_checkbox->isChecked()) displayPasses();
 
   fitToView();
 }
@@ -231,9 +239,9 @@ void MainWindow::doCool() {
 }
 
 void MainWindow::runPasses() {
-  for (auto actuator : actuators) {
-    actuator->setEnabled(actuator_widgets[actuator]->isActuatorEnabled());
-    actuator->setPath(actuator_widgets[actuator]->getPasses());
+  for (auto actuator : actuators_) {
+    actuator->setEnabled(actuator_widgets_[actuator]->isActuatorEnabled());
+    actuator->setPath(actuator_widgets_[actuator]->getPasses());
   }
   sim_->runLinearPasses();
   addNewState();
@@ -268,7 +276,7 @@ void MainWindow::makeTriangle() {
 
     int active_actuators_count = 0;
     Actuator* active_actuator = nullptr;
-    for (auto actuator : actuators) {
+    for (auto actuator : actuators_) {
       if (actuator->enabled()) {
         active_actuator = actuator;
         active_actuators_count++;
@@ -348,6 +356,7 @@ void MainWindow::makeTriangle() {
 
 void MainWindow::updateFieldUI() {
   clearUI();
+  redrawActuators();
 
   if (current_sim_state_) {
     ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
@@ -371,6 +380,9 @@ void MainWindow::updateFieldUI() {
       spring_ui_[s]->setZValue(10);
     }
   }
+  displayContour(ui_->show_contour_checkbox->isChecked());
+  displayActuators(ui_->show_actuators_checkbox->isChecked());
+
   if (ui_->graphicsView->scene()) ui_->graphicsView->scene()->update();
 
   ui_->log_text_edit->clear();
@@ -433,7 +445,81 @@ void MainWindow::fitToView() {
   updateZoom();
 }
 
-void MainWindow::displayPasses(bool show) {
+void MainWindow::eraseActuator(Actuator* actuator) {
+  for (auto ui_item : actuators_ui_[actuator]) {
+    delete ui_item;
+  }
+  actuators_ui_[actuator].clear();
+}
+
+void MainWindow::eraseActuators() {
+  for (auto actuator : actuators_ui_) {
+    eraseActuator(actuator.first);
+  }
+  actuators_ui_.clear();
+}
+
+void MainWindow::redrawActuator(Actuator* actuator) {
+  eraseActuator(actuator);
+
+  // draw actuator shape
+  auto shape = actuator->shape();
+  auto origin = shape.centroid();
+  QPolygonF polygon;
+  for (auto point : shape.points()) {
+    polygon << QPointF(point.x, point.y);
+  }
+  polygon = QTransform().translate(origin.x, origin.y)
+                        .rotateRadians(actuator->orientation())
+                        .translate(-origin.x, -origin.y)
+                        .map(polygon);
+  polygon = QTransform().translate(-origin.x, -origin.y)
+                        .map(polygon);
+  // todo: pallette and gray for disabled!
+  int actuator_index = std::find(actuators_.begin(), actuators_.end(), actuator) - actuators_.begin();
+  auto main_color = kColorPalette[actuator_index % kColorPalette.size()];
+  if (!actuator->enabled()) {
+    auto gray = qGray(main_color.rgb());
+    main_color = QColor(gray, gray, gray);
+  }
+  auto light_color = main_color.lighter(300);
+  auto shape_item = ui_->graphicsView->scene()->addPolygon(polygon,
+                      QPen(QBrush(main_color), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin),
+                      QBrush(light_color));
+  actuators_ui_[actuator].push_back(shape_item);
+
+  // draw path
+  auto path_points = actuator->path().points();
+  if (!path_points.empty()) {
+    QPainterPath painter_path;
+    auto point = path_points.begin();
+    // also translate actuator shape to the first point of the path
+    shape_item->moveBy(point->x, point->y);
+    painter_path.moveTo(point->x, point->y);
+    for (point++; point != path_points.end(); point++) {
+      painter_path.lineTo(point->x, point->y);
+    }
+    auto path_item = ui_->graphicsView->scene()->addPath(painter_path,
+                       QPen(QBrush(main_color), 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+    actuators_ui_[actuator].push_back(path_item);
+  }
+
+  displayActuators(ui_->show_actuators_checkbox->isChecked());
+}
+
+void MainWindow::redrawActuators() {
+  for (auto actuator : actuators_) {
+    redrawActuator(actuator);
+  }
+}
+
+void MainWindow::displayActuators(bool show) {
+  for (auto actuator_ui : actuators_ui_) {
+    for (auto ui_item : actuator_ui.second) {
+      ui_item->setVisible(show);
+    }
+  }
+  /*
   if (show) {
     std::vector<std::vector<Point>> passes = {};//getPasses();
     auto color = static_cast<int>(Qt::red);
@@ -516,6 +602,7 @@ void MainWindow::displayPasses(bool show) {
   }
   ui_->graphicsView->update();
   fitToView();
+  */
 }
 
 void MainWindow::displayContour(bool show) {
@@ -639,23 +726,15 @@ void MainWindow::addActuator() {
 
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list,
                                              sim_->settings()->actuatorSpeed(),
-                                             actuators.empty(),
+                                             true,
                                              actuator_type == ActuatorType::kPusher);
+  actuator->enable();
   actuator->setShape(actuator_widget->getShape());
-  connect(actuator_widget, &QActuatorWidget::actuatorGeometryChanged, this, [actuator_widget, this]() {
-    widget_to_actuator[actuator_widget]->setShape(actuator_widget->getShape());
-    widget_to_actuator[actuator_widget]->setOrientation(actuator_widget->getOrientation());
-  });
-  connect(actuator_widget, &QActuatorWidget::actuatorSpeedChanged, this, [&]() {
-    widget_to_actuator[actuator_widget]->setSpeed(actuator_widget->getSpeed());
-    // save last change as a general setting for an actuator speed
-    sim_->settings()->setActuatorSpeed(actuator_widget->getSpeed());
-  });
 
   sim_->addActuator(actuator);
-  actuators.push_back(actuator);
-  actuator_widgets[actuator] = actuator_widget;
-  widget_to_actuator[actuator_widget] = actuator;
+  actuators_.push_back(actuator);
+  actuator_widgets_[actuator] = actuator_widget;
+  widget_to_actuator_[actuator_widget] = actuator;
 
   // find an available unqiue name for a new actuator
   std::unordered_set<QString> taken_names;
@@ -674,25 +753,50 @@ void MainWindow::addActuator() {
   // addition should be kept after actuator data structures are populated,
   // as it triggers their update immediately via Qt signalling
   ui_->actuator_list->addItem(actuator_widget, QString::fromStdString(actuator->name()));
-  if (actuators.size() == 1) {
+  if (actuators_.size() == 1) {
     // remove empty placeholder
-    ui_->actuator_list->removeItem(ui_->actuator_list->indexOf(actuator_placeholder));
+    ui_->actuator_list->removeItem(ui_->actuator_list->indexOf(actuator_placeholder_));
   }
+
+  // Add UI
+  actuators_ui_[actuator] = {};
+  redrawActuator(actuator);
+
+  connect(actuator_widget, &QActuatorWidget::actuatorGeometryChanged, this, [actuator_widget, this]() {
+    widget_to_actuator_[actuator_widget]->setShape(actuator_widget->getShape());
+    widget_to_actuator_[actuator_widget]->setOrientation(actuator_widget->getOrientation());
+    redrawActuator(widget_to_actuator_[actuator_widget]);
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorSpeedChanged, this, [actuator_widget, this]() {
+    widget_to_actuator_[actuator_widget]->setSpeed(actuator_widget->getSpeed());
+    // save last change as a general setting for an actuator speed
+    sim_->settings()->setActuatorSpeed(actuator_widget->getSpeed());
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorPathChanged, this, [actuator_widget, this]() {
+    auto path = actuator_widget->getPasses();
+    widget_to_actuator_[actuator_widget]->setPath(actuator_widget->getPasses());
+    redrawActuator(widget_to_actuator_[actuator_widget]);
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorEnabledChanged, this, [actuator_widget, this](bool enabled) {
+    widget_to_actuator_[actuator_widget]->setEnabled(enabled);
+    redrawActuator(widget_to_actuator_[actuator_widget]);
+  });
 }
 
 void MainWindow::removeActuator() {
   auto actuator_widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
   if (ui_->actuator_list->count() == 1) {
     // add an empty placeholder
-    ui_->actuator_list->addItem(actuator_placeholder, QString("No actuators added"));
+    ui_->actuator_list->addItem(actuator_placeholder_, QString("No actuators added"));
   }
   ui_->actuator_list->removeItem(ui_->actuator_list->indexOf(actuator_widget));
 
-  auto actuator = widget_to_actuator[actuator_widget];
+  auto actuator = widget_to_actuator_[actuator_widget];
   sim_->removeActuator(actuator);
-  actuators.erase(std::find(actuators.begin(), actuators.end(), actuator));
-  actuator_widgets.erase(actuator);
-  widget_to_actuator.erase(actuator_widget);
+  actuators_.erase(std::find(actuators_.begin(), actuators_.end(), actuator));
+  actuator_widgets_.erase(actuator);
+  widget_to_actuator_.erase(actuator_widget);
+  eraseActuator(actuator);
   delete actuator;
   delete actuator_widget;
 }
@@ -701,7 +805,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow), sim_(simulator) {
   ui_->setupUi(this);
 
-  actuator_placeholder = ui_->actuator_placeholder_widget;
+  actuator_placeholder_ = ui_->actuator_placeholder_widget;
   for (int index = 0; index < kActuatorTypeCount; ++index) {
     QString actuator_name = "Unknown actuator";
     switch (static_cast<ActuatorType>(index)) {
@@ -720,6 +824,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
 
     ui_->actuator_type_list->addItem(actuator_name);
   }
+  ui_->actuator_type_list->setCurrentIndex(kActuatorTypeCount - 1);
+
   connect(ui_->actuator_list, &QToolBox::currentChanged, [&](int index) {
     auto current_widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->widget(index));
     current_widget->updatePreview();
@@ -739,7 +845,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
                                      static_cast<int>(SimulatorType::kInelastic));
   ui_->simulator_type_button_group->setId(ui_->elastic_button,
                                      static_cast<int>(SimulatorType::kElastic));
-  ui_->inelastic_button->setChecked(true);
+  ui_->elastic_button->setChecked(true);
 
   ui_->drawing_mode_button_group->setId(ui_->selection_button,
                                      static_cast<int>(QCustomGraphicsScene::MouseMode::kSelection));
@@ -763,7 +869,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->init_circle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldCircle);
   connect(ui_->init_rectangle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldRectangle);
   connect(ui_->init_select_image, &QPushButton::clicked, this, &MainWindow::initializeFieldImage);
-  connect(ui_->show_passes_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayPasses);
+  connect(ui_->show_actuators_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayActuators);
   connect(ui_->show_contour_checkbox, &QCheckBox::stateChanged, this, &MainWindow::displayContour);
   connect(ui_->change_bkg_button, &QPushButton::clicked, this, &MainWindow::changeBackground);
   connect(ui_->previous_state_button, &QToolButton::clicked, this, &MainWindow::decrementState);

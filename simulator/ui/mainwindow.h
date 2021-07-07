@@ -78,20 +78,23 @@ private:
   void loadSettings();
   void saveSettings();
   void connectSettingsSignals();
-  void displayPasses(bool show = true);
+  void eraseActuator(Actuator* actuator);
+  void eraseActuators();
+  void redrawActuator(Actuator* actuator);
+  void redrawActuators();
+  void displayActuators(bool show = true);
   void displayContour(bool show = true);
 
-  QWidget* actuator_placeholder = nullptr;
-  std::vector<Actuator*> actuators;
-  std::unordered_map<Actuator*, QActuatorWidget*> actuator_widgets;
-  std::unordered_map<QActuatorWidget*, Actuator*> widget_to_actuator;
+  QWidget* actuator_placeholder_ = nullptr;
+  std::vector<Actuator*> actuators_;
+  std::unordered_map<Actuator*, QActuatorWidget*> actuator_widgets_;
+  std::unordered_map<QActuatorWidget*, Actuator*> widget_to_actuator_;
 
   std::unordered_map<ParticleState*, QGraphicsEllipseItem*> particle_ui_;
   std::unordered_map<SpringState*, QGraphicsLineItem*> spring_ui_;
+  std::unordered_map<Actuator*, std::vector<QGraphicsItem*>> actuators_ui_;
   std::vector<SpringSimulatorState*> sim_states_;
   SpringSimulatorState* current_sim_state_ = nullptr;
-
-  std::vector<std::vector<QGraphicsItem*>> passes_ui_;
 
   std::vector<QGraphicsItem*> contour_ui_;
   QGraphicsPixmapItem* bkg_image_ui_ = nullptr;

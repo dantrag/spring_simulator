@@ -2,6 +2,8 @@
 #define QACTUATORWIDGET_H
 
 #include <QWidget>
+#include <QGraphicsItem>
+#include <QGraphicsScene>
 
 #include <backend/Shape.h>
 #include <backend/Path.h>
@@ -28,12 +30,13 @@ class QActuatorWidget : public QWidget {
   void addPass(const Path& path);
   Path getPasses();
 
-
   void updatePreview();
 
  signals:
   void actuatorGeometryChanged();
+  void actuatorPathChanged();
   void actuatorSpeedChanged();
+  void actuatorEnabledChanged(bool enabled);
 
  private:
   Ui::QActuatorWidget* ui_;

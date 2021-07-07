@@ -2,6 +2,10 @@
 
 #include <sstream>
 
+int Path::size() const {
+  return n_;
+}
+
 double Path::length() const {
   if (n_ == 0) return 0.0;
 

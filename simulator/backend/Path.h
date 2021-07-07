@@ -14,6 +14,7 @@ class Path {
   Path(const std::vector<Point>&& points, bool is_cyclic = false)
       : Path(points, is_cyclic) {}
 
+  int size() const;
   double length() const;
   const std::vector<Point> points() const { return points_; }
 
