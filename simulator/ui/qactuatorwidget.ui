@@ -218,6 +218,26 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QCheckBox" name="firm_grip_checkbox">
+     <property name="text">
+      <string>Firm grip</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="release_grip_checkbox">
+     <property name="text">
+      <string>Release grip in the end</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources>

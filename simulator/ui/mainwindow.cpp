@@ -740,11 +740,16 @@ void MainWindow::addActuator() {
   }
   if (actuator == nullptr) return;
 
+  actuator->enable();
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list,
                                              sim_->settings()->actuatorSpeed(),
-                                             true,
-                                             actuator_type == ActuatorType::kPusher);
-  actuator->enable();
+                                             actuator->enabled(),
+                                             actuator->isSpringCrossingApplicable(),
+                                             actuator->isFirmGripApplicable(),
+                                             actuator->isFinalReleaseApplicable(),
+                                             actuator->isSpringCrossingAllowed(),
+                                             actuator->isFirmGrip(),
+                                             actuator->isFinalRelease());
   actuator->setShape(actuator_widget->getShape());
 
   sim_->addActuator(actuator);
@@ -796,6 +801,18 @@ void MainWindow::addActuator() {
   });
   connect(actuator_widget, &QActuatorWidget::actuatorEnabledChanged, this, [actuator_widget, this](bool enabled) {
     widget_to_actuator_[actuator_widget]->setEnabled(enabled);
+    redrawActuator(widget_to_actuator_[actuator_widget]);
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorSpringCrossingChanged, this, [actuator_widget, this](bool allowed) {
+    widget_to_actuator_[actuator_widget]->setSpringCrossing(allowed);
+    redrawActuator(widget_to_actuator_[actuator_widget]);
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorFirmGripChanged, this, [actuator_widget, this](bool allowed) {
+    widget_to_actuator_[actuator_widget]->setFirmGrip(allowed);
+    redrawActuator(widget_to_actuator_[actuator_widget]);
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorFinalReleaseChanged, this, [actuator_widget, this](bool allowed) {
+    widget_to_actuator_[actuator_widget]->setFinalRelease(allowed);
     redrawActuator(widget_to_actuator_[actuator_widget]);
   });
 }

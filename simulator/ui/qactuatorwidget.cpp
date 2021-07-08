@@ -11,11 +11,22 @@
 QActuatorWidget::QActuatorWidget(QWidget* parent,
                                  double speed,
                                  bool enabled,
-                                 bool show_spring_crossing_option)
+                                 bool show_spring_crossing_option,
+                                 bool show_firm_grip_option,
+                                 bool show_release_option,
+                                 bool spring_crossing_allowed,
+                                 bool firm_grip_allowed,
+                                 bool release_allowed)
     : QWidget(parent), ui_(new Ui::QActuatorWidget) {
   ui_->setupUi(this);
 
   ui_->allow_spring_crossing_checkbox->setVisible(show_spring_crossing_option);
+  ui_->allow_spring_crossing_checkbox->setChecked(spring_crossing_allowed);
+  ui_->firm_grip_checkbox->setVisible(show_firm_grip_option);
+  ui_->firm_grip_checkbox->setChecked(firm_grip_allowed);
+  ui_->release_grip_checkbox->setVisible(show_release_option);
+  ui_->release_grip_checkbox->setChecked(release_allowed);
+
   ui_->speed_spinbox->setValue(speed);
   ui_->enabled_checkbox->setChecked(enabled);
 
@@ -26,6 +37,9 @@ QActuatorWidget::QActuatorWidget(QWidget* parent,
   connect(ui_->speed_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::actuatorSpeedChanged);
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, this, &QActuatorWidget::actuatorPathChanged);
   connect(ui_->enabled_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorEnabledChanged);
+  connect(ui_->allow_spring_crossing_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorSpringCrossingChanged);
+  connect(ui_->firm_grip_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorFirmGripChanged);
+  connect(ui_->release_grip_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorFinalReleaseChanged);
   connect(ui_->clear_button, &QToolButton::clicked, [&]() { ui_->passes_text_edit->clear(); });
 
   updatePreview();

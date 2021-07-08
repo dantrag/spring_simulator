@@ -19,7 +19,12 @@ class QActuatorWidget : public QWidget {
   explicit QActuatorWidget(QWidget* parent,
                            double speed,
                            bool enabled,
-                           bool show_spring_crossing_option = false);
+                           bool show_spring_crossing_option,
+                           bool show_firm_grip_option,
+                           bool show_release_option,
+                           bool spring_crossing_allowed = false,
+                           bool firm_grip_allowed = false,
+                           bool release_allowed = false);
   ~QActuatorWidget();
 
   void setActuatorEnabled(bool enabled);
@@ -39,6 +44,9 @@ class QActuatorWidget : public QWidget {
   void actuatorPathChanged();
   void actuatorSpeedChanged();
   void actuatorEnabledChanged(bool enabled);
+  void actuatorSpringCrossingChanged(bool allowed);
+  void actuatorFirmGripChanged(bool allowed);
+  void actuatorFinalReleaseChanged(bool allowed);
 
  private:
   Ui::QActuatorWidget* ui_;

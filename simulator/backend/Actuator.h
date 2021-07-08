@@ -48,6 +48,24 @@ class Actuator {
 
   virtual void resetParticles(std::vector<Particle*>& particles) = 0;
 
+  // means that the inward motion allows material to self-penetrate;
+  // sometimes it allows to emulate folding
+  virtual bool isSpringCrossingApplicable() const { return false; };
+  bool isSpringCrossingAllowed() const { return spring_crossing_allowed_; }
+  void setSpringCrossing(bool allowed) { spring_crossing_allowed_ = allowed; }
+
+  // means that the particle(s) captured in the first move is/are going to be the one(s)
+  // being pushed until resetParticles() is called
+  virtual bool isFirmGripApplicable() const { return false; }
+  bool isFirmGrip() const { return firm_grip_; }
+  void setFirmGrip(bool firm) { firm_grip_ = firm; }
+
+  // means that the actuator releases grip (if applicable) after the run
+  // and lets the particles to reach equilibrium under no external forces
+  virtual bool isFinalReleaseApplicable() const { return false; }
+  bool isFinalRelease() const { return final_release_; }
+  void setFinalRelease(bool release) { final_release_ = release; }
+
   virtual std::string generic_name() const { return "Actuator"; }
   std::string name() const { return name_; }
   void setName(std::string new_name) { name_ = new_name; }
@@ -61,6 +79,9 @@ class Actuator {
   bool on_ = false;
   double speed_ = 1.0;
   int time_ = 0;
+  bool spring_crossing_allowed_ = false;
+  bool firm_grip_ = true;
+  bool final_release_ = false;
 
   Point position_ = Point(0.0, 0.0);
   Point last_position_ = Point(0.0, 0.0);

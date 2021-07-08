@@ -74,9 +74,9 @@ void Pusher::postprocessParticle(Particle* particle) {
 }
 
 void Pusher::resetParticles(std::vector<Particle*>& particles) {
-  // optionally - release pusher grip and let all particles move
+  // if this option is set, release pusher grip and let all particles move
   for (auto& p : particles) {
-    p->setMovable(true);
+    p->setMovable(isFinalRelease());
   }
   current_grip.clear();
 }
