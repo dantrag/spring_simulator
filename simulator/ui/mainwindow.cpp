@@ -110,6 +110,10 @@ void MainWindow::createScene() {
         if (widget != nullptr) {
           widget->addPass(Path({Point(line.x1(), line.y1()),
                                 Point(line.x2(), line.y2())}));
+          auto actuator = widget_to_actuator_[widget];
+          actuator->enable();
+          widget->setActuatorEnabled(true);
+          redrawActuator(actuator);
         }
       }
       current_scene->releasePass();
@@ -485,17 +489,19 @@ void MainWindow::redrawActuator(Actuator* actuator) {
                         .map(polygon);
   polygon = QTransform().translate(-origin.x, -origin.y)
                         .map(polygon);
-  // todo: pallette and gray for disabled!
+
   int actuator_index = std::find(actuators_.begin(), actuators_.end(), actuator) - actuators_.begin();
   auto main_color = kColorPalette[actuator_index % kColorPalette.size()];
   if (!actuator->enabled()) {
     auto gray = qGray(main_color.rgb());
     main_color = QColor(gray, gray, gray);
   }
-  auto light_color = main_color.lighter(300);
+  auto light_color = main_color;
+  light_color.setAlpha(100);
   auto shape_item = ui_->graphicsView->scene()->addPolygon(polygon,
                       QPen(QBrush(main_color), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin),
                       QBrush(light_color));
+  shape_item->setToolTip(QString::fromStdString(actuator->name()));
   actuators_ui_[actuator].push_back(shape_item);
 
   // draw path
@@ -767,6 +773,7 @@ void MainWindow::addActuator() {
     // remove empty placeholder
     ui_->actuator_list->removeItem(ui_->actuator_list->indexOf(actuator_placeholder_));
   }
+  ui_->actuator_list->setCurrentWidget(actuator_widget);
 
   // Add UI
   actuators_ui_[actuator] = {};
