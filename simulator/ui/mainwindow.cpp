@@ -741,8 +741,9 @@ void MainWindow::addActuator() {
   if (actuator == nullptr) return;
 
   actuator->enable();
+  actuator->setSpeed(sim_->settings()->actuatorSpeed());
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list,
-                                             sim_->settings()->actuatorSpeed(),
+                                             actuator->speed(),
                                              actuator->enabled(),
                                              actuator->isSpringCrossingApplicable(),
                                              actuator->isFirmGripApplicable(),
