@@ -35,6 +35,7 @@ SOURCES += \
     backend/SpringState.cpp \
     backend/WaxSimulator.cpp \
     main.cpp \
+    pugixml/pugixml.cpp \
     ui/mainwindow.cpp \
     ui/qactuatorwidget.cpp \
     ui/qcustomgraphicsscene.cpp
@@ -55,6 +56,8 @@ HEADERS += \
     backend/SpringSimulatorState.h \
     backend/SpringState.h \
     backend/WaxSimulator.h \
+    pugixml/pugiconfig.hpp \
+    pugixml/pugixml.hpp \
     ui/mainwindow.h \
     ui/qactuatorwidget.h \
     ui/qcustomgraphicsscene.h
