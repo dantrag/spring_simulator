@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "pugixml/pugixml.hpp"
+
 #include "backend/Particle.h"
 #include "backend/Path.h"
 #include "backend/Shape.h"
@@ -14,6 +16,7 @@ struct ActuatorState;
 class Actuator {
  public:
   Actuator();
+  Actuator(std::string xml_file);
   virtual ~Actuator() {}
 
   bool enabled() const { return on_; }
@@ -73,7 +76,13 @@ class Actuator {
   virtual ActuatorState saveState() const;
   virtual void loadState(const ActuatorState& state);
 
+  void loadFromXML(std::string xml_file);
+  void saveToXML(std::string filename) const;
+  std::string toString() const;
+
  protected:
+  pugi::xml_document toXML() const;
+
   std::string name_ = "";
 
   bool on_ = false;
