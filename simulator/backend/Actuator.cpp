@@ -125,15 +125,7 @@ void Actuator::saveToXML(std::string filename) const {
 }
 
 std::string Actuator::toString() const {
-  struct xml_string_writer : pugi::xml_writer {
-    std::string result;
-
-    virtual void write(const void* data, size_t size) {
-      result.append(static_cast<const char*>(data), size);
-    }
-  };
-
-  xml_string_writer writer;
+  pugi::xml_writer_string writer;
   toXML().save(writer);
   return writer.result;
 }
