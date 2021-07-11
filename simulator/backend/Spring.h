@@ -6,8 +6,8 @@
 
 class Spring {
  public:
-  Spring(Particle* p1, Particle* p2, double length, SimulatorSettings* settings)
-      : length_(length), ends_(std::make_pair(p1, p2)), settings_(settings) {
+  Spring(Particle* p1, Particle* p2, double length, double force_constant)
+      : length_(length), force_constant_(force_constant), ends_(std::make_pair(p1, p2)) {
     p1->addSpring(this);
     p2->addSpring(this);
   }
@@ -25,20 +25,19 @@ class Spring {
     return distance(ends_.first, ends_.second) - ends_.first->radius() - ends_.second->radius();
   }
 
+  double forceConstant() const { return force_constant_; }
+  void setForceConstant(double force_constant) { force_constant_ = force_constant; }
+
   double force() const { return force_; }
   void updateForce();
-
-  void setSettings(SimulatorSettings* settings) { settings_ = settings; }
-  SimulatorSettings* settings() { return settings_; }
 
  private:
   // equilibrium length
   double length_ = 0.0;
+  double force_constant_ = 0.0;
   double force_ = 0.0;
 
   std::pair<Particle*, Particle*> ends_ = {};
-
-  SimulatorSettings* settings_ = nullptr;
 };
 
 #endif // SPRING_H

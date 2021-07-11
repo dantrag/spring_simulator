@@ -32,7 +32,7 @@ SpringSimulator::SpringSimulator(const SpringSimulator* simulator)
         spring_mapping[spring] = new Spring(particle_mapping[particle],
                                             particle_mapping[spring->otherEnd(particle)],
                                             spring->length(),
-                                            spring->settings());
+                                            spring->forceConstant());
       }
     }
   }
@@ -62,7 +62,7 @@ Spring* SpringSimulator::checkAndAddSpring(Particle *p1, Particle *p2) {
     for (auto s : p1->springs())
       if (s->otherEnd(p1) == p2) return nullptr;
 
-    return new Spring(p1, p2, settings_->springDefaultLength(), settings_);
+    return new Spring(p1, p2, settings_->springDefaultLength(), settings_->springDefaultStiffness());
   } else return nullptr;
 }
 
