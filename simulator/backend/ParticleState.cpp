@@ -1,9 +1,10 @@
 #include "backend/ParticleState.h"
 
-#include "backend/Particle.h"
-
-ParticleState::ParticleState(const Particle *particle) {
-  x_ = particle->x();
-  y_ = particle->y();
-  radius_ = particle->radius();
+ParticleState::ParticleState(double x, double y, double radius) {
+  x_ = x;
+  y_ = y;
+  radius_ = radius;
 }
+
+ParticleState::ParticleState(const Particle *particle)
+  : ParticleState(particle->x(), particle->y(), particle->radius()) {}
