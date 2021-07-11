@@ -356,6 +356,16 @@ namespace pugi
 		std::basic_ostream<char, std::char_traits<char> >* narrow_stream;
 		std::basic_ostream<wchar_t, std::char_traits<wchar_t> >* wide_stream;
 	};
+
+  // Added by alexkrav
+  struct xml_writer_string : public xml_writer {
+    std::string result;
+
+    virtual void write(const void* data, size_t size) PUGIXML_OVERRIDE {
+      result.append(static_cast<const char*>(data), size);
+    }
+  };
+  //
 	#endif
 
 	// A light-weight handle for manipulating attributes in DOM tree
