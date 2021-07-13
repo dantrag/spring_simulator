@@ -8,18 +8,20 @@
 #include <functional>
 #include <chrono>
 
+#include "backend/XMLIO.h"
 #include "backend/SimulatorSettings.h"
+#include "backend/SpringSimulatorState.h"
 #include "backend/Particle.h"
 #include "backend/Path.h"
 #include "backend/Shape.h"
 #include "backend/Actuator.h"
 
-class SpringSimulator {
+class SpringSimulator : public XMLIO, public TypeReadable {
  public:
   // Initialization
   SpringSimulator();
   SpringSimulator(const SpringSimulator* simulator);
-  SpringSimulator(SimulatorSettings* settings);
+  SpringSimulator(SimulatorSettings* settings);  
   #ifdef QT_CORE_LIB
   SpringSimulator(QString settings_file);
   #endif
@@ -29,6 +31,10 @@ class SpringSimulator {
     kHexagonal = 0,
     kSquare,
   };
+
+  bool loadFromXMLNode(pugi::xml_node root) override;
+  bool loadFromXML(std::string xml_file) override;
+  void restoreState(const SpringSimulatorState* state);
 
   void initializeCircle(Point center, double radius,
                         InitializationGrid mode = InitializationGrid::kHexagonal);
@@ -43,7 +49,8 @@ class SpringSimulator {
   void initializeFromImage();
   #endif
 
-  // Publicly accesible variables
+  // Publicly accessible variables
+  virtual std::string generic_name() const { return "Simulator"; }
   SimulatorSettings* settings() const { return settings_; }
   std::string log() const { return log_.str(); }
 
@@ -80,6 +87,10 @@ class SpringSimulator {
 
   Spring* checkAndAddSpring(Particle* p1, Particle* p2);
   virtual void updateConnectivity() {}
+
+  pugi::xml_document toXML() const override;
+
+  virtual std::vector<std::string> compatible_names() override { return {"simulator", "elastic-simulator"}; }
 
   std::vector<Particle*> particles_;
   std::vector<Particle*> movable_particles_;

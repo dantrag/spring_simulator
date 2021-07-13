@@ -3,8 +3,7 @@
 
 #include <vector>
 
-#include "pugixml/pugixml.hpp"
-
+#include "backend/XMLIO.h"
 #include "backend/Particle.h"
 #include "backend/Path.h"
 #include "backend/Shape.h"
@@ -13,7 +12,7 @@ typedef std::function<bool(const Particle*)> ActuatorCaptureFunction;
 
 struct ActuatorState;
 
-class Actuator {
+class Actuator : public XMLIO, public TypeReadable {
  public:
   Actuator();
   Actuator(std::string xml_file);
@@ -39,10 +38,10 @@ class Actuator {
   const Path& path() const { return path_; }
   void setPath(Path path) { path_ = path; setPathAdvancement(0.0); }
 
-  const Shape& shape() { return shape_; }
+  const Shape& shape() const { return shape_; }
   void setShape(Shape shape);
 
-  double orientation() { return orientation_; }
+  double orientation() const { return orientation_; }
   void setOrientation(double orientation) { orientation_ = orientation; }
 
   virtual void preprocessParticle(Particle* particle) = 0;
@@ -76,13 +75,13 @@ class Actuator {
   virtual ActuatorState saveState() const;
   virtual void loadState(const ActuatorState& state);
 
-  void loadFromXML(std::string xml_file);
-  void saveToXML(std::string filename) const;
-  std::string toString() const;
+  //static std::string loadGenericNameFromXML(std::string xml_file);
+
+  bool loadFromXMLNode(pugi::xml_node root) override;
+  bool loadFromXML(std::string xml_file) override;
+  pugi::xml_document toXML() const override;
 
  protected:
-  pugi::xml_document toXML() const;
-
   std::string name_ = "";
 
   bool on_ = false;
@@ -101,6 +100,20 @@ class Actuator {
   Shape shape_ = Shape({Point(0.0, 0.0)});
   ActuatorCaptureFunction capture_particle_check_;
 };
+
+template<class ActuatorClass> Actuator* tryLoadingActuatorFromFile(std::string filename) {
+  auto actuator = new ActuatorClass();
+  if (actuator->loadFromXML(filename)) return actuator;
+  delete actuator;
+  return nullptr;
+}
+
+template<class ActuatorClass> Actuator* tryLoadingActuatorFromXMLNode(pugi::xml_node root) {
+  auto actuator = new ActuatorClass();
+  if (actuator->loadFromXMLNode(root)) return actuator;
+  delete actuator;
+  return nullptr;
+}
 
 // contains parameters that can be changed during the simulator operation,
 // so that they can be reset after trying something with it

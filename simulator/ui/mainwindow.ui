@@ -53,7 +53,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>119</width>
+              <width>171</width>
               <height>139</height>
              </rect>
             </property>
@@ -144,7 +144,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>117</width>
+              <width>171</width>
               <height>170</height>
              </rect>
             </property>
@@ -259,8 +259,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>168</width>
-              <height>73</height>
+              <width>171</width>
+              <height>68</height>
              </rect>
             </property>
             <attribute name="label">
@@ -274,65 +274,40 @@
                </property>
               </widget>
              </item>
-             <item>
-              <layout class="QHBoxLayout" name="layout22">
-               <item>
-                <widget class="QLabel" name="static29">
-                 <property name="text">
-                  <string>Opacity:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QSlider" name="bkg_opacity_slider">
-                 <property name="minimum">
-                  <number>0</number>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                 <property name="value">
-                  <number>0</number>
-                 </property>
-                 <property name="sliderPosition">
-                  <number>0</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="tickPosition">
-                  <enum>QSlider::TicksBothSides</enum>
-                 </property>
-                 <property name="tickInterval">
-                  <number>20</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
             </layout>
            </widget>
           </widget>
          </item>
          <item>
-          <widget class="QRadioButton" name="init_hexagonal_button">
-           <property name="text">
-            <string>Hexagonal grid</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">init_mode_button_group</string>
-           </attribute>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="init_square_button">
-           <property name="text">
-            <string>Square grid</string>
-           </property>
-           <attribute name="buttonGroup">
-            <string notr="true">init_mode_button_group</string>
-           </attribute>
-          </widget>
+          <layout class="QHBoxLayout" name="layout42">
+           <item>
+            <widget class="QLabel" name="static1">
+             <property name="text">
+              <string>Grid:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="init_hexagonal_button">
+             <property name="text">
+              <string>hexagonal</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">init_mode_button_group</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="init_square_button">
+             <property name="text">
+              <string>square</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">init_mode_button_group</string>
+             </attribute>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
           <widget class="Line" name="static43">
@@ -342,16 +317,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="static15">
-           <property name="text">
-            <string>Selected area:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <layout class="QHBoxLayout" name="layout33">
            <item>
-            <widget class="QPushButton" name="heat_button">
+            <widget class="QLabel" name="static15">
+             <property name="text">
+              <string>Selected area:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="heat_button">
              <property name="palette">
               <palette>
                <active>
@@ -401,7 +376,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="cool_button">
+            <widget class="QToolButton" name="cool_button">
              <property name="palette">
               <palette>
                <active>
@@ -460,6 +435,31 @@
           </widget>
          </item>
          <item>
+          <layout class="QHBoxLayout" name="layout41">
+           <item>
+            <widget class="QPushButton" name="load_simulator_button">
+             <property name="text">
+              <string>Load from file</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="save_simulator_button">
+             <property name="text">
+              <string>Save to file</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="Line" name="static6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="triangle_button">
            <property name="text">
             <string>[Testing] Make a triangle</string>
@@ -467,17 +467,13 @@
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="show_actuators_checkbox">
-           <property name="text">
-            <string>Display actuators</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="submit_passes_button">
+           <property name="font">
+            <font>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
            <property name="text">
             <string>Submit</string>
            </property>
@@ -493,6 +489,16 @@
         </property>
         <layout class="QVBoxLayout" name="layout38">
          <item>
+          <widget class="QCheckBox" name="show_actuators_checkbox">
+           <property name="text">
+            <string>Display actuators</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QToolBox" name="actuator_list">
            <property name="currentIndex">
             <number>0</number>
@@ -502,8 +508,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>168</width>
-              <height>119</height>
+              <width>171</width>
+              <height>112</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1171,9 +1177,59 @@
         </widget>
        </item>
        <item>
+        <widget class="Line" name="static47">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="change_bkg_button">
          <property name="text">
           <string>Change background</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="layout22">
+         <item>
+          <widget class="QLabel" name="static29">
+           <property name="text">
+            <string>Opacity:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="bkg_opacity_slider">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>100</number>
+           </property>
+           <property name="sliderPosition">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksBothSides</enum>
+           </property>
+           <property name="tickInterval">
+            <number>20</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="Line" name="static48">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -1222,6 +1278,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="save_state_button">
+         <property name="text">
+          <string>Save state to file</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="static45">
          <property name="text">
           <string>Tech log:</string>
@@ -1264,8 +1327,8 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="init_mode_button_group"/>
   <buttongroup name="simulator_type_button_group"/>
+  <buttongroup name="init_mode_button_group"/>
   <buttongroup name="drawing_mode_button_group"/>
  </buttongroups>
 </ui>

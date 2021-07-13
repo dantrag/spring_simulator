@@ -47,55 +47,59 @@ void Actuator::setShape(Shape shape) {
   });
 }
 
-void Actuator::loadFromXML(std::string xml_file) {
-  pugi::xml_document xml;
-  auto extension = xml_file.substr(xml_file.find_last_of(".") + 1, std::string::npos);
-  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+bool Actuator::loadFromXMLNode(pugi::xml_node root) {
+  std::string type(root.attribute("type").as_string());
+  if (!checkType(type)) return false;
 
-  auto status = pugi::xml_parse_status::status_file_not_found;
-  if (extension == "xml")
-    status = xml.load_file(xml_file.c_str()).status;
-  else
-    status = xml.load_string(xml_file.c_str()).status;
+  setName(root.attribute("name").as_string());
+  setSpeed(root.attribute("speed").as_double());
+  setEnabled(root.attribute("enabled").as_bool());
+  setSpringCrossing(root.attribute("spring-crossing-allowed").as_bool());
+  setFirmGrip(root.attribute("firm-grip").as_bool());
+  setFinalRelease(root.attribute("final-release").as_bool());
 
-  if (status == pugi::xml_parse_status::status_ok) {
-    auto actuator_node = xml.child("actuator");
-
-    setName(actuator_node.attribute("name").as_string());
-    setSpeed(actuator_node.attribute("speed").as_double());
-    setSpringCrossing(actuator_node.attribute("spring-crossing-allowed").as_bool());
-    setFirmGrip(actuator_node.attribute("firm-grip").as_bool());
-    setFinalRelease(actuator_node.attribute("final-release").as_bool());
-
-    auto shape_node = actuator_node.child("shape");
-    std::vector<Point> points = {};
-    for (auto point_node = shape_node.child("point");
-         point_node;
-         point_node = point_node.next_sibling("point")) {
-      points.push_back(Point(point_node.attribute("x").as_double(),
-                             point_node.attribute("y").as_double()));
-    }
-    if (!points.empty()) setShape(Shape(points));
-    setOrientation(actuator_node.attribute("orientation").as_double() / 180 * M_PI);
-
-    points.clear();
-    auto path_node = actuator_node.child("path");
-    for (auto point_node = path_node.child("point");
-         point_node;
-         point_node = point_node.next_sibling("point")) {
-      points.push_back(Point(point_node.attribute("x").as_double(),
-                             point_node.attribute("y").as_double()));
-    }
-    setPath(Path(points));
-
-    setPathAdvancement(actuator_node.attribute("path-advancement").as_double());
+  auto shape_node = root.child("shape");
+  std::vector<Point> points = {};
+  for (auto point_node = shape_node.child("point");
+       point_node;
+       point_node = point_node.next_sibling("point")) {
+    points.push_back(Point(point_node.attribute("x").as_double(),
+                           point_node.attribute("y").as_double()));
   }
+  if (!points.empty()) setShape(Shape(points));
+  setOrientation(root.attribute("orientation").as_double() / 180 * M_PI);
+
+  points.clear();
+  auto path_node = root.child("path");
+  for (auto point_node = path_node.child("point");
+       point_node;
+       point_node = point_node.next_sibling("point")) {
+    points.push_back(Point(point_node.attribute("x").as_double(),
+                           point_node.attribute("y").as_double()));
+  }
+  setPath(Path(points));
+
+  setPathAdvancement(root.attribute("path-advancement").as_double());
+
+  return true;
+}
+
+bool Actuator::loadFromXML(std::string xml_file) {
+  pugi::xml_document xml;
+
+  if (xml.load_file_or_string(xml_file)) {
+    auto actuator_node = xml.child("actuator");
+    if (actuator_node.empty()) return false;
+    return loadFromXMLNode(actuator_node);
+  } else return false;
 }
 
 pugi::xml_document Actuator::toXML() const {
   pugi::xml_document xml;
   auto actuator_node = xml.append_child("actuator");
+  actuator_node.append_attribute("type") = generic_name().c_str();
   actuator_node.append_attribute("name") = name_.c_str();
+  actuator_node.append_attribute("enabled") = on_;
   actuator_node.append_attribute("speed") = speed_;
   actuator_node.append_attribute("path-advancement") = path_advancement_;
   actuator_node.append_attribute("orientation") = orientation_ / M_PI * 180;
@@ -120,15 +124,19 @@ pugi::xml_document Actuator::toXML() const {
   return xml;
 }
 
-void Actuator::saveToXML(std::string filename) const {
-  toXML().save_file(filename.c_str());
-}
+/*
+std::string Actuator::loadGenericNameFromXML(std::string xml_file) {
+  pugi::xml_document xml;
+  auto extension = xml_file.substr(xml_file.find_last_of(".") + 1, std::string::npos);
+  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-std::string Actuator::toString() const {
-  pugi::xml_writer_string writer;
-  toXML().save(writer);
-  return writer.result;
-}
+  if (extension == "xml")
+    xml.load_file(xml_file.c_str());
+  else
+    xml.load_string(xml_file.c_str());
+
+  return std::string(xml.child("actuator").attribute("type").as_string());
+}*/
 
 ActuatorState Actuator::saveState() const {
   return ActuatorState(this);

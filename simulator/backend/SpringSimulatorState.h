@@ -3,16 +3,18 @@
 
 #include <vector>
 
-#include "pugixml/pugixml.hpp"
-
+#include "backend/XMLIO.h"
 #include "backend/ParticleState.h"
 #include "backend/SpringState.h"
 #include "backend/Shape.h"
 
 class SpringSimulator;
 
-class SpringSimulatorState {
+// Contains only crucial geometric information - postions of particles
+// and connectivity; type of simulator etc. is not available
+class SpringSimulatorState : public XMLIO {
  public:
+  SpringSimulatorState() {}
   SpringSimulatorState(const SpringSimulator* simulator, int id = -1);
   SpringSimulatorState(std::string xml_file);
 
@@ -22,12 +24,11 @@ class SpringSimulatorState {
 
   Shape fieldContour();
 
-  bool loadFromXML(std::string xml_file);
-  void saveToXML(std::string filename) const;
-  std::string toString() const;
+  bool loadFromXMLNode(pugi::xml_node root) override;
+  bool loadFromXML(std::string xml_file) override;
+  pugi::xml_document toXML() const override;
 
  protected:
-  pugi::xml_document toXML() const;
   void clear();
 
   std::vector<ParticleState*> particles_;

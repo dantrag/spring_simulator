@@ -23,6 +23,9 @@ class Pusher : public Actuator {
 
   std::string generic_name() const override { return "Pusher"; }
 
+ protected:
+  virtual std::vector<std::string> compatible_names() override { return {"pusher", "picker", "gripper"}; }
+
  private:
   bool isParticleCaptured(Particle* particle);
 

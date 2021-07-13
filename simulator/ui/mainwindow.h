@@ -62,10 +62,15 @@ private:
   void decrementState();
   void incrementState();
   void restoreCurrentState();
+  void saveStateToFile();
+  void loadSimulatorFromFile();
+  void saveSimulatorToFile();
 
   void doHeat();
   void doCool();
+  Actuator* createActuatorByType(int type, bool& loaded);
   void addActuator();
+  void addActuator(Actuator* actuator, bool actuator_loaded);
   void removeActuator();
   void runPasses();
   void makeTriangle();

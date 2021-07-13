@@ -11,6 +11,9 @@
 #include <sstream>
 
 #include "backend/Spring.h"
+#include "backend/SpringSimulatorState.h"
+#include "backend/Heater.h"
+#include "backend/Pusher.h"
 
 SpringSimulator::SpringSimulator() {
   settings_ = new SimulatorSettings();
@@ -51,6 +54,87 @@ SpringSimulator::SpringSimulator(QString settings_file) {
 
 SpringSimulator::SpringSimulator(SimulatorSettings* settings)
     : settings_(settings) {}
+
+void SpringSimulator::restoreState(const SpringSimulatorState* state) {
+  clear();
+
+  std::unordered_map<const ParticleState*, Particle*> states;
+  for (const auto particle_state : state->particles()) {
+    auto particle = new Particle(particle_state->x(), particle_state->y(), settings_);
+    if (std::abs(particle_state->radius() - settings_->moltenParticleDefaultRadius()) < 1e-5)
+      particle->setMolten(true);
+    states[particle_state] = particle;
+    particles_.push_back(particle);
+  }
+
+  for (const auto spring_state : state->springs()) {
+    new Spring(states[spring_state->particle1()],
+               states[spring_state->particle2()],
+               spring_state->equilibriumLength(),
+               spring_state->forceConstant());
+  }
+}
+
+bool SpringSimulator::loadFromXMLNode(pugi::xml_node root) {
+  std::string type(root.attribute("type").as_string());
+  if (!checkType(type)) return false;
+
+  time_ = root.attribute("time").as_int();
+  scale_ = root.attribute("scale").as_double(1.0);
+
+  auto state_node = root.child("state");
+  if (state_node.empty()) return false;
+
+  auto state = new SpringSimulatorState();
+  if (!state->loadFromXMLNode(state_node)) return false;
+
+  restoreState(state);
+
+  auto actuators_node = root.child("actuators");
+  for (auto actuator_node = actuators_node.child("actuator");
+       actuator_node;
+       actuator_node = actuator_node.next_sibling("actuator")) {
+    Actuator* actuator = nullptr;
+    if (actuator == nullptr) actuator = tryLoadingActuatorFromXMLNode<Heater>(actuator_node);
+    if (actuator == nullptr) actuator = tryLoadingActuatorFromXMLNode<Pusher>(actuator_node);
+    if (actuator != nullptr) addActuator(actuator);
+  }
+
+  return true;
+}
+
+bool SpringSimulator::loadFromXML(std::string xml_file) {
+  clear();
+
+  pugi::xml_document xml;
+
+  if (xml.load_file_or_string(xml_file)) {
+    auto simulator_node = xml.child("simulator");
+    if (simulator_node.empty()) return false;
+    return loadFromXMLNode(simulator_node);
+  } else return false;
+}
+
+pugi::xml_document SpringSimulator::toXML() const {
+  pugi::xml_document xml;
+
+  auto simulator_node = xml.append_child("simulator");
+  simulator_node.append_attribute("type") = generic_name().c_str();
+  simulator_node.append_attribute("time") = time_;
+  simulator_node.append_attribute("scale") = scale_;
+
+  auto current_state = new SpringSimulatorState(this);
+
+  auto state_xml = current_state->toXML();
+  simulator_node.append_copy(state_xml.root().first_child());
+
+  auto actuators_node = simulator_node.append_child("actuators");
+  for (auto actuator : actuators_) {
+    auto actuator_xml = actuator->toXML();
+    actuators_node.append_copy(actuator_xml.root().first_child());
+  }
+  return xml;
+}
 
 void SpringSimulator::incrementTime() {
   time_++;

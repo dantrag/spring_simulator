@@ -18,6 +18,9 @@ class Heater : public Actuator {
 
   std::string generic_name() const override { return "Heater"; }
 
+ protected:
+  virtual std::vector<std::string> compatible_names() override { return {"heater", "laser"}; }
+
  private:
   double size_ = 0.0;
 };

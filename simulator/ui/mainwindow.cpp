@@ -65,7 +65,7 @@ void MainWindow::addNewState() {
 }
 
 void MainWindow::restoreCurrentState() {
-  //
+  sim_->restoreState(current_sim_state_);
 }
 
 void MainWindow::recreateSimulator() {
@@ -654,9 +654,7 @@ void MainWindow::loadSettings() {
   auto filename = QFileDialog::getOpenFileName(this, "Load simulator settings from file",
                                                QApplication::applicationDirPath(),
                                                "Configuration file (*.cfg);;All Files (*)");
-  if (filename.isEmpty())
-    return;
-  else {
+  if (!filename.isEmpty()) {
     sim_->settings()->loadFromFile(filename);
     populateSettings();
     updateFieldUI();
@@ -667,11 +665,52 @@ void MainWindow::saveSettings() {
   auto filename = QFileDialog::getSaveFileName(this, "Save simulator settings to file",
                                                QApplication::applicationDirPath(),
                                                "Configuration file (*.cfg);;All Files (*)");
-  if (filename.isEmpty())
-    return;
-  else {
+  if (!filename.isEmpty())
     sim_->settings()->saveToFile(filename);
+}
+
+void MainWindow::loadSimulatorFromFile() {
+  auto filename = QFileDialog::getOpenFileName(this, "Load simulator from file",
+                                               QApplication::applicationDirPath(),
+                                               "Extensible Markup Language (*.xml);;"
+                                               "All Files (*)");
+  if (!filename.isEmpty()) {
+    while (!actuator_widgets_.empty()) {
+      removeActuator();
+    }
+    // in case some actuators remain
+    for (auto actuator : actuators_) delete actuator;
+    actuators_.clear();
+    widget_to_actuator_.clear();
+    sim_->removeAllActuators();
+
+    clearUI();
+    recreateSimulator();
+    sim_->loadFromXML(filename.toStdString());
+    initializeUI();
+
+    for (auto actuator : sim_->actuators()) {
+      addActuator(actuator, true);
+    }
   }
+}
+
+void MainWindow::saveSimulatorToFile() {
+  auto filename = QFileDialog::getSaveFileName(this, "Save simulator to file",
+                                               QApplication::applicationDirPath(),
+                                               "Extensible Markup Language (*.xml);;"
+                                               "All Files (*)");
+  if (!filename.isEmpty())
+    sim_->saveToXML(filename.toStdString());
+}
+
+void MainWindow::saveStateToFile() {
+  auto filename = QFileDialog::getSaveFileName(this, "Save state to file",
+                                               QApplication::applicationDirPath(),
+                                               "Extensible Markup Language (*.xml);;"
+                                               "All Files (*)");
+  if (!filename.isEmpty())
+    current_sim_state_->saveToXML(filename.toStdString());
 }
 
 void MainWindow::populateSettings() {
@@ -723,38 +762,56 @@ void MainWindow::connectSettingsSignals() {
           [&](int) { dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId())); });
 }
 
-void MainWindow::addActuator() {
-  if (sim_ == nullptr) return;
-
-  auto actuator_type = static_cast<ActuatorType>(ui_->actuator_type_list->currentIndex());
-
+Actuator* MainWindow::createActuatorByType(int type, bool& loaded) {
   Actuator* actuator = nullptr;
-  switch (actuator_type) {
-    case ActuatorType::kHeater: {
+  loaded = false;
+  switch (type) {
+    case static_cast<int>(ActuatorType::kHeater): {
       actuator = new Heater();
       // TODO: remove this when we all actuators can use Shape
       dynamic_cast<Heater*>(actuator)->setSize(sim_->settings()->heaterSize());
       break;
     }
-    case ActuatorType::kPusher: {
+    case static_cast<int>(ActuatorType::kPusher): {
       actuator = new Pusher();
       break;
     }
+    default: {
+      // controlled failure mode - load from file
+      auto filename = QFileDialog::getOpenFileName(this, "Load an actuator XML file",
+                                                   QApplication::applicationDirPath(),
+                                                   "Extensible Markup Language (*.xml);;"
+                                                   "All Files (*)");
+      if (!filename.isEmpty()) {
+        if (actuator == nullptr) actuator = tryLoadingActuatorFromFile<Heater>(filename.toStdString());
+        if (actuator == nullptr) actuator = tryLoadingActuatorFromFile<Pusher>(filename.toStdString());
+        if (actuator != nullptr) loaded = true;
+      }
+    }
   }
+  return actuator;
+}
+
+void MainWindow::addActuator() {
+  if (sim_ == nullptr) return;
+
+  bool actuator_loaded = false;
+  Actuator* actuator = createActuatorByType(ui_->actuator_type_list->currentIndex(), actuator_loaded);
   if (actuator == nullptr) return;
 
-  actuator->enable();
-  actuator->setSpeed(sim_->settings()->actuatorSpeed());
-  auto actuator_widget = new QActuatorWidget(ui_->actuator_list,
-                                             actuator->speed(),
-                                             actuator->enabled(),
-                                             actuator->isSpringCrossingApplicable(),
-                                             actuator->isFirmGripApplicable(),
-                                             actuator->isFinalReleaseApplicable(),
-                                             actuator->isSpringCrossingAllowed(),
-                                             actuator->isFirmGrip(),
-                                             actuator->isFinalRelease());
-  actuator->setShape(actuator_widget->getShape());
+  addActuator(actuator, actuator_loaded);
+}
+
+void MainWindow::addActuator(Actuator* actuator, bool actuator_loaded) {
+  if (!actuator_loaded) {
+    actuator->enable();
+    actuator->setSpeed(sim_->settings()->actuatorSpeed());
+    actuator->setShape(Shape({Point(0, 0),
+                              Point(10, 0),
+                              Point(10, 10),
+                              Point(0, 10)}));
+  }
+  auto actuator_widget = new QActuatorWidget(ui_->actuator_list, actuator);
 
   sim_->addActuator(actuator);
   actuators_.push_back(actuator);
@@ -819,10 +876,15 @@ void MainWindow::addActuator() {
     widget_to_actuator_[actuator_widget]->setFinalRelease(allowed);
     redrawActuator(widget_to_actuator_[actuator_widget]);
   });
+  connect(actuator_widget, &QActuatorWidget::saveActuatorToFile, this, [actuator_widget, this](QString filename) {
+    widget_to_actuator_[actuator_widget]->saveToXML(filename.toStdString());
+  });
 }
 
 void MainWindow::removeActuator() {
   auto actuator_widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->currentWidget());
+  if (actuator_widget == nullptr) return;
+
   if (ui_->actuator_list->count() == 1) {
     // add an empty placeholder
     ui_->actuator_list->addItem(actuator_placeholder_, QString("No actuators added"));
@@ -862,11 +924,12 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
 
     ui_->actuator_type_list->addItem(actuator_name);
   }
+  ui_->actuator_type_list->addItem("Load from file");
   ui_->actuator_type_list->setCurrentIndex(kActuatorTypeCount - 1);
 
   connect(ui_->actuator_list, &QToolBox::currentChanged, [&](int index) {
     auto current_widget = dynamic_cast<QActuatorWidget*>(ui_->actuator_list->widget(index));
-    current_widget->updatePreview();
+    if (current_widget) current_widget->updatePreview();
   });
 
   coordinates_label = new QLabel(this);
@@ -902,6 +965,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->zoom_slider, &QSlider::valueChanged, this, &MainWindow::updateZoom);
   connect(ui_->bkg_opacity_slider, &QSlider::valueChanged, this, &MainWindow::updateBackgroundOpacity);
 
+  connect(ui_->load_simulator_button, &QPushButton::clicked, this, &MainWindow::loadSimulatorFromFile);
+  connect(ui_->save_simulator_button, &QPushButton::clicked, this, &MainWindow::saveSimulatorToFile);
   connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::loadSettings);
   connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);
   connect(ui_->init_circle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldCircle);
@@ -913,8 +978,10 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->previous_state_button, &QToolButton::clicked, this, &MainWindow::decrementState);
   connect(ui_->next_state_button, &QToolButton::clicked, this, &MainWindow::incrementState);
   connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
+  connect(ui_->save_state_button, &QPushButton::clicked, this, &MainWindow::saveStateToFile);
   connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
-  connect(ui_->add_actuator_button, &QToolButton::clicked, this, &MainWindow::addActuator);
+  connect(ui_->add_actuator_button, &QToolButton::clicked,
+          this, static_cast<void (MainWindow::*)(void)>(&MainWindow::addActuator));
   connect(ui_->remove_actuator_button, &QToolButton::clicked, this, &MainWindow::removeActuator);
   connectSettingsSignals();
 
