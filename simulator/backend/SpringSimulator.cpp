@@ -284,7 +284,7 @@ void SpringSimulator::runLinearPasses() {
   for (int tick = 0; tick <= total_ticks; ++tick) {
     for (auto actuator : actuators_) {
       if (actuator->enabled()) {
-        actuator->setPathAdvancement(actuator->speed() * std::min(tick, ticks[actuator]));
+        actuator->setPathAdvancement(std::min(actuator->speed() * tick, actuator->path().length()));
       }
     }
 
