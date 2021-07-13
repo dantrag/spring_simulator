@@ -34,6 +34,7 @@ SOURCES += \
     backend/SpringSimulatorState.cpp \
     backend/SpringState.cpp \
     backend/WaxSimulator.cpp \
+    backend/XMLIO.cpp \
     main.cpp \
     pugixml/pugixml.cpp \
     ui/mainwindow.cpp \
@@ -56,6 +57,7 @@ HEADERS += \
     backend/SpringSimulatorState.h \
     backend/SpringState.h \
     backend/WaxSimulator.h \
+    backend/XMLIO.h \
     pugixml/pugiconfig.hpp \
     pugixml/pugixml.hpp \
     ui/mainwindow.h \

@@ -35,6 +35,7 @@
 #	include <istream>
 #	include <ostream>
 #	include <string>
+#include <algorithm>
 #endif
 
 // For placement new
@@ -7221,6 +7222,22 @@ namespace pugi
 
 		return impl::load_file_impl(static_cast<impl::xml_document_struct*>(_root), file.data, options, encoding, &_buffer);
 	}
+
+  PUGI__FN bool xml_document::load_file_or_string(std::string xml_file, unsigned int options, xml_encoding encoding) {
+    auto extension = xml_file.substr(xml_file.find_last_of(".") + 1, std::string::npos);
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+    xml_parse_result result;
+
+    if (extension == "xml") {
+      result = load_file(xml_file.c_str(), options, encoding);
+    } else {
+      // note: this does not use encoding, it is most likely just regular char*
+      result = load_string(xml_file.c_str(), options);
+    }
+
+    return result.status == xml_parse_status::status_ok;
+  }
 
 	PUGI__FN xml_parse_result xml_document::load_buffer(const void* contents, size_t size, unsigned int options, xml_encoding encoding)
 	{

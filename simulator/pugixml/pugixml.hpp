@@ -1081,6 +1081,9 @@ namespace pugi
 		xml_parse_result load_file(const char* path, unsigned int options = parse_default, xml_encoding encoding = encoding_auto);
 		xml_parse_result load_file(const wchar_t* path, unsigned int options = parse_default, xml_encoding encoding = encoding_auto);
 
+    // Added by alkrav - load from file if it has *.xml extension, otherwise from string; return if ok
+    bool load_file_or_string(std::string xml_file, unsigned int options = parse_default, xml_encoding encoding = encoding_auto);
+
 		// Load document from buffer. Copies/converts the buffer, so it may be deleted or changed after the function returns.
 		xml_parse_result load_buffer(const void* contents, size_t size, unsigned int options = parse_default, xml_encoding encoding = encoding_auto);
 
