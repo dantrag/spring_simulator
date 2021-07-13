@@ -71,7 +71,7 @@ private:
   void makeTriangle();
 
   void changeBackground();
-  void changeBackgroundOpacity(int value);
+  void updateBackgroundOpacity();
   void updateZoom();
   void fitToView();
   void populateSettings();
@@ -97,6 +97,7 @@ private:
   SpringSimulatorState* current_sim_state_ = nullptr;
 
   std::vector<QGraphicsItem*> contour_ui_;
+  QPixmap bkg_image_;
   QGraphicsPixmapItem* bkg_image_ui_ = nullptr;
   QLabel* coordinates_label = nullptr;
 

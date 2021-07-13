@@ -396,6 +396,8 @@ void MainWindow::updateFieldUI() {
   }
   displayContour(ui_->show_contour_checkbox->isChecked());
   displayActuators(ui_->show_actuators_checkbox->isChecked());
+  bkg_image_ui_ = ui_->graphicsView->scene()->addPixmap(bkg_image_);
+  updateBackgroundOpacity();
 
   if (ui_->graphicsView->scene()) ui_->graphicsView->scene()->update();
 
@@ -432,17 +434,18 @@ void MainWindow::changeBackground() {
                                                "JPG/JPEG (*.jpg);;Windows Bitmap (*.bmp);;All Files (*)");
   if (!filename.isEmpty()) {
     try {
-      QPixmap pixmap(filename);
       if (bkg_image_ui_) ui_->graphicsView->scene()->removeItem(bkg_image_ui_);
       delete bkg_image_ui_;
-      bkg_image_ui_ = ui_->graphicsView->scene()->addPixmap(pixmap);
+      bkg_image_.load(filename);
+      bkg_image_ui_ = ui_->graphicsView->scene()->addPixmap(bkg_image_);
+      updateBackgroundOpacity();
     } catch (const std::exception&) {
     }
   }
 }
 
-void MainWindow::changeBackgroundOpacity(int value) {
-  if (bkg_image_ui_) bkg_image_ui_->setOpacity(double(value) / 100.0);
+void MainWindow::updateBackgroundOpacity() {
+  if (bkg_image_ui_) bkg_image_ui_->setOpacity(double(ui_->bkg_opacity_slider->value()) / 100.0);
 }
 
 void MainWindow::updateZoom() {
@@ -897,7 +900,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->submit_passes_button, &QPushButton::clicked, this, &MainWindow::runPasses);
 
   connect(ui_->zoom_slider, &QSlider::valueChanged, this, &MainWindow::updateZoom);
-  connect(ui_->bkg_opacity_slider, &QSlider::valueChanged, this, &MainWindow::changeBackgroundOpacity);
+  connect(ui_->bkg_opacity_slider, &QSlider::valueChanged, this, &MainWindow::updateBackgroundOpacity);
 
   connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::loadSettings);
   connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);
