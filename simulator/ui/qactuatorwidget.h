@@ -7,6 +7,7 @@
 
 #include <backend/Shape.h>
 #include <backend/Path.h>
+#include <backend/Actuator.h>
 
 namespace Ui {
   class QActuatorWidget;
@@ -16,15 +17,7 @@ class QActuatorWidget : public QWidget {
   Q_OBJECT
 
  public:
-  explicit QActuatorWidget(QWidget* parent,
-                           double speed,
-                           bool enabled,
-                           bool show_spring_crossing_option,
-                           bool show_firm_grip_option,
-                           bool show_release_option,
-                           bool spring_crossing_allowed = false,
-                           bool firm_grip_allowed = false,
-                           bool release_allowed = false);
+  explicit QActuatorWidget(QWidget* parent, const Actuator* actuator);
   ~QActuatorWidget();
 
   void setActuatorEnabled(bool enabled);
@@ -47,6 +40,10 @@ class QActuatorWidget : public QWidget {
   void actuatorSpringCrossingChanged(bool allowed);
   void actuatorFirmGripChanged(bool allowed);
   void actuatorFinalReleaseChanged(bool allowed);
+  void saveActuatorToFile(QString filename);
+
+ protected:
+  void saveToFile();
 
  private:
   Ui::QActuatorWidget* ui_;

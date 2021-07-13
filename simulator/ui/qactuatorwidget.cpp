@@ -4,31 +4,31 @@
 #include <sstream>
 #include <cmath>
 
-#include <cmath>
+#include <QFileDialog>
 
 #include <backend/Particle.h>
 
-QActuatorWidget::QActuatorWidget(QWidget* parent,
-                                 double speed,
-                                 bool enabled,
-                                 bool show_spring_crossing_option,
-                                 bool show_firm_grip_option,
-                                 bool show_release_option,
-                                 bool spring_crossing_allowed,
-                                 bool firm_grip_allowed,
-                                 bool release_allowed)
+QActuatorWidget::QActuatorWidget(QWidget* parent, const Actuator* actuator)
     : QWidget(parent), ui_(new Ui::QActuatorWidget) {
   ui_->setupUi(this);
 
-  ui_->allow_spring_crossing_checkbox->setVisible(show_spring_crossing_option);
-  ui_->allow_spring_crossing_checkbox->setChecked(spring_crossing_allowed);
-  ui_->firm_grip_checkbox->setVisible(show_firm_grip_option);
-  ui_->firm_grip_checkbox->setChecked(firm_grip_allowed);
-  ui_->release_grip_checkbox->setVisible(show_release_option);
-  ui_->release_grip_checkbox->setChecked(release_allowed);
+  ui_->allow_spring_crossing_checkbox->setVisible(actuator->isSpringCrossingApplicable());
+  ui_->allow_spring_crossing_checkbox->setChecked(actuator->isSpringCrossingAllowed());
+  ui_->firm_grip_checkbox->setVisible(actuator->isFirmGripApplicable());
+  ui_->firm_grip_checkbox->setChecked(actuator->isFirmGrip());
+  ui_->release_grip_checkbox->setVisible(actuator->isFinalReleaseApplicable());
+  ui_->release_grip_checkbox->setChecked(actuator->isFinalRelease());
 
-  ui_->speed_spinbox->setValue(speed);
-  ui_->enabled_checkbox->setChecked(enabled);
+  ui_->speed_spinbox->setValue(actuator->speed());
+  ui_->orientation_spinbox->setValue(actuator->orientation() / M_PI);
+  ui_->enabled_checkbox->setChecked(actuator->enabled());
+  for (auto point : actuator->shape().points()) {
+    ui_->coordinates_line_edit->insert(QString("%1 %2 ").arg(point.x).arg(point.y));
+  }
+  ui_->coordinates_line_edit->backspace();
+  for (auto point : actuator->path().points()) {
+    ui_->passes_text_edit->insertPlainText(QString("%1 %2 ").arg(point.x).arg(point.y));
+  }
 
   ui_->actuator_preview->setScene(new QGraphicsScene(ui_->actuator_preview));
 
@@ -41,6 +41,7 @@ QActuatorWidget::QActuatorWidget(QWidget* parent,
   connect(ui_->firm_grip_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorFirmGripChanged);
   connect(ui_->release_grip_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorFinalReleaseChanged);
   connect(ui_->clear_button, &QToolButton::clicked, [&]() { ui_->passes_text_edit->clear(); });
+  connect(ui_->save_button, &QPushButton::clicked, this, &QActuatorWidget::saveToFile);
 
   updatePreview();
 }
@@ -123,6 +124,14 @@ void QActuatorWidget::updatePreview() {
   ui_->actuator_preview->centerOn(QPointF(origin.x, origin.y));
   ui_->actuator_preview->fitInView(ui_->actuator_preview->sceneRect(), Qt::KeepAspectRatio);
   emit actuatorGeometryChanged();
+}
+
+void QActuatorWidget::saveToFile() {
+  auto filename = QFileDialog::getSaveFileName(this, "Save actuator to file",
+                                               QApplication::applicationDirPath(),
+                                               "Extensible Markup Language (*.xml);;"
+                                               "All Files (*)");
+  if (!filename.isEmpty()) emit saveActuatorToFile(filename);
 }
 
 QActuatorWidget::~QActuatorWidget() {
