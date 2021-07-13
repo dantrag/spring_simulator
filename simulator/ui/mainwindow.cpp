@@ -690,7 +690,7 @@ void MainWindow::loadSimulatorFromFile() {
     initializeUI();
 
     for (auto actuator : sim_->actuators()) {
-      addActuator(actuator, true);
+      addActuatorUI(actuator, true);
     }
   }
 }
@@ -799,10 +799,11 @@ void MainWindow::addActuator() {
   Actuator* actuator = createActuatorByType(ui_->actuator_type_list->currentIndex(), actuator_loaded);
   if (actuator == nullptr) return;
 
-  addActuator(actuator, actuator_loaded);
+  addActuatorUI(actuator, actuator_loaded);
+  sim_->addActuator(actuator);
 }
 
-void MainWindow::addActuator(Actuator* actuator, bool actuator_loaded) {
+void MainWindow::addActuatorUI(Actuator* actuator, bool actuator_loaded) {
   if (!actuator_loaded) {
     actuator->enable();
     actuator->setSpeed(sim_->settings()->actuatorSpeed());
@@ -813,7 +814,6 @@ void MainWindow::addActuator(Actuator* actuator, bool actuator_loaded) {
   }
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list, actuator);
 
-  sim_->addActuator(actuator);
   actuators_.push_back(actuator);
   actuator_widgets_[actuator] = actuator_widget;
   widget_to_actuator_[actuator_widget] = actuator;
@@ -980,8 +980,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
   connect(ui_->save_state_button, &QPushButton::clicked, this, &MainWindow::saveStateToFile);
   connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
-  connect(ui_->add_actuator_button, &QToolButton::clicked,
-          this, static_cast<void (MainWindow::*)(void)>(&MainWindow::addActuator));
+  connect(ui_->add_actuator_button, &QToolButton::clicked, this, &MainWindow::addActuator);
   connect(ui_->remove_actuator_button, &QToolButton::clicked, this, &MainWindow::removeActuator);
   connectSettingsSignals();
 
