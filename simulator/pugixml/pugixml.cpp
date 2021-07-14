@@ -7232,6 +7232,12 @@ namespace pugi
     if (extension == "xml") {
       result = load_file(xml_file.c_str(), options, encoding);
     } else {
+      if (xml_file.empty()) return false;
+      // remove quotes, if any
+      if (xml_file[0] == '\'' || xml_file[0] == '"') {
+        xml_file.erase(0, 1);
+        xml_file.pop_back();
+      }
       // note: this does not use encoding, it is most likely just regular char*
       result = load_string(xml_file.c_str(), options);
     }

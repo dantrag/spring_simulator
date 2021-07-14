@@ -104,6 +104,13 @@ class SpringSimulator : public XMLIO, public TypeReadable {
   std::stringstream log_;
 };
 
+template<class SimulatorClass> SpringSimulator* tryLoadingSimulatorFromFile(std::string filename) {
+  auto simulator = new SimulatorClass();
+  if (simulator->loadFromXML(filename)) return simulator;
+  delete simulator;
+  return nullptr;
+}
+
 Shape particlesContour(const std::vector<Particle*>& particles_);
 
 double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start);
