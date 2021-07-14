@@ -12,5 +12,5 @@ if len(sys.argv) >= 3:
         pixels = image.load()
         for i in range(height):
             for j in range(width):
-                file.write('%d ' % pixels[i, j])
+                file.write('%d ' % pixels[j, i])
             file.write('\n')
