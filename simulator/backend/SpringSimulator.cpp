@@ -557,7 +557,6 @@ Shape particlesContour(const std::vector<Particle*>& particles_) {
 }
 
 void SpringSimulator::clear() {
-  time_ = 0;
   for (auto p : particles_) {
     delete p;
   }
