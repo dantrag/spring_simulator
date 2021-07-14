@@ -79,15 +79,6 @@ int sign(double x) {
 }
 
 bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const Point& p4) {
-  std::cout << p1.x << " " << p1.y << " "
-               << p2.x << " " << p2.y << " "
-                  << p3.x << " " << p3.y << " "
-                  << p4.x << " " << p4.y << " ";
-  if (intersect_1(p1.x, p2.x, p3.x, p4.x)
-    && intersect_1 (p1.y, p2.y, p3.y, p4.y)
-    && sign(area(p1, p2, p3)) * sign(area(p1, p2, p4)) <= 0
-    && sign(area(p3, p4, p1)) * sign(area(p3, p4, p2)) <= 0) std::cout << " intersect";
-  std::cout << std::endl;
   return intersect_1(p1.x, p2.x, p3.x, p4.x)
     && intersect_1 (p1.y, p2.y, p3.y, p4.y)
     && sign(area(p1, p2, p3)) * sign(area(p1, p2, p4)) <= 0
