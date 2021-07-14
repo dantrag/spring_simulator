@@ -15,7 +15,7 @@
 #include "backend/Heater.h"
 #include "backend/Pusher.h"
 #include "backend/ElasticSimulator.h"
-#include "backend/InelasticSimulator.h"
+#include "backend/WaxSimulator.h"
 
 #ifndef QT_CORE_LIB
 #include "tclap/CmdLine.h"
@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
     TCLAP::MultiArg<std::string> actuator_argument("a", "actuators", "XML filenames or XML strings of actuators", false, "actuator files");
     TCLAP::ValueArg<std::string> target_argument("t", "target", "file with XY coordinates of shape outline (2 numbers per line)", false, "", "target file");
     TCLAP::ValueArg<std::string> output_argument("o", "output", "will write a suggested pass (CSV with XY coordinates of points) for command ""predict"", and CSV/XML file or XML string with resulting state for ""simulate""", false, "", "output file");
+    TCLAP::SwitchArg wax_argument("w", "wax", "indicates that wax (inelastic) simulator should be used", false);
 
     args.add(command_argument);
     args.add(settings_argument);
@@ -67,6 +68,7 @@ int main(int argc, char* argv[]) {
     args.add(actuator_argument);
     args.add(target_argument);
     args.add(output_argument);
+    args.add(wax_argument);
     args.parse(argc, argv);
 
     std::string settings_file = settings_argument.getValue();
@@ -79,7 +81,11 @@ int main(int argc, char* argv[]) {
     std::string command = command_argument.getValue();
     std::string input_filename = input_argument.getValue();
 
-    auto simulator = new SpringSimulator();
+    SpringSimulator* simulator = nullptr;
+    if (wax_argument.getValue())
+      simulator = new WaxSimulator();
+    else
+      simulator = new SpringSimulator();
 
     if (!input_filename.empty()) {
       auto extension = input_filename.substr(input_filename.find_last_of(".") + 1, std::string::npos);
@@ -104,9 +110,12 @@ int main(int argc, char* argv[]) {
       } else {
         delete simulator;
         simulator = nullptr;
+        if (simulator == nullptr) simulator = tryLoadingSimulatorFromFile<WaxSimulator>(input_filename);
         if (simulator == nullptr) simulator = tryLoadingSimulatorFromFile<ElasticSimulator>(input_filename);
-        if (simulator == nullptr) simulator = tryLoadingSimulatorFromFile<InelasticSimulator>(input_filename);
         if (simulator == nullptr) simulator = new SpringSimulator();
+        if ((dynamic_cast<WaxSimulator*>(simulator) == nullptr) == wax_argument.getValue()) {
+          std::cerr << "Warning: loaded simulator has a different type than provided by -w switch" << std::endl;
+        }
       }
       if (simulator == nullptr) {
         std::cerr << "Error: unknown input file format (PNG, CSV, XML files and XML strings are allowed)" << std::endl;
