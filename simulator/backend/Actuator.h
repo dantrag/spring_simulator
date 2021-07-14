@@ -2,6 +2,7 @@
 #define ACTUATOR_H
 
 #include <vector>
+#include <functional>
 
 #include "backend/XMLIO.h"
 #include "backend/Particle.h"

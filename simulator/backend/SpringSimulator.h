@@ -6,6 +6,7 @@
 #include <set>
 #include <vector>
 #include <functional>
+#include <algorithm>
 #include <chrono>
 
 #include "backend/XMLIO.h"
