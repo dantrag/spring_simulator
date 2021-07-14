@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Spring Simulator</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="res/images.qrc">
+    <normaloff>:/icons/logo</normaloff>:/icons/logo</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="layout7" stretch="4,1,1,1">
     <item>
@@ -1324,11 +1328,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="res/images.qrc"/>
+ </resources>
  <connections/>
  <buttongroups>
   <buttongroup name="simulator_type_button_group"/>
-  <buttongroup name="init_mode_button_group"/>
   <buttongroup name="drawing_mode_button_group"/>
+  <buttongroup name="init_mode_button_group"/>
  </buttongroups>
 </ui>
