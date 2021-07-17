@@ -95,7 +95,7 @@ void MainWindow::recreateSimulator() {
 }
 
 void MainWindow::createScene() {
-  auto scene = new QCustomGraphicsScene(ui_->graphicsView);
+  auto scene = new QCustomGraphicsScene(ui_->graphicsView, ui_->show_axes_checkbox->isChecked());
 
   connect(scene, &QCustomGraphicsScene::mouseMoved, [this](double x, double y) {
     coordinates_label->setText(QString("X: %1  Y: %2").arg(x, 0, 'f', 0)
@@ -119,6 +119,7 @@ void MainWindow::createScene() {
       current_scene->releasePass();
     }
   });
+  connect(ui_->show_axes_checkbox, &QCheckBox::clicked, scene, &QCustomGraphicsScene::setAxesVisibility);
   scene->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId()));
   ui_->graphicsView->setScene(scene);
 }
@@ -512,15 +513,17 @@ void MainWindow::redrawActuator(Actuator* actuator) {
   if (!path_points.empty()) {
     QPainterPath painter_path;
     auto point = path_points.begin();
-    // also translate actuator shape to the first point of the path
-    shape_item->moveBy(point->x, point->y);
     painter_path.moveTo(point->x, point->y);
     for (point++; point != path_points.end(); point++) {
       painter_path.lineTo(point->x, point->y);
-    }
+    }   
     auto path_item = ui_->graphicsView->scene()->addPath(painter_path,
                        QPen(QBrush(main_color), 2, Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
     actuators_ui_[actuator].push_back(path_item);
+
+    // also translate actuator shape to the last point of the path
+    shape_item->moveBy(actuator->position().x - shape_item->x(),
+                       actuator->position().y - shape_item->y());
   }
 
   displayActuators(ui_->show_actuators_checkbox->isChecked());

@@ -1145,6 +1145,16 @@
         </layout>
        </item>
        <item>
+        <widget class="QCheckBox" name="show_axes_checkbox">
+         <property name="text">
+          <string>Show axes</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="static51">
          <property name="title">
           <string>Drawing mode</string>
@@ -1333,8 +1343,8 @@
  </resources>
  <connections/>
  <buttongroups>
-  <buttongroup name="simulator_type_button_group"/>
   <buttongroup name="drawing_mode_button_group"/>
   <buttongroup name="init_mode_button_group"/>
+  <buttongroup name="simulator_type_button_group"/>
  </buttongroups>
 </ui>

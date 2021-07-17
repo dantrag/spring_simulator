@@ -6,8 +6,8 @@
 #include <QGraphicsItem>
 #include <QGraphicsTextItem>
 
-QCustomGraphicsScene::QCustomGraphicsScene(QObject* parent)
-    : QGraphicsScene(parent) {
+QCustomGraphicsScene::QCustomGraphicsScene(QObject* parent, bool show_axes)
+    : QGraphicsScene(parent), show_axes_(show_axes) {
   createAxes();
 }
 
@@ -39,11 +39,21 @@ void QCustomGraphicsScene::createAxes() {
       labels.push_back(text);
     }
   }
+  updateAxesVisibility();
+}
+
+void QCustomGraphicsScene::updateAxesVisibility() {
+  if (x_axis != nullptr) x_axis->setVisible(show_axes_);
+  if (y_axis != nullptr) y_axis->setVisible(show_axes_);
+  for (auto tick : ticks) if (tick != nullptr) tick->setVisible(show_axes_);
+  for (auto label : labels) if (label != nullptr)
+    label->setVisible(show_axes_);
 }
 
 void QCustomGraphicsScene::clearField() {
   clear();
   ticks.clear();
+  labels.clear();
   createAxes();
 }
 

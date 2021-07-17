@@ -9,7 +9,7 @@
 class QCustomGraphicsScene : public QGraphicsScene {
   Q_OBJECT
 public:
-  QCustomGraphicsScene(QObject* parent);
+  QCustomGraphicsScene(QObject* parent, bool show_axes);
 
   enum MouseMode {
     kSelection = 0,
@@ -23,6 +23,7 @@ public:
     mode = new_mode;
   }
   MouseMode currentMode() { return mode; }
+  void setAxesVisibility(bool visible) { show_axes_ = visible; updateAxesVisibility(); }
 
   void releaseSelection() { if (selection) { removeItem(selection); delete selection; selection = nullptr; update(); } }
   void releasePass() { if (pass) { removeItem(pass); delete pass; pass = nullptr; update(); } }
@@ -54,9 +55,11 @@ signals:
 
 private:
   void createAxes();
+  void updateAxesVisibility();
 
   MouseMode mode = MouseMode::kSelection;
   bool drawing_now = false;
+  bool show_axes_ = true;
 
   QGraphicsRectItem* selection = nullptr;
   QGraphicsLineItem* pass = nullptr;
