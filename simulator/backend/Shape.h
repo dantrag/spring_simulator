@@ -15,6 +15,7 @@ class Shape {
   int n() const { return n_; }
 
   bool contains(const Point& point) const;
+  bool contains_ray_casting(const Point& point) const;
 
   double perimeter() const;
   double diameter() const;

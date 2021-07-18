@@ -37,22 +37,42 @@ Shape::Shape(std::string filename) {
 }
 
 bool Shape::contains(const Point& point) const {
+  int winding_number = 0;
+
+  for (int i = 0; i < n_; i++) {
+    const auto& current = points_[i];
+    const auto& next = (i < n_ - 1) ? points_[i + 1]
+                                    : points_[0];
+    if (current.y <= point.y) {
+      if (next.y > point.y) {
+        if (sign(crossProduct(current, next, point)) > 0) winding_number++;
+      }
+    } else {
+      if (next.y <= point.y) {
+        if (sign(crossProduct(current, next, point)) < 0) winding_number--;
+      }
+    }
+  }
+
+  return winding_number > 0;
+}
+
+bool Shape::contains_ray_casting(const Point& point) const {
   int intersections = 0;
   if (n_ < 3) return false;
 
   double max_x = points_[0].x;
   double max_y = points_[0].y;
-  for (const auto& point : points_) {
-    max_x = std::max(max_x, point.x);
-    max_y = std::max(max_y, point.y);
+  for (const auto& shape_point : points_) {
+    max_x = std::max(max_x, shape_point.x);
+    max_y = std::max(max_y, shape_point.y);
   }
   // create a ray from the point, make sure it does not hit a vertex
-  Point infinity(max_x + 100.0, max_y + 100.0);
+  Point infinity(max_x + 111.1, max_y + 100.0);
 
   for (int i = 0; i < n_; ++i) {
     auto& p1 = points_[i];
     auto& p2 = points_[(i + 1) % n_];
-    Line line(p1, p2);
     if (segmentsIntersect(p1, p2, point, infinity)) intersections++;
   }
   if (intersections > 2) {

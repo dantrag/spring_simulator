@@ -84,6 +84,7 @@ class Particle {
   const SimulatorSettings* settings_ = nullptr;
 };
 
+int sign(double x);
 double distance(double x1, double y1, double x2, double y2);
 double distance2(double x1, double y1, double x2, double y2);
 double distance(const Point& p, double x, double y);
