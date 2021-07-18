@@ -865,6 +865,7 @@ void MainWindow::addActuatorUI(Actuator* actuator, bool actuator_loaded) {
   });
   connect(actuator_widget, &QActuatorWidget::actuatorEnabledChanged, this, [actuator_widget, this](bool enabled) {
     widget_to_actuator_[actuator_widget]->setEnabled(enabled);
+    if (enabled) widget_to_actuator_[actuator_widget]->setPathAdvancement(0.0);
     redrawActuator(widget_to_actuator_[actuator_widget]);
   });
   connect(actuator_widget, &QActuatorWidget::actuatorSpringCrossingChanged, this, [actuator_widget, this](bool allowed) {
