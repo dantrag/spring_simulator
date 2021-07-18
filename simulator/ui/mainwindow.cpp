@@ -150,9 +150,6 @@ void MainWindow::initializeFieldRectangle() {
   clearUI();
   recreateSimulator();
 
-  sim_ = new SpringSimulator();
-
-
   double left = ui_->init_rect_left_spinbox->value();
   double top = ui_->init_rect_top_spinbox->value();
   double right = ui_->init_rect_right_spinbox->value();
