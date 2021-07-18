@@ -361,7 +361,10 @@ void SpringSimulator::runLinearPasses() {
   int total_ticks = 0;
   for (auto actuator : actuators_) {
     if (actuator->enabled()) {
-      ticks[actuator] = static_cast<int>(std::floor(actuator->path().length() / actuator->speed()));
+      if (actuator->speed() < 1e-5)
+        ticks[actuator] = 0;
+      else
+        ticks[actuator] = static_cast<int>(std::floor(actuator->path().length() / actuator->speed())) + 1;
       total_ticks = std::max(total_ticks, ticks[actuator]);
     }
   }
