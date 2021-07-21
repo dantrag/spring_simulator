@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
     TCLAP::MultiArg<std::string> actuator_argument("a", "actuators", "XML filenames or XML strings of actuators", false, "actuator files");
     TCLAP::ValueArg<std::string> target_argument("t", "target", "file with XY coordinates of shape outline (2 numbers per line)", false, "", "target file");
     TCLAP::ValueArg<std::string> output_argument("o", "output", "will write a suggested pass (CSV with XY coordinates of points) for command ""predict"", and CSV/XML file or XML string with resulting state for ""simulate""", false, "", "output file");
+    TCLAP::ValueArg<std::string> save_simulator_argument("S", "savesimulator", "save the full simulator output as XML", false, "", "simulator output file");
     TCLAP::SwitchArg wax_argument("w", "wax", "indicates that wax (inelastic) simulator should be used", false);
 
     args.add(command_argument);
@@ -70,6 +71,7 @@ int main(int argc, char* argv[]) {
     args.add(target_argument);
     args.add(output_argument);
     args.add(wax_argument);
+    args.add(save_simulator_argument);
     args.parse(argc, argv);
 
     std::string command = command_argument.getValue();
@@ -188,10 +190,14 @@ int main(int argc, char* argv[]) {
           simulator->runLinearPasses();
         }
         std::string output_filename = output_argument.getValue();
+        std::string save_simulator_filename = save_simulator_argument.getValue();
         if (output_filename.empty()) {
-          std::cerr << "Warning: no output filename provided, result is written to console as XML string" << std::endl;
-
-          std::cout << simulator->toXMLString() << std:: endl;
+          if (save_simulator_filename.empty()) {
+            std::cerr << "Warning: no output filename provided, result is written to console as XML string" << std::endl;
+            std::cout << simulator->toXMLString() << std:: endl;
+          } else {
+            simulator->saveToXML(save_simulator_filename);
+          }
         } else {
           auto extension = output_filename.substr(output_filename.find_last_of(".") + 1, std::string::npos);
           std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
@@ -205,6 +211,10 @@ int main(int argc, char* argv[]) {
               SpringSimulatorState(simulator).saveToXML(output_filename);
           } else {
             std::cout << simulator->toXMLString() << std:: endl;
+          }
+
+          if (!save_simulator_filename.empty()) {
+            simulator->saveToXML(save_simulator_filename);
           }
         }
       }
