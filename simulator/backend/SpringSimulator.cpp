@@ -295,19 +295,22 @@ void SpringSimulator::relax(bool extra_long_relaxation) {
   log_ << movable_particles_.size() << " movable particles\n";
   auto timer = std::chrono::steady_clock::now();
 
+  bool is_spring_crossing_allowed = false;
+  for (auto actuator : actuators_) is_spring_crossing_allowed |= actuator->isSpringCrossingAllowed();
+
   do {
     max_displacement = 0;
     for (auto p : movable_particles_) {
       double x_displacement = 0.0;
       double y_displacement = 0.0;
-      double max_allowable_displacement = settings_->springDefaultLength() / 4;
-      std::set<Particle*> neighbours = {};
+      //std::set<Particle*> neighbours = {};
+      auto max_allowable_displacement = std::numeric_limits<double>::max();
       for (auto s : p->springs()) {
         double delta_x = s->otherEnd(p)->x() - p->x();
         double delta_y = s->otherEnd(p)->y() - p->y();
         if (s->force() > 0) delta_x = -delta_x, delta_y = -delta_y;
         double delta_module = std::sqrt(delta_x * delta_x + delta_y * delta_y);
-        neighbours.insert(s->otherEnd(p));
+        //neighbours.insert(s->otherEnd(p));
         // make sure not to divide by [close to] zero
         if (delta_module < 1e-5) continue;
         delta_x /= delta_module;
@@ -317,8 +320,10 @@ void SpringSimulator::relax(bool extra_long_relaxation) {
         x_displacement += delta_x;
         y_displacement += delta_y;
 
-        max_allowable_displacement = std::min(max_allowable_displacement, s->actualLength() / 4);
+        if (!is_spring_crossing_allowed)
+          max_allowable_displacement = std::min(max_allowable_displacement, s->actualLength() / 4);
       }
+      /*
       for (auto neighbour : neighbours) {
         for (auto neighbour_spring : neighbour->springs()) {
           if (neighbours.count(neighbour_spring->otherEnd(neighbour)) &&
@@ -330,6 +335,7 @@ void SpringSimulator::relax(bool extra_long_relaxation) {
           }
         }
       }
+      */
 
       double total_displacement = distance(Point(0, 0), Point(x_displacement, y_displacement));
       if (total_displacement > max_allowable_displacement) {
@@ -373,6 +379,7 @@ void SpringSimulator::runLinearPasses() {
       total_ticks = std::max(total_ticks, ticks[actuator]);
     }
   }
+
   for (int tick = 0; tick <= total_ticks; ++tick) {
     for (auto actuator : actuators_) {
       if (actuator->enabled()) {
@@ -396,7 +403,7 @@ void SpringSimulator::runLinearPasses() {
       for (auto s : p->springs()) s->updateForce();
     }
 
-    relax();
+    relax(tick == total_ticks);
 
     for (auto p : particles_) {
       for (auto a : actuators_) {
