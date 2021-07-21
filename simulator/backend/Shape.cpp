@@ -54,7 +54,7 @@ bool Shape::contains(const Point& point) const {
     }
   }
 
-  return winding_number > 0;
+  return winding_number != 0;
 }
 
 bool Shape::contains_ray_casting(const Point& point) const {
