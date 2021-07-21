@@ -58,6 +58,7 @@ HEADERS += \
     backend/SpringState.h \
     backend/WaxSimulator.h \
     backend/XMLIO.h \
+    mini/ini.h \
     pugixml/pugiconfig.hpp \
     pugixml/pugixml.hpp \
     ui/mainwindow.h \
