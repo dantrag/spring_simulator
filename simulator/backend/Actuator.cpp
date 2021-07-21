@@ -53,10 +53,10 @@ bool Actuator::loadFromXMLNode(pugi::xml_node root) {
 
   setName(root.attribute("name").as_string());
   setSpeed(root.attribute("speed").as_double());
-  setEnabled(root.attribute("enabled").as_bool());
-  setSpringCrossing(root.attribute("spring-crossing-allowed").as_bool());
-  setFirmGrip(root.attribute("firm-grip").as_bool());
-  setFinalRelease(root.attribute("final-release").as_bool());
+  setEnabled(root.attribute("enabled").as_bool(true));
+  setSpringCrossing(root.attribute("spring_crossing_allowed").as_bool(false));
+  setFirmGrip(root.attribute("firm_grip").as_bool(true));
+  setFinalRelease(root.attribute("final_release").as_bool(false));
 
   auto shape_node = root.child("shape");
   std::vector<Point> points = {};
@@ -79,7 +79,7 @@ bool Actuator::loadFromXMLNode(pugi::xml_node root) {
   }
   setPath(Path(points));
 
-  setPathAdvancement(root.attribute("path-advancement").as_double());
+  setPathAdvancement(root.attribute("path_advancement").as_double());
 
   return true;
 }
@@ -101,11 +101,11 @@ pugi::xml_document Actuator::toXML() const {
   actuator_node.append_attribute("name") = name_.c_str();
   actuator_node.append_attribute("enabled") = on_;
   actuator_node.append_attribute("speed") = speed_;
-  actuator_node.append_attribute("path-advancement") = path_advancement_;
+  actuator_node.append_attribute("path_advancement") = path_advancement_;
   actuator_node.append_attribute("orientation") = orientation_ / M_PI * 180;
-  actuator_node.append_attribute("spring-crossing-allowed") = spring_crossing_allowed_;
-  actuator_node.append_attribute("firm-grip") = firm_grip_;
-  actuator_node.append_attribute("final-release") = final_release_;
+  actuator_node.append_attribute("spring_crossing_allowed") = spring_crossing_allowed_;
+  actuator_node.append_attribute("firm_grip") = firm_grip_;
+  actuator_node.append_attribute("final_release") = final_release_;
 
   auto shape_node = actuator_node.append_child("shape");
   for (const auto point : shape_.points()) {

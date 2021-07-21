@@ -86,7 +86,7 @@ class Actuator : public XMLIO, public TypeReadable {
   std::string name_ = "";
 
   bool on_ = false;
-  double speed_ = 1.0;
+  double speed_ = 0.0;
   int time_ = 0;
   bool spring_crossing_allowed_ = false;
   bool firm_grip_ = true;
