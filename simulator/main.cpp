@@ -106,9 +106,16 @@ int main(int argc, char* argv[]) {
         simulator = nullptr;
         if (simulator == nullptr) simulator = tryLoadingSimulatorFromFile<WaxSimulator>(input_filename);
         if (simulator == nullptr) simulator = tryLoadingSimulatorFromFile<ElasticSimulator>(input_filename);
-        if (simulator == nullptr) simulator = new SpringSimulator();
-        if ((dynamic_cast<WaxSimulator*>(simulator) == nullptr) == wax_argument.getValue()) {
-          std::cerr << "Warning: loaded simulator has a different type than provided by -w switch" << std::endl;
+        if (simulator == nullptr) {
+          // could not load simulator, try loading the state
+          simulator = new SpringSimulator();
+          auto state = new SpringSimulatorState(input_filename);
+          simulator->restoreState(state);
+          delete state;
+        } else {
+          if ((dynamic_cast<WaxSimulator*>(simulator) == nullptr) == wax_argument.getValue()) {
+            std::cerr << "Warning: loaded simulator has a different type than provided by -w switch" << std::endl;
+          }
         }
       }
       if (simulator == nullptr) {
