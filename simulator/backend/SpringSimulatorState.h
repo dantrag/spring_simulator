@@ -17,6 +17,7 @@ class SpringSimulatorState : public XMLIO {
   SpringSimulatorState() {}
   SpringSimulatorState(const SpringSimulator* simulator, int id = -1);
   SpringSimulatorState(std::string xml_file);
+  ~SpringSimulatorState();
 
   const std::vector<ParticleState*>& particles() const { return particles_; }
   const std::vector<SpringState*>& springs() const { return springs_; }

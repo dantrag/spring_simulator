@@ -137,3 +137,7 @@ void SpringSimulatorState::clear() {
   particles_.clear();
   springs_.clear();
 }
+
+SpringSimulatorState::~SpringSimulatorState() {
+  clear();
+}
