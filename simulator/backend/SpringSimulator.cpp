@@ -45,15 +45,19 @@ SpringSimulator::SpringSimulator(const SpringSimulator* simulator)
   settings_ = simulator->settings();
 }
 
-#ifdef QT_CORE_LIB
-SpringSimulator::SpringSimulator(QString settings_file) {
-  settings_ = new SimulatorSettings();
-  settings_->loadFromFile(settings_file);
+SpringSimulator::SpringSimulator(std::string settings_file) {
+  settings_ = new SimulatorSettings(settings_file);
 }
-#endif
 
 SpringSimulator::SpringSimulator(SimulatorSettings* settings)
     : settings_(settings) {}
+
+void SpringSimulator::setSettings(SimulatorSettings* settings) {
+  settings_ = settings;
+  for (auto particle : particles_) {
+    particle->setSettings(settings_);
+  }
+}
 
 void SpringSimulator::restoreState(const SpringSimulatorState* state) {
   clear();

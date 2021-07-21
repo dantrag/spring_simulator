@@ -1,39 +1,70 @@
-#include "SimulatorSettings.h"
+#include "backend/SimulatorSettings.h"
 
-#ifdef QT_CORE_LIB
-void SimulatorSettings::loadFromFile(QString filename) {
-  QSettings file_settings(filename, QSettings::IniFormat);
-  particle_default_radius_ = file_settings.value("Particle/DefaultRadius", 1.0).toDouble();
-  molten_particle_default_radius_ = file_settings.value("Particle/MoltenDefaultRadius", 2.0).toDouble();
-  molten_particle_cooldown_time_ = file_settings.value("Particle/CooldownTime", 20).toInt();
+#include "mini/ini.h"
 
-  spring_default_stiffness_ = file_settings.value("Spring/DefaultStiffness", 0.01).toDouble();
-  spring_default_length_ = file_settings.value("Spring/DefaultLength", 5.5).toDouble();
-  spring_connection_threshold_ = file_settings.value("Spring/ConnectionThreshold", 1.0).toDouble();
-  spring_disconnection_threshold_ = file_settings.value("Spring/DisconnectionThreshold", 1.3).toDouble();
-
-  relaxation_iteration_limit_ = file_settings.value("Relaxation/IterationLimit", 2000).toInt();
-  relaxation_convergence_limit_ = file_settings.value("Relaxation/ConvergenceLimit", 0.001).toDouble();
-
-  actuator_speed_ = file_settings.value("Actuator/Speed", 2.0).toDouble();
-  heater_size_ = file_settings.value("Heater/Size", 20.0).toDouble();
+template <typename T>
+T convert(std::string& value, T default_result) {
+  T result = default_result;
+  std::stringstream stream;
+  stream << value;
+  if (stream >> result) {
+    return result;
+  } else {
+    stream.str(std::string());
+    stream << default_result;
+    value = stream.str();
+    return default_result;
+  }
 }
 
-void SimulatorSettings::saveToFile(QString filename) {
-  QSettings file_settings(filename, QSettings::IniFormat);
-  file_settings.setValue("Particle/DefaultRadius", particle_default_radius_);
-  file_settings.setValue("Particle/MoltenDefaultRadius", molten_particle_default_radius_);
-  file_settings.setValue("Particle/CooldownTime", molten_particle_cooldown_time_);
-
-  file_settings.setValue("Spring/DefaultStiffness", spring_default_stiffness_);
-  file_settings.setValue("Spring/DefaultLength", spring_default_length_);
-  file_settings.setValue("Spring/ConnectionThreshold", spring_connection_threshold_);
-  file_settings.setValue("Spring/DisconnectionThreshold", spring_disconnection_threshold_);
-
-  file_settings.setValue("Relaxation/IterationLimit", relaxation_iteration_limit_);
-  file_settings.setValue("Relaxation/ConvergenceLimit", relaxation_convergence_limit_);
-
-  file_settings.setValue("Actuator/Speed", actuator_speed_);
-  file_settings.setValue("Heater/Size", heater_size_);
+template <typename T>
+std::string convert(T value) {
+  std::stringstream stream;
+  stream << value;
+  auto result = stream.str();
+  return result;
 }
-#endif
+
+void SimulatorSettings::loadFromFile(std::string filename) {
+  mINI::INIFile settings_file(filename);
+  mINI::INIStructure ini;
+
+  settings_file.read(ini);
+
+  particle_default_radius_ = convert(ini["Particle"]["DefaultRadius"], 1.0);
+  molten_particle_default_radius_ = convert(ini["Particle"]["MoltenDefaultRadius"], 2.0);
+  molten_particle_cooldown_time_ = convert(ini["Particle"]["CooldownTime"], 20);
+
+  spring_default_stiffness_ = convert(ini["Spring"]["DefaultStiffness"], 0.01);
+  spring_default_length_ = convert(ini["Spring"]["DefaultLength"], 5.5);
+  spring_connection_threshold_ = convert(ini["Spring"]["ConnectionThreshold"], 1.0);
+  spring_disconnection_threshold_ = convert(ini["Spring"]["DisconnectionThreshold"], 1.3);
+
+  relaxation_iteration_limit_ = convert(ini["Relaxation"]["IterationLimit"], 2000);
+  relaxation_convergence_limit_ = convert(ini["Relaxation"]["ConvergenceLimit"], 0.001);
+
+  actuator_speed_ = convert(ini["Actuator"]["Speed"], 2.0);
+  heater_size_ = convert(ini["Heater"]["Size"], 20.0);
+}
+
+void SimulatorSettings::saveToFile(std::string filename) {
+  mINI::INIFile settings_file(filename);
+  mINI::INIStructure ini;
+
+  ini["Particle"]["DefaultRadius"] = convert(particle_default_radius_);
+  ini["Particle"]["MoltenDefaultRadius"] = convert(molten_particle_default_radius_);
+  ini["Particle"]["CooldownTime"] = convert(molten_particle_cooldown_time_);
+
+  ini["Spring"]["DefaultStiffness"] = convert(spring_default_stiffness_);
+  ini["Spring"]["DefaultLength"] = convert(spring_default_length_);
+  ini["Spring"]["ConnectionThreshold"] = convert(spring_connection_threshold_);
+  ini["Spring"]["DisconnectionThreshold"] = convert(spring_disconnection_threshold_);
+
+  ini["Relaxation"]["IterationLimit"] = convert(relaxation_iteration_limit_);
+  ini["Relaxation"]["ConvergenceLimit"] = convert(relaxation_convergence_limit_);
+
+  ini["Actuator"]["Speed"] = convert(actuator_speed_);
+  ini["Heater"]["Size"] = convert(heater_size_);
+
+  settings_file.write(ini);
+}

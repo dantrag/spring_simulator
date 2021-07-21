@@ -23,9 +23,7 @@ class SpringSimulator : public XMLIO, public TypeReadable {
   SpringSimulator();
   SpringSimulator(const SpringSimulator* simulator);
   SpringSimulator(SimulatorSettings* settings);  
-  #ifdef QT_CORE_LIB
-  SpringSimulator(QString settings_file);
-  #endif
+  SpringSimulator(std::string settings_file);
   virtual ~SpringSimulator();
 
   enum class InitializationGrid {
@@ -52,8 +50,9 @@ class SpringSimulator : public XMLIO, public TypeReadable {
 
   // Publicly accessible variables
   virtual std::string generic_name() const { return "Simulator"; }
-  SimulatorSettings* settings() const { return settings_; }
   std::string log() const { return log_.str(); }
+  SimulatorSettings* settings() const { return settings_; }
+  void setSettings(SimulatorSettings* settings);
 
   const std::vector<Particle*>& particles() const { return particles_; }
   const std::vector<Actuator*>& actuators() const { return actuators_; }

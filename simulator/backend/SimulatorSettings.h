@@ -3,17 +3,10 @@
 
 #include <string>
 
-#ifdef QT_CORE_LIB
-#include <QString>
-#include <QSettings>
-#endif
-
 class SimulatorSettings {
  public:
   SimulatorSettings() {}
-  #ifdef QT_CORE_LIB
-  SimulatorSettings(QString settings_file) { loadFromFile(settings_file); }
-  #endif
+  SimulatorSettings(std::string settings_file) { loadFromFile(settings_file); }
 
   double particleDefaultRadius() const { return particle_default_radius_; }
   void setParticleDefaultRadius(double radius) { particle_default_radius_ = radius; }
@@ -41,10 +34,8 @@ class SimulatorSettings {
   double heaterSize() const { return heater_size_; }
   void setHeaterSize(double size) { heater_size_ = size; }
 
-  #ifdef QT_CORE_LIB
-  void loadFromFile(QString filename);
-  void saveToFile(QString filename);
-  #endif
+  void loadFromFile(std::string filename);
+  void saveToFile(std::string filename);
 
  private:
   double particle_default_radius_ = 1.0;

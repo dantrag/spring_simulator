@@ -44,7 +44,8 @@ void pngToArray(std::string filename, std::vector<std::vector<int>>& pixel_array
 int main(int argc, char* argv[]) {
 #ifdef QT_CORE_LIB
   QApplication a(argc, argv);
-  auto simulator = new SpringSimulator(QApplication::applicationDirPath() + "/default.cfg");
+  auto default_config_filename = QApplication::applicationDirPath() + "/default.cfg";
+  auto simulator = new SpringSimulator(default_config_filename.toStdString());
 
   MainWindow window(simulator);
   window.show();
@@ -70,13 +71,6 @@ int main(int argc, char* argv[]) {
     args.add(output_argument);
     args.add(wax_argument);
     args.parse(argc, argv);
-
-    std::string settings_file = settings_argument.getValue();
-    if (!settings_file.empty()) {
-      // todo: load from settings file
-    } else {
-      std::cerr << "Warning: no settings file provided, using default (use -s)" << std::endl;
-    }
 
     std::string command = command_argument.getValue();
     std::string input_filename = input_argument.getValue();
@@ -127,6 +121,14 @@ int main(int argc, char* argv[]) {
     if ((simulator == nullptr) || simulator->particles().empty()) {
       std::cerr << "Error: could not initialize non-empty simulator, no particles created" << std::endl;
     } else {
+      std::string settings_file = settings_argument.getValue();
+      if (!settings_file.empty()) {
+        auto simulator_settings = new SimulatorSettings(settings_file);
+        simulator->setSettings(simulator_settings);
+      } else {
+        std::cerr << "Warning: no settings file provided, using default (use -s)" << std::endl;
+      }
+
       auto actuator_files = actuator_argument.getValue();
       std::vector<Actuator*> actuators;
       for (auto& actuator_file : actuator_files) {

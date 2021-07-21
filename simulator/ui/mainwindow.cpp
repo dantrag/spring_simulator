@@ -655,7 +655,7 @@ void MainWindow::loadSettings() {
                                                QApplication::applicationDirPath(),
                                                "Configuration file (*.cfg);;All Files (*)");
   if (!filename.isEmpty()) {
-    sim_->settings()->loadFromFile(filename);
+    sim_->settings()->loadFromFile(filename.toStdString());
     populateSettings();
     updateFieldUI();
   }
@@ -666,7 +666,7 @@ void MainWindow::saveSettings() {
                                                QApplication::applicationDirPath(),
                                                "Configuration file (*.cfg);;All Files (*)");
   if (!filename.isEmpty())
-    sim_->settings()->saveToFile(filename);
+    sim_->settings()->saveToFile(filename.toStdString());
 }
 
 void MainWindow::loadSimulatorFromFile() {
