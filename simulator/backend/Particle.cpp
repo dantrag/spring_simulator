@@ -140,7 +140,7 @@ Particle::Particle(const Particle* particle) : settings_(particle->settings_) {
   melting_timeout_ = particle->meltingTimeout();
 }
 
-void Particle::removeString(Spring* spring) {
+void Particle::removeSpring(Spring* spring) {
   for (size_t i = 0; i < springs_.size(); ++i) {
     if (springs_[i] == spring) {
       springs_[i] = nullptr;
@@ -157,7 +157,7 @@ void Particle::removeString(Spring* spring) {
 
 Particle::~Particle() {
   for (auto s : springs_) {
-    s->otherEnd(this)->removeString(s);
+    s->otherEnd(this)->removeSpring(s);
     delete s;
   }
 }

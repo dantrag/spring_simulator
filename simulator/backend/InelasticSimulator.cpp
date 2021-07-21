@@ -164,8 +164,8 @@ void InelasticSimulator::updateConnectivity() {
               recently_added_springs_.insert(new_spring);
               break;
             } else {
-              p1->removeString(new_spring);
-              p2->removeString(new_spring);
+              p1->removeSpring(new_spring);
+              p2->removeSpring(new_spring);
               delete new_spring;
               new_spring = nullptr;
             }
@@ -178,8 +178,8 @@ void InelasticSimulator::updateConnectivity() {
     }
 
     if (can_remove) {
-      s->particle1()->removeString(s);
-      s->particle2()->removeString(s);
+      s->particle1()->removeSpring(s);
+      s->particle2()->removeSpring(s);
       if (recently_added_springs_.count(s))
         recently_added_springs_.erase(s);
       else
