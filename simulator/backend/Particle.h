@@ -43,31 +43,31 @@ class Particle {
   Particle(const Particle* particle);
   ~Particle();
 
-  Point point() const { return Point(x_, y_); }
-  double x() const { return x_; }
-  double y() const { return y_; }
-  double radius() const { return molten_ ? settings_->moltenParticleDefaultRadius()
-                                         : settings_->particleDefaultRadius(); }
+  inline Point point() const { return Point(x_, y_); }
+  inline double x() const { return x_; }
+  inline double y() const { return y_; }
+  inline double radius() const { return molten_ ? settings_->moltenParticleDefaultRadius()
+                                                : settings_->particleDefaultRadius(); }
 
   void setDisplacement(const Point& displacement) { displacement_ = displacement; }
   void applyDisplacement() { x_ += displacement_.x; y_ += displacement_.y; }
 
   // molten implies larger radius; mobility is set separately
-  bool isMolten() const { return molten_; }
+  inline bool isMolten() const { return molten_; }
   void setMolten(bool molten) { molten_ = molten; if (!molten_) melting_timeout_ = -1; }
-  int meltingTimeout() const { return melting_timeout_; }
+  inline int meltingTimeout() const { return melting_timeout_; }
   void setMeltingTimeout(int timeout) { melting_timeout_ = timeout; }
 
   // mark that this particle is allowed to relax its new state (move)
-  bool isMovable() const { return movable_; }
+  inline bool isMovable() const { return movable_; }
   void setMovable(bool movable) { movable_ = movable; }
 
   void addSpring(Spring* spring) { springs_.push_back(spring); }
-  const std::vector<Spring*>& springs() const { return springs_; }
+  inline const std::vector<Spring*>& springs() const { return springs_; }
   void removeSpring(Spring* spring);
 
   void setSettings(SimulatorSettings* settings) { settings_ = settings; }
-  const SimulatorSettings* settings() const { return settings_; }
+  inline const SimulatorSettings* settings() const { return settings_; }
 
  protected:
   double x_ = 0;

@@ -12,23 +12,24 @@ class Spring {
     p2->addSpring(this);
   }
 
-  Particle* particle1() const { return ends_.first; }
-  Particle* particle2() const { return ends_.second; }
-  Particle* otherEnd(const Particle* one_end) {
+  inline Particle* particle1() const { return ends_.first; }
+  inline Particle* particle2() const { return ends_.second; }
+  inline Particle* otherEnd(const Particle* one_end) {
     if (ends_.first == one_end) return ends_.second;
     if (ends_.second == one_end) return ends_.first;
     return nullptr;
   }
 
-  double length() const { return length_; }
-  double actualLength() const {
+  inline double length() const { return length_; }
+  void setLength(double length) { length_ = length; }
+  inline double actualLength() const {
     return distance(ends_.first, ends_.second) - ends_.first->radius() - ends_.second->radius();
   }
 
-  double forceConstant() const { return force_constant_; }
+  inline double forceConstant() const { return force_constant_; }
   void setForceConstant(double force_constant) { force_constant_ = force_constant; }
 
-  double force() const { return force_; }
+  inline double force() const { return force_; }
   void updateForce();
 
  private:
