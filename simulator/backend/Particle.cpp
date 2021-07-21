@@ -35,8 +35,12 @@ double distance(const Particle* p1, const Particle* p2) {
   return distance(p1->point(), p2->point());
 }
 
-double distance(const Particle* p1, const Particle* p2, const Particle* p3) {
-  return distance(p1->point(), p2->point(), p3->point());
+double distance(const Particle* p1, const Particle* p2, const Particle* p3, bool segment) {
+  return distance(p1->point(), p2->point(), p3->point(), segment);
+}
+
+double distance2(const Particle* p1, const Particle* p2, const Particle* p3, bool segment) {
+  return distance2(p1->point(), p2->point(), p3->point(), segment);
 }
 
 double distance(const Point& p1, const Point& p2, const Point& p3, bool segment) {
@@ -56,6 +60,27 @@ double distance(const Point& p1, const Point& p2, const Point& p3, bool segment)
     double distance_to_line = std::abs(l.a * p1.x + l.b * p1.y + l.c) /
                               std::sqrt(l.a * l.a + l.b * l.b + l.c * l.c);
     return distance_to_line;
+  }
+}
+
+double distance2(const Point& p1, const Point& p2, const Point& p3, bool segment) {
+  if (distance2(p2, p3) < 1e-10) return distance2(p1, p2);
+  if (segment) {
+    // calculate distance to segment
+    auto segment_length_squared = distance2(p2, p3);
+    auto dot_product = ((p1.x - p2.x) * (p3.x - p2.x) + (p1.y - p2.y) * (p3.y - p2.y));
+    auto projection_fraction = std::max(0.0, std::min(1.0,
+                                                      dot_product / segment_length_squared));
+    Point projection(p2.x + projection_fraction * (p3.x - p2.x),
+                     p2.y + projection_fraction * (p3.y - p2.y));
+    return distance2(p1, projection);
+  } else {
+    // calculate distance to line
+    Line l(p2, p3);
+    auto line_evaluation = l.a * p1.x + l.b * p1.y + l.c;
+    double distance_to_line_squared = line_evaluation * line_evaluation /
+                                      (l.a * l.a + l.b * l.b + l.c * l.c);
+    return distance_to_line_squared;
   }
 }
 

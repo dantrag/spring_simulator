@@ -92,8 +92,10 @@ double distance(const Point& p1, const Point& p2);
 double distance2(const Point& p1, const Point& p2);
 double distance(const Particle* p, double x, double y);
 double distance(const Particle* p1, const Particle* p2);
-double distance(const Particle* p1, const Particle* p2, const Particle* p3);
+double distance(const Particle* p1, const Particle* p2, const Particle* p3, bool segment = true);
+double distance2(const Particle* p1, const Particle* p2, const Particle* p3, bool segment = true);
 double distance(const Point& p1, const Point& p2, const Point& p3, bool segment = true);
+double distance2(const Point& p1, const Point& p2, const Point& p3, bool segment = true);
 double crossProduct(const Point& p1, const Point& p2, const Point& p3);
 bool segmentsIntersect(const Point& p1, const Point& p2, const Point& p3, const Point& p4);
 
