@@ -53,9 +53,9 @@ int main(int argc, char* argv[]) {
 #else
   try {
     TCLAP::CmdLine args("Simulator control script");
-    std::vector<std::string> allowed_commands = {"simulate", "predict"};
+    std::vector<std::string> allowed_commands = {"simulate", "predict", "convert"};
     TCLAP::ValuesConstraint<std::string> commands_constraint(allowed_commands);
-    TCLAP::ValueArg<std::string> command_argument("c", "command", "simulate (simulate actuator passes), or predict (find an actuator pass to reach a desired target shape)", true, "", &commands_constraint);
+    TCLAP::ValueArg<std::string> command_argument("c", "command", "simulate (simulate actuator passes), predict (find an actuator pass to reach a desired target shape), or convert (convert input format into output format)", true, "", &commands_constraint);
     TCLAP::ValueArg<std::string> settings_argument("s", "settings", "simulator parameters file (*.cfg)", false, "", "settings file");
     TCLAP::ValueArg<std::string> input_argument("i", "input", "*.png - black/white mask, *.csv - shape outline XY coordinates, *.xml or XML string in quotes - saved state or simulator", true, "", "input file");
     TCLAP::MultiArg<std::string> actuator_argument("a", "actuators", "XML filenames or XML strings of actuators", false, "actuator files");
@@ -80,6 +80,8 @@ int main(int argc, char* argv[]) {
       simulator = new WaxSimulator();
     else
       simulator = new SpringSimulator();
+
+    bool input_is_simulator_xml = false;
 
     if (!input_filename.empty()) {
       auto extension = input_filename.substr(input_filename.find_last_of(".") + 1, std::string::npos);
@@ -113,6 +115,8 @@ int main(int argc, char* argv[]) {
           simulator->restoreState(state);
           delete state;
         } else {
+          // remember whether the XML input is a state or a full simulator
+          input_is_simulator_xml = true;
           if ((dynamic_cast<WaxSimulator*>(simulator) == nullptr) == wax_argument.getValue()) {
             std::cerr << "Warning: loaded simulator has a different type than provided by -w switch" << std::endl;
           }
@@ -161,9 +165,7 @@ int main(int argc, char* argv[]) {
         }
       }
 
-      if (command == "simulate") {
-        simulator->runLinearPasses();
-      } else if (command == "predict") {
+      if (command == "predict") {
         std::string target_filename = target_argument.getValue();
         if (!target_filename.empty()) {
           auto actuator = simulator->actuators()[0];
@@ -181,26 +183,34 @@ int main(int argc, char* argv[]) {
         } else {
           std::cerr << "Error: no target shape file provided for prediction (use -t)" << std::endl;
         }
-      }
-
-      std::string output_filename = output_argument.getValue();
-      if (output_filename.empty()) {
-        std::cerr << "Warning: no output filename provided, result is written to console as XML string" << std::endl;
-
-        std::cout << simulator->toXMLString() << std:: endl;
       } else {
-        auto extension = output_filename.substr(output_filename.find_last_of(".") + 1, std::string::npos);
-        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+        if (command == "simulate") {
+          simulator->runLinearPasses();
+        }
+        std::string output_filename = output_argument.getValue();
+        if (output_filename.empty()) {
+          std::cerr << "Warning: no output filename provided, result is written to console as XML string" << std::endl;
 
-        if (extension == "csv") {
-          simulator->fieldContour().saveToFile(output_filename);
-        } else if (extension == "xml") {
-          simulator->saveToXML(output_filename);
-        } else {
           std::cout << simulator->toXMLString() << std:: endl;
+        } else {
+          auto extension = output_filename.substr(output_filename.find_last_of(".") + 1, std::string::npos);
+          std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+          if (extension == "csv") {
+            simulator->fieldContour().saveToFile(output_filename);
+          } else if (extension == "xml") {
+            if (input_is_simulator_xml)
+              simulator->saveToXML(output_filename);
+            else
+              SpringSimulatorState(simulator).saveToXML(output_filename);
+          } else {
+            std::cout << simulator->toXMLString() << std:: endl;
+          }
         }
       }
     }
+
+    if (simulator != nullptr) delete simulator;
   } catch (TCLAP::ArgException &e) {
     std::cerr << "Error: " << e.error() << " for argument " << e.argId() << std::endl;
   } catch (...) {
