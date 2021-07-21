@@ -284,7 +284,6 @@ void SpringSimulator::initializeFromShape(const Shape& shape, double scale, Init
   });
 }
 
-void SpringSimulator::relax() {
 void SpringSimulator::relax(bool extra_long_relaxation) {
   double max_displacement = 0;
   int iteration_count = 0;
