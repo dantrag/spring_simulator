@@ -8,6 +8,8 @@
 
 class XMLIO {
  public:
+  virtual ~XMLIO() = default;
+
   virtual bool loadFromXMLNode(pugi::xml_node root) = 0;
   virtual bool loadFromXML(std::string xml_file) = 0;
   void saveToXML(std::string filename) const;
