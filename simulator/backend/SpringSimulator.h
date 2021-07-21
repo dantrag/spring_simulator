@@ -74,7 +74,7 @@ class SpringSimulator : public XMLIO, public TypeReadable {
 
   // Operation
   void runLinearPasses();
-  void relax();
+  void relax(bool extra_long_relaxation = false);
   void clear();
   Path predictMoves(Shape target, Actuator* actuator,
                     double entry_margin, double exit_margin,

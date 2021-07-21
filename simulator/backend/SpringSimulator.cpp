@@ -285,6 +285,7 @@ void SpringSimulator::initializeFromShape(const Shape& shape, double scale, Init
 }
 
 void SpringSimulator::relax() {
+void SpringSimulator::relax(bool extra_long_relaxation) {
   double max_displacement = 0;
   int iteration_count = 0;
   movable_particles_.clear();
@@ -352,8 +353,8 @@ void SpringSimulator::relax() {
     }
 
     iteration_count++;
-  } while (max_displacement > settings_->relaxationConvergenceLimit() &&
-           iteration_count < settings_->relaxationIterationLimit());
+  } while (max_displacement > settings_->relaxationConvergenceLimit() * (extra_long_relaxation ? 0.1 : 1) &&
+           iteration_count < settings_->relaxationIterationLimit() * (extra_long_relaxation ? 10 : 1));
 
   log_ << iteration_count << " steps in " << stopwatch(timer) << " ms\n";
 }
