@@ -51,13 +51,13 @@ Pusher acts as a typical robotic manipulator that grasps a piece of material and
  <img src="/docs/single-pusher.png" width="400" />
 </p>
 <p align="center">
- Figure 2. Different responses based on different spring force constants (rigidity) and actuator options.
+ Figure 2. Different responses based on different number of <a href="#simulator">iterations</a>.
 <p>
  
 Pushers are more helpful when two or more are used. With several pushers one can stretch the material (Figure 3).
 
 <p align="center">
- <img src="/docs/two-pushers.png" width="400" />
+ <img src="/docs/two-pushers.png" width="600" />
 </p>
 <p align="center">
  Figure 3. Stretching a rectangular particle network with two pushers.
@@ -118,6 +118,7 @@ Non-GUI version of the simulator has a command line interface. The following opt
 | -o      | output file; XML with the final state of the simulator if the *simulate* command is supplied; CSV file with the coordinates of the piecewise-linear move if the *predict* command is supplied |
 | -t      | target shape file for *predict* command: a CSV file with the coordinates of a target shape outline. The shape is scaled to the current spot area and translated to match shapes' barycenters. Used only with *predict* command. |
 | -s      | settings file; see format below |
+| -S      | XML output file for full simulator data to be saved |
 | -w      | switch that turns on inelasticity |
 | -h      | show help |
 
@@ -274,19 +275,21 @@ Size=
 
 #### non-GUI
 
-First, make sure `make` and `g++` are installed (`sudo apt-get install make g++`). For Windows, use can use [Cygwin](https://www.cygwin.com/). Then run `make` in the root of the repository. This should create an executable in the _./builds/nongui_ folder.
+First, make sure `make` and `g++` are installed (`sudo apt-get install make g++`). For Windows, use can use [Cygwin](https://www.cygwin.com/). Then run `make` in the root of the repository. This should create an executable in _./builds/nongui_.
 
 #### GUI
 
-On the top of `make` and `g++`, you need to have `Qt` installed, for example, via 'apt-get install qt5-default'. Go to _./simulator_, run `qmake` and then `make`. This should create an executable in the same folder.
+On the top of `make` and `g++`, you need to have `Qt` installed, for example, via 'apt-get install qt5-default'. Qt 5.12 is supported, as it is default version for Ubuntu 20.04. Go to _./builds_, run `qmake ../simulator/SpringSystem.pro` and then `make`. This should create an executable in _./builds/release-x64_.
 
 ### Simulation details
 
 Simulator uses discrete time. Each simulation step is called a _tick_, and all speeds are specified per tick. First, simulator calculates how many ticks it will take for each actuator to complete its pass. The simulation lasts until the latest actuator finishes its pass. Then, for each tick, all actuators are moved along their respective paths according to their speeds. Finally, processing of particles begins. First step is preprocessing - for example, particles which freeze at this point of time, are marked as frozen but still allowed to move to simulate the contraction of matter upon cooling down. Second step is the processing of the particles by actuators: heaters melt particles they cover, and pushers forcefully move the particles they cover. Third step is so-called relaxation which includes calculation of forces and displacements. In short, the force is calculated for each spring, and the force acting on a particle is a vector sum of all forces from the attached springs. The displacement of a particle is then calculated based on the force. Normally a spring crossing is not allowed, meaning that the displacement is limited in such a way that particles do not cross other springs. After all displacements are calculated, all particles are moved accordingly. In the fourth step the postprocessing of particles takes place: for example, newly frozen particles become immovable. After all actuators finished theirs passes, all particles reset their states: molten particles are cooled down, and (if the release option is set) particles grasped by a pusher are released. After this, the final relaxation is performed, and all actuators are disabled.
 
-The primary difference between elastic and inelastic simulator is the connectivity during the simulation. Inelastic simulator includes an updateConnectivity() method which first checks if there are too long springs. In case there are such springs, the method also checks whether removal of such springs will create large cycles ("holes" inside the material). For each too long spring that cannot be removed without creating a large cycle (typically longer than 4), the algorithm tries to fill this cycle with another, shorter spring. This approach allows to keep the connectivity without creating holes and also to avoid getting too long springs. Second stage of the algorithm checks if there are particles that came close enough to form a spring between them. Since spring crossing is not allowed, it also checks if a new spring will cross any already existing springs.
+The primary difference between elastic and inelastic simulator is the connectivity during the simulation. Inelastic simulator includes an updateConnectivity() method which first checks if there are too long springs. In case there are such springs, the method also checks whether removal of such springs will create large cycles ("holes" inside the material). For each too long spring that cannot be removed without creating a large cycle (typically longer than 3), the algorithm tries to fill this cycle with another, shorter spring. This approach allows to keep the connectivity without creating holes and also to avoid getting too long springs. Second stage of the algorithm checks if there are particles that came close enough to form a spring between them. Since spring crossing is not allowed, it also checks if a new spring will cross any already existing springs.
 
 ### Class reference
+
+#### Summary
 
 | Class | Description |
 |:-------------:|:-------------|
