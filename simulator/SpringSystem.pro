@@ -3,6 +3,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
+CONFIG -= debug_and_release debug_and_release_target
 
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE *= -Ofast
@@ -79,9 +80,9 @@ RESOURCES += \
   ui/res/images.qrc
 
 CONFIG(debug, debug|release) {
-    DESTDIR = ../debug-x64
+    DESTDIR = debug-x64
 } else {
-    DESTDIR = ../release-x64
+    DESTDIR = release-x64
 }
 
 OBJECTS_DIR = $${DESTDIR}/.obj

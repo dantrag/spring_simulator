@@ -733,21 +733,21 @@ void MainWindow::populateSettings() {
 }
 
 void MainWindow::connectSettingsSignals() {
-  connect(ui_->particle_radius_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->particle_radius_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setParticleDefaultRadius(value); });
-  connect(ui_->particle_molten_radius_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->particle_molten_radius_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setMoltenParticleDefaultRadius(value); });
   connect(ui_->cooldown_time_spinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
           [&](int value) { sim_->settings()->setMoltenParticleCooldownTime(value); });
-  connect(ui_->spring_length_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->spring_length_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setSpringDefaultLength(value); });
-  connect(ui_->spring_stiffness_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->spring_stiffness_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setSpringDefaultStiffness(value); });
-  connect(ui_->spring_connection_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->spring_connection_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setSpringConnectionThreshold(value); });
-  connect(ui_->spring_disconnection_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->spring_disconnection_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setSpringDisconnectionThreshold(value); });
-  connect(ui_->relaxation_convergence_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+  connect(ui_->relaxation_convergence_spinbox, QDoubleSpinBoxChanged,
           [&](double value) { sim_->settings()->setRelaxationConvergenceLimit(value); });
   connect(ui_->iteration_limit_spinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
           [&](int value) { sim_->settings()->setRelaxationIterationLimit(value); });

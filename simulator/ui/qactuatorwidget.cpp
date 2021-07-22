@@ -33,8 +33,8 @@ QActuatorWidget::QActuatorWidget(QWidget* parent, const Actuator* actuator)
   ui_->actuator_preview->setScene(new QGraphicsScene(ui_->actuator_preview));
 
   connect(ui_->coordinates_line_edit, &QLineEdit::textChanged, this, &QActuatorWidget::updatePreview);
-  connect(ui_->orientation_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::updatePreview);
-  connect(ui_->speed_spinbox, &QDoubleSpinBox::textChanged, this, &QActuatorWidget::actuatorSpeedChanged);
+  connect(ui_->orientation_spinbox, QDoubleSpinBoxChanged, this, &QActuatorWidget::updatePreview);
+  connect(ui_->speed_spinbox, QDoubleSpinBoxChanged, this, &QActuatorWidget::actuatorSpeedChanged);
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, this, &QActuatorWidget::actuatorPathChanged);
   connect(ui_->enabled_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorEnabledChanged);
   connect(ui_->allow_spring_crossing_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorSpringCrossingChanged);
