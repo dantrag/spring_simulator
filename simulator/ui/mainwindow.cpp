@@ -6,7 +6,6 @@
 #include <iostream>
 #include <exception>
 #include <sstream>
-#include <unordered_set>
 
 #include <QDesktopWidget>
 #include <QColor>
@@ -34,6 +33,8 @@ const std::vector<QColor> kColorPalette = {QColor::fromRgb(27, 158, 119),
 void MainWindow::clearUI() {
   eraseActuators();
 
+  ui_->graphicsView->scene()->clearSelection();
+
   for (auto p : particle_ui_) if (p.second) {
     ui_->graphicsView->scene()->removeItem(p.second);
     delete p.second;
@@ -44,6 +45,9 @@ void MainWindow::clearUI() {
     delete s.second;
   }
   spring_ui_.clear();
+
+  selected_particle_states_.clear();
+  selected_spring_states_.clear();
 
   for (auto contour_item : contour_ui_) if (contour_item) {
     ui_->graphicsView->scene()->removeItem(contour_item);
@@ -66,6 +70,8 @@ void MainWindow::addNewState() {
 
 void MainWindow::restoreCurrentState() {
   sim_->restoreState(current_sim_state_);
+  addNewState();
+  updateFieldUI();
 }
 
 void MainWindow::recreateSimulator() {
@@ -117,6 +123,9 @@ void MainWindow::createScene() {
         }
       }
       current_scene->releasePass();
+    }
+    if (current_scene->currentMode() == QCustomGraphicsScene::MouseMode::kSelection) {
+      selectionChanged();
     }
   });
   connect(ui_->show_axes_checkbox, &QCheckBox::clicked, scene, &QCustomGraphicsScene::setAxesVisibility);
@@ -188,54 +197,247 @@ void MainWindow::initializeFieldImage() {
   }
 }
 
-void MainWindow::doHeat() {
-  auto scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
-  auto rect = scene->getSelection();
-  double left = std::min(rect.left(), rect.right());
-  double right = std::max(rect.left(), rect.right());
-  double top = std::min(rect.top(), rect.bottom());
-  double bottom = std::max(rect.top(), rect.bottom());
-  scene->releaseSelection();
-  if (left == right || top == bottom) return;
+std::vector<Particle*> MainWindow::getSelectedParticles() {
+  std::vector<Particle*> particles = {};
 
-  for (auto p : sim_->particles()) {
-    if (p->x() >= left && p->x() <= right &&
-        p->y() >= top && p->y() <= bottom) {
-      p->setMolten(true);
-      p->setMovable(true);
+  if (isLatestState()) {
+    std::unordered_map<ParticleState*, Particle*> particle_map;
+    for (auto p : sim_->particles()) {
+      auto state = current_sim_state_->getItemState(p);
+      if (state != nullptr) {
+        particle_map[state] = p;
+      }
+    }
+
+    for (auto particle_state : selected_particle_states_) {
+      if (particle_map.find(particle_state) != particle_map.end()) {
+        particles.push_back(particle_map[particle_state]);
+      }
     }
   }
+
+  return particles;
+}
+
+std::vector<Spring*> MainWindow::getSelectedSprings() {
+  std::vector<Spring*> springs = {};
+
+  if (isLatestState()) {
+    std::unordered_map<SpringState*, Spring*> spring_map;
+    for (auto p : sim_->particles()) {
+      for (auto s : p->springs()) {
+        auto state = current_sim_state_->getItemState(s);
+        if (state != nullptr) {
+          spring_map[state] = s;
+        }
+      }
+    }
+
+    for (auto spring_state : selected_spring_states_) {
+      if (spring_map.find(spring_state) != spring_map.end()) {
+        springs.push_back(spring_map[spring_state]);
+      }
+    }
+  }
+
+  return springs;
+}
+
+template <class Item, class ItemState, class ItemUI>
+void MainWindow::restoreSelection(const std::vector<Item*>& items,
+                                  const std::unordered_map<ItemState*, ItemUI*> ui) {
+  for (auto item : items) {
+    auto item_state = current_sim_state_->getItemState(item);
+    if (item_state != nullptr) {
+      if (ui.find(item_state) != ui.end()) {
+        ui.at(item_state)->setSelected(true);
+      }
+    }
+  }
+}
+
+void MainWindow::identifySelectedStates() {
+  selected_particle_states_.clear();
+  for (auto particle_ui : particle_ui_) {
+    if (particle_ui.second->isSelected()) {
+      selected_particle_states_.insert(particle_ui.first);
+    }
+  }
+
+  selected_spring_states_.clear();
+  for (auto spring_ui : spring_ui_) {
+    if (spring_ui.second->isSelected()) {
+      selected_spring_states_.insert(spring_ui.first);
+    }
+  }
+}
+
+void MainWindow::selectionChanged() {
+  selected_particle_states_.clear();
+  selected_spring_states_.clear();
+
+  ui_->single_particle_editor->hide();
+  ui_->multiple_particles_editor->hide();
+  ui_->heating_editor->hide();
+  ui_->spring_editor->hide();
+  ui_->empty_selection_label->show();
+
+  ui_->stiffness_spinbox->disconnect();
+  ui_->equilibrium_length_spinbox->disconnect();
+
+  if (!isLatestState()) return;
+
+  identifySelectedStates();
+
+  /*
+  if (!selected_particle_states_.empty()) {
+    ui_->multiple_particles_editor->show();
+    if (selected_particle_states_.size() == 1u) {
+      auto particle_state = *selected_particle_states_.begin();
+      ui_->single_particle_editor->show();
+      ui_->x_coordinate_spinbox->setValue(particle_state->x());
+      ui_->y_coordinate_spinbox->setValue(particle_state->y());
+      connect(ui_->x_coordinate_spinbox,
+              QDoubleSpinBoxChanged,
+              [this, particle_state](double value) {
+        if (!isLatestState()) return;
+        for (auto p : sim_->particles()) {
+          if (current_sim_state_->getParticleState(p) == particle_state) {
+            auto ui = dynamic_cast<QGraphicsEllipseItem*>(particle_ui_[particle_state]);
+            std::cout << ui->x() << std::endl;
+            //ui->moveBy(value - p->x());
+            p->setDisplacement(Point(value - p->x(), 0.0));
+            p->applyDisplacement();
+            ui->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
+                                              .arg(p->y(), 0, 'f', 0));
+            break;
+          }
+        }
+      });
+    }
+  }
+  */
+
+  if (!selected_spring_states_.empty()) {
+    ui_->spring_editor->show();
+    ui_->empty_selection_label->hide();
+    ui_->stiffness_spinbox->setSpecialValueText("(multiple)");
+    ui_->equilibrium_length_spinbox->setSpecialValueText("(multiple)");
+
+    auto first_spring_state = *selected_spring_states_.begin();
+    ui_->stiffness_spinbox->setValue(first_spring_state->forceConstant());
+    ui_->equilibrium_length_spinbox->setValue(first_spring_state->equilibriumLength());
+    if (selected_spring_states_.size() > 1u) {
+      if (!std::all_of(selected_spring_states_.begin(), selected_spring_states_.end(),
+                       [&first_spring_state](const SpringState* state) {
+                         return std::abs(state->forceConstant() - first_spring_state->forceConstant()) < 1e-5;
+                       }))
+        ui_->stiffness_spinbox->setValue(0.0);
+
+      if (!std::all_of(selected_spring_states_.begin(), selected_spring_states_.end(),
+                       [&first_spring_state](const SpringState* state) {
+                         return std::abs(state->equilibriumLength() - first_spring_state->equilibriumLength()) < 1e-5;
+                       }))
+        ui_->equilibrium_length_spinbox->setValue(0.0);
+    }
+
+    connect(ui_->stiffness_spinbox,
+            QDoubleSpinBoxChanged,
+            [this](double value) {
+      if (!isLatestState()) return;
+      if (value < 1e-5) return;
+      ui_->stiffness_spinbox->setSpecialValueText("");
+
+      auto selected_particles = getSelectedParticles();
+      auto selected_springs = getSelectedSprings();
+      for (auto spring : selected_springs) {
+        spring->setForceConstant(value);
+      }
+
+      addNewState();
+      updateFieldUI();
+
+      restoreSelection(selected_particles, particle_ui_);
+      restoreSelection(selected_springs, spring_ui_);
+      identifySelectedStates();
+    });
+
+    connect(ui_->equilibrium_length_spinbox,
+            QDoubleSpinBoxChanged,
+            [this](double value) {
+      if (!isLatestState()) return;
+      if (value < 1e-5) return;
+      ui_->equilibrium_length_spinbox->setSpecialValueText("");
+
+      auto selected_particles = getSelectedParticles();
+      auto selected_springs = getSelectedSprings();
+      for (auto spring : selected_springs) {
+        spring->setLength(value);
+      }
+
+      addNewState();
+      updateFieldUI();
+
+      restoreSelection(selected_particles, particle_ui_);
+      restoreSelection(selected_springs, spring_ui_);
+      identifySelectedStates();
+    });
+  }
+}
+
+void MainWindow::doHeat() {
+  auto scene = ui_->graphicsView->scene();
+
+  if (scene->selectedItems().empty()) return;
+
+  for (auto p : sim_->particles()) {
+    if (auto state = current_sim_state_->getItemState(p)) {
+      if (particle_ui_.find(state) != particle_ui_.end()) {
+        if (particle_ui_[state]->isSelected()) {
+          p->setMolten(true);
+          p->setMovable(true);
+          p->setMeltingTimeout(100000);
+        }
+      }
+    }
+  }
+
   for (auto p : sim_->particles()) {
     for (auto s : p->springs()) s->updateForce();
   }
 
   sim_->relax();
+
   addNewState();
   updateFieldUI();
 }
 
 void MainWindow::doCool() {
-  auto scene = dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene());
-  auto rect = scene->getSelection();
-  double left = std::min(rect.left(), rect.right());
-  double right = std::max(rect.left(), rect.right());
-  double top = std::min(rect.top(), rect.bottom());
-  double bottom = std::max(rect.top(), rect.bottom());
-  scene->releaseSelection();
+  auto scene = ui_->graphicsView->scene();
+
+  if (scene->selectedItems().empty()) return;
 
   for (auto p : sim_->particles()) {
-    if (p->x() >= left && p->x() <= right &&
-        p->y() >= top && p->y() <= bottom &&
-        p->isMolten()) {
-      p->setMolten(false);
-      p->setMovable(true);
+    if (auto state = current_sim_state_->getItemState(p)) {
+      if (particle_ui_.find(state) != particle_ui_.end()) {
+        if (particle_ui_[state]->isSelected()) {
+          p->setMolten(false);
+          p->setMovable(true);
+        }
+      }
     }
   }
+
   for (auto p : sim_->particles()) {
     for (auto s : p->springs()) s->updateForce();
   }
 
   sim_->relax();
+
+  for (auto p : sim_->particles()) {
+    p->setMovable(false);
+  }
+
   addNewState();
   updateFieldUI();
 }
@@ -382,14 +584,19 @@ void MainWindow::updateFieldUI() {
       particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
                                                      .arg(p->y(), 0, 'f', 0));
       particle_ui_[p]->setZValue(20);
+      particle_ui_[p]->setFlag(QGraphicsItem::ItemIsSelectable, true);
     }
     for (auto s : current_sim_state_->springs()) {
       spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
                                                           s->particle2()->x(), s->particle2()->y(),
-                                                          QPen(Qt::darkGreen));
-      spring_ui_[s]->setToolTip(QString("L: %1\nS: %2").arg(s->actualLength(), 0, 'f', 1)
-                                                       .arg(s->stretch(), 0, 'f', 2));
+                                                          QPen(QBrush(Qt::darkGreen),
+                                                               sim_->settings()->particleDefaultRadius() * (0.5 + 1.5 * s->forceConstant())));
+      spring_ui_[s]->setToolTip(QString("Length: %1\nStretch: %2\nStiffness: %3")
+                                  .arg(s->actualLength(), 0, 'f', 1)
+                                  .arg(s->stretch(), 0, 'f', 2)
+                                  .arg(s->forceConstant(), 0, 'f', 2));
       spring_ui_[s]->setZValue(10);
+      spring_ui_[s]->setFlag(QGraphicsItem::ItemIsSelectable, true);
     }
   }
   displayContour(ui_->show_contour_checkbox->isChecked());
@@ -407,6 +614,10 @@ void MainWindow::updateFieldUI() {
 void MainWindow::displayState(SpringSimulatorState* state) {
   current_sim_state_ = state;
   updateFieldUI();
+}
+
+inline bool MainWindow::isLatestState() {
+  return (!sim_states_.empty() && current_sim_state_ == *sim_states_.rbegin());
 }
 
 void MainWindow::decrementState() {
@@ -704,6 +915,20 @@ void MainWindow::saveSimulatorToFile() {
     sim_->saveToXML(filename.toStdString());
 }
 
+void MainWindow::loadStateFromFile() {
+  auto filename = QFileDialog::getOpenFileName(this, "Load state from file",
+                                               QApplication::applicationDirPath(),
+                                               "Extensible Markup Language (*.xml);;"
+                                               "All Files (*)");
+  if (!filename.isEmpty()) {
+    auto state = new SpringSimulatorState(filename.toStdString());
+    sim_->restoreState(state);
+    delete state;
+    addNewState();
+    updateFieldUI();
+  }
+}
+
 void MainWindow::saveStateToFile() {
   auto filename = QFileDialog::getSaveFileName(this, "Save state to file",
                                                QApplication::applicationDirPath(),
@@ -725,11 +950,6 @@ void MainWindow::populateSettings() {
 
   ui_->iteration_limit_spinbox->setValue(sim_->settings()->relaxationIterationLimit());
   ui_->relaxation_convergence_spinbox->setValue(sim_->settings()->relaxationConvergenceLimit());
-
-  ui_->heater_size_spinbox->setValue(sim_->settings()->heaterSize());
-  ui_->heater_speed_spinbox->setValue(sim_->settings()->actuatorSpeed());
-
-  ui_->pusher_speed_spinbox->setValue(sim_->settings()->actuatorSpeed());
 }
 
 void MainWindow::connectSettingsSignals() {
@@ -751,15 +971,14 @@ void MainWindow::connectSettingsSignals() {
           [&](double value) { sim_->settings()->setRelaxationConvergenceLimit(value); });
   connect(ui_->iteration_limit_spinbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
           [&](int value) { sim_->settings()->setRelaxationIterationLimit(value); });
-  connect(ui_->heater_size_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-          [&](double value) { sim_->settings()->setHeaterSize(value); });
-  connect(ui_->heater_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-          [&](double value) { sim_->settings()->setActuatorSpeed(value); });
-  connect(ui_->pusher_speed_spinbox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-          [&](double value) { sim_->settings()->setActuatorSpeed(value); });
 
   connect(ui_->drawing_mode_button_group, static_cast<void (QButtonGroup::*)(int)>(&QButtonGroup::buttonClicked),
-          [&](int) { dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->setMode(static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId())); });
+          [&](int) {
+    auto mode = static_cast<QCustomGraphicsScene::MouseMode>(ui_->drawing_mode_button_group->checkedId());
+    dynamic_cast<QCustomGraphicsScene*>(ui_->graphicsView->scene())->setMode(mode);
+    ui_->graphicsView->setDragMode(mode == (QCustomGraphicsScene::kSelection) ? QGraphicsView::RubberBandDrag
+                                                                              : QGraphicsView::NoDrag);
+   });
 }
 
 Actuator* MainWindow::createActuatorByType(int type, bool& loaded) {
@@ -819,7 +1038,7 @@ void MainWindow::addActuatorUI(Actuator* actuator, bool actuator_loaded) {
   widget_to_actuator_[actuator_widget] = actuator;
 
   // find an available unqiue name for a new actuator
-  std::unordered_set<QString> taken_names;
+  std::set<QString> taken_names;
   for (int index = 0; index < ui_->actuator_list->count(); ++ index)
     taken_names.insert(ui_->actuator_list->itemText(index));
 
@@ -906,6 +1125,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
     : QMainWindow(parent), ui_(new Ui::MainWindow), sim_(simulator) {
   ui_->setupUi(this);
 
+  ui_->graphicsView->setRubberBandSelectionMode(Qt::ContainsItemShape);
+
   actuator_placeholder_ = ui_->actuator_placeholder_widget;
   for (int index = 0; index < kActuatorTypeCount; ++index) {
     QString actuator_name = "Unknown actuator";
@@ -954,6 +1175,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   ui_->drawing_mode_button_group->setId(ui_->pass_drawing_button,
                                      static_cast<int>(QCustomGraphicsScene::MouseMode::kPassDrawing));
   ui_->pass_drawing_button->setChecked(true);
+  ui_->graphicsView->setDragMode(QGraphicsView::NoDrag);
 
   createScene();
 
@@ -979,6 +1201,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->previous_state_button, &QToolButton::clicked, this, &MainWindow::decrementState);
   connect(ui_->next_state_button, &QToolButton::clicked, this, &MainWindow::incrementState);
   connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
+  connect(ui_->load_state_button, &QPushButton::clicked, this, &MainWindow::loadStateFromFile);
   connect(ui_->save_state_button, &QPushButton::clicked, this, &MainWindow::saveStateToFile);
   connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
   connect(ui_->add_actuator_button, &QToolButton::clicked, this, &MainWindow::addActuator);

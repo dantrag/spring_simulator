@@ -80,20 +80,15 @@ QRectF QCustomGraphicsScene::fieldBoundingRect() {
 }
 
 void QCustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+  QGraphicsScene::mousePressEvent(event);
   if (event->buttons() & Qt::LeftButton) {
     drawingOn();
     switch (mode) {
       case MouseMode::kSelection : {
-        if (selection)
-          selection->setRect(event->scenePos().x(), event->scenePos().y(), 0, 0);
-        else {
-          selection = addRect(event->scenePos().x(), event->scenePos().y(), 0, 0, QPen(QBrush(Qt::darkBlue), 1));
-          selection->setZValue(30);
-        }
         break;
       }
       case MouseMode::kPassDrawing : {
-        releaseSelection();
+        clearSelection();
         if (pass)
           pass->setLine(QLineF(pass->line().p1(), QPointF(event->scenePos().x(), event->scenePos().y())));
         else {
@@ -112,6 +107,8 @@ void QCustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 }
 
 void QCustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
+  QGraphicsScene::mouseMoveEvent(event);
+
   double x = event->scenePos().x();
   double y = event->scenePos().y();
   emit mouseMoved(x, y);
@@ -119,8 +116,6 @@ void QCustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
     if (event->buttons() & Qt::LeftButton) {
       switch (mode) {
         case MouseMode::kSelection : {
-          selection->setRect(selection->rect().x(), selection->rect().y(),
-                             x - selection->rect().x(), y - selection->rect().y());
           break;
         }
         case MouseMode::kPassDrawing : {
@@ -139,7 +134,9 @@ void QCustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event) {
   }
 }
 
-void QCustomGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent*) {
+void QCustomGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
+  QGraphicsScene::mouseReleaseEvent(event);
+
   if (isDrawingNow()) {
     drawingOff();
     emit drawingFinished();

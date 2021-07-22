@@ -25,15 +25,8 @@ public:
   MouseMode currentMode() { return mode; }
   void setAxesVisibility(bool visible) { show_axes_ = visible; updateAxesVisibility(); }
 
-  void releaseSelection() { if (selection) { removeItem(selection); delete selection; selection = nullptr; update(); } }
   void releasePass() { if (pass) { removeItem(pass); delete pass; pass = nullptr; update(); } }
 
-  const QRectF getSelection() {
-    if (selection)
-      return selection->rect();
-    else
-      return QRectF();
-  }
   const QLineF getPass() {
     if (pass)
       return pass->line();
@@ -43,7 +36,7 @@ public:
 
   void mousePressEvent(QGraphicsSceneMouseEvent* event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event) override;
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent*) override;
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
 
   void clearField();
 
@@ -61,7 +54,6 @@ private:
   bool drawing_now = false;
   bool show_axes_ = true;
 
-  QGraphicsRectItem* selection = nullptr;
   QGraphicsLineItem* pass = nullptr;
   QGraphicsLineItem* x_axis = nullptr;
   QGraphicsLineItem* y_axis = nullptr;

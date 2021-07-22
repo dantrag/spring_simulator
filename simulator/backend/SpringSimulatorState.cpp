@@ -7,22 +7,43 @@
 
 SpringSimulatorState::SpringSimulatorState(const SpringSimulator* simulator, int id) {
   id_ = id;
-  std::unordered_map<Particle*, ParticleState*> states = {};
 
   for (const auto p : simulator->particles()) {
     particles_.push_back(new ParticleState(p));
-    states[p] = *particles_.rbegin();
+    particle_state_mapping_[p] = *particles_.rbegin();
   }
 
   for (const auto p : simulator->particles()) {
     for (const auto s : p->springs()) {
       // iterate only once each string
       if (p < s->otherEnd(p)) {
-        springs_.push_back(new SpringState(states[p], states[s->otherEnd(p)],
+        springs_.push_back(new SpringState(particle_state_mapping_[p],
+                                           particle_state_mapping_[s->otherEnd(p)],
                                            s->length(), s->forceConstant()));
+        spring_state_mapping_[s] = *springs_.rbegin();
       }
     }
   }
+}
+
+ParticleState* SpringSimulatorState::getItemState(Particle* particle) const {
+  if (particle) {
+    if (particle_state_mapping_.find(particle) != particle_state_mapping_.end())
+      return particle_state_mapping_.at(particle);
+    else
+      return nullptr;
+  }
+  return nullptr;
+}
+
+SpringState* SpringSimulatorState::getItemState(Spring* spring) const {
+  if (spring) {
+    if (spring_state_mapping_.find(spring) != spring_state_mapping_.end())
+      return spring_state_mapping_.at(spring);
+    else
+      return nullptr;
+  }
+  return nullptr;
 }
 
 SpringSimulatorState::SpringSimulatorState(std::string xml_file) {

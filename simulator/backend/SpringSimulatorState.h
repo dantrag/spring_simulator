@@ -2,6 +2,7 @@
 #define SPRINGSIMULATORSTATE_H
 
 #include <vector>
+#include <unordered_map>
 
 #include "backend/XMLIO.h"
 #include "backend/ParticleState.h"
@@ -23,6 +24,9 @@ class SpringSimulatorState : public XMLIO {
   const std::vector<SpringState*>& springs() const { return springs_; }
   int id() const { return id_; }
 
+  ParticleState* getItemState(Particle* particle) const;
+  SpringState* getItemState(Spring* spring) const;
+
   Shape fieldContour();
 
   bool loadFromXMLNode(pugi::xml_node root) override;
@@ -31,6 +35,9 @@ class SpringSimulatorState : public XMLIO {
 
  protected:
   void clear();
+
+  std::unordered_map<Particle*, ParticleState*> particle_state_mapping_;
+  std::unordered_map<Spring*, SpringState*> spring_state_mapping_;
 
   std::vector<ParticleState*> particles_;
   std::vector<SpringState*> springs_;

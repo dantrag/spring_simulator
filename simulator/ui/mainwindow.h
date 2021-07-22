@@ -4,6 +4,7 @@
 #include <deque>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <QMainWindow>
 #include <QGraphicsEllipseItem>
@@ -21,8 +22,6 @@
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
-struct State;
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -47,8 +46,6 @@ private:
   static const int kActuatorTypeCount = 2;
 
   Ui::MainWindow* ui_;
-  std::deque<State*> states;
-  std::deque<State*>::iterator current_state;
 
   void clearUI();
   void recreateSimulator();
@@ -63,9 +60,11 @@ private:
   void decrementState();
   void incrementState();
   void restoreCurrentState();
+  void loadStateFromFile();
   void saveStateToFile();
   void loadSimulatorFromFile();
   void saveSimulatorToFile();
+  inline bool isLatestState();
 
   void doHeat();
   void doCool();
@@ -90,6 +89,15 @@ private:
   void redrawActuators();
   void displayActuators(bool show = true);
   void displayContour(bool show = true);
+  void selectionChanged();
+
+  void identifySelectedStates();
+  std::vector<Particle*> getSelectedParticles();
+  std::vector<Spring*> getSelectedSprings();
+
+  template <class Item, class ItemState, class ItemUI>
+  void restoreSelection(const std::vector<Item*>& items,
+                        const std::unordered_map<ItemState*, ItemUI*> ui);
 
   QWidget* actuator_placeholder_ = nullptr;
   std::vector<Actuator*> actuators_;
@@ -101,6 +109,9 @@ private:
   std::unordered_map<Actuator*, std::vector<QGraphicsItem*>> actuators_ui_;
   std::vector<SpringSimulatorState*> sim_states_;
   SpringSimulatorState* current_sim_state_ = nullptr;
+
+  std::unordered_set<ParticleState*> selected_particle_states_;
+  std::unordered_set<SpringState*> selected_spring_states_;
 
   std::vector<QGraphicsItem*> contour_ui_;
   QPixmap bkg_image_;

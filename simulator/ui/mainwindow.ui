@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
-    <height>931</height>
+    <width>718</width>
+    <height>973</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <normaloff>:/icons/logo</normaloff>:/icons/logo</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="layout7" stretch="4,1,1,1">
+   <layout class="QHBoxLayout" name="layout7" stretch="3,1,1,1">
     <item>
      <widget class="QGraphicsView" name="graphicsView">
       <property name="mouseTracking">
@@ -27,7 +27,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="layout1">
+     <layout class="QVBoxLayout" name="layout1" stretch="0,0,1">
       <item>
        <widget class="QGroupBox" name="static14">
         <property name="sizeIncrement">
@@ -57,7 +57,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>171</width>
+              <width>200</width>
               <height>139</height>
              </rect>
             </property>
@@ -148,7 +148,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>171</width>
+              <width>200</width>
               <height>170</height>
              </rect>
             </property>
@@ -263,7 +263,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>171</width>
+              <width>200</width>
               <height>68</height>
              </rect>
             </property>
@@ -321,140 +321,18 @@
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="layout33">
-           <item>
-            <widget class="QLabel" name="static15">
-             <property name="text">
-              <string>Selected area:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="heat_button">
-             <property name="palette">
-              <palette>
-               <active>
-                <colorrole role="ButtonText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>170</red>
-                   <green>0</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </active>
-               <inactive>
-                <colorrole role="ButtonText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>170</red>
-                   <green>0</green>
-                   <blue>0</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </inactive>
-               <disabled>
-                <colorrole role="ButtonText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>120</red>
-                   <green>120</green>
-                   <blue>120</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </disabled>
-              </palette>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Heat</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QToolButton" name="cool_button">
-             <property name="palette">
-              <palette>
-               <active>
-                <colorrole role="ButtonText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>0</red>
-                   <green>0</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </active>
-               <inactive>
-                <colorrole role="ButtonText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>0</red>
-                   <green>0</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </inactive>
-               <disabled>
-                <colorrole role="ButtonText">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>120</red>
-                   <green>120</green>
-                   <blue>120</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </disabled>
-              </palette>
-             </property>
-             <property name="font">
-              <font>
-               <weight>75</weight>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>Cool</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="Line" name="static44">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QPushButton" name="load_simulator_button">
+           <property name="text">
+            <string>Load simulator from file</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="layout41">
-           <item>
-            <widget class="QPushButton" name="load_simulator_button">
-             <property name="text">
-              <string>Load from file</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="save_simulator_button">
-             <property name="text">
-              <string>Save to file</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <widget class="QPushButton" name="save_simulator_button">
+           <property name="text">
+            <string>Save simulator to file</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="Line" name="static6">
@@ -487,41 +365,366 @@
        </widget>
       </item>
       <item>
+       <widget class="QGroupBox" name="static3">
+        <property name="title">
+         <string>State editor</string>
+        </property>
+        <layout class="QVBoxLayout" name="layout10">
+         <item>
+          <layout class="QHBoxLayout" name="layout34" stretch="0,1,0">
+           <item>
+            <widget class="QToolButton" name="previous_state_button">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="state_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Empty state</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QToolButton" name="next_state_button">
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="restore_state_button">
+           <property name="text">
+            <string>Restore this state</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_state_button">
+           <property name="text">
+            <string>Load state from file</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="save_state_button">
+           <property name="text">
+            <string>Save state to file</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="static2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="empty_selection_label">
+           <property name="text">
+            <string>No objects selected</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="heating_editor" native="true">
+           <layout class="QHBoxLayout" name="layout33">
+            <item>
+             <widget class="QToolButton" name="heat_button">
+              <property name="palette">
+               <palette>
+                <active>
+                 <colorrole role="ButtonText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>170</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </active>
+                <inactive>
+                 <colorrole role="ButtonText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>170</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </inactive>
+                <disabled>
+                 <colorrole role="ButtonText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>120</red>
+                    <green>120</green>
+                    <blue>120</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </disabled>
+               </palette>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Heat</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="cool_button">
+              <property name="palette">
+               <palette>
+                <active>
+                 <colorrole role="ButtonText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </active>
+                <inactive>
+                 <colorrole role="ButtonText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>255</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </inactive>
+                <disabled>
+                 <colorrole role="ButtonText">
+                  <brush brushstyle="SolidPattern">
+                   <color alpha="255">
+                    <red>120</red>
+                    <green>120</green>
+                    <blue>120</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </disabled>
+               </palette>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Cool</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="static15">
+              <property name="text">
+               <string>selected particles</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="single_particle_editor" native="true">
+           <layout class="QHBoxLayout" name="layout37">
+            <item>
+             <widget class="QLabel" name="static4">
+              <property name="text">
+               <string>X:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="x_coordinate_spinbox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+              <property name="decimals">
+               <number>3</number>
+              </property>
+              <property name="maximum">
+               <double>9999.998999999999796</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="static5">
+              <property name="text">
+               <string>Y:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="y_coordinate_spinbox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+              <property name="decimals">
+               <number>3</number>
+              </property>
+              <property name="maximum">
+               <double>9999.998999999999796</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="multiple_particles_editor" native="true">
+           <layout class="QHBoxLayout" name="layout39">
+            <item>
+             <widget class="QLabel" name="static30">
+              <property name="text">
+               <string>Radius:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="radius_spinbox">
+              <property name="keyboardTracking">
+               <bool>false</bool>
+              </property>
+              <property name="decimals">
+               <number>3</number>
+              </property>
+              <property name="maximum">
+               <double>9999.998999999999796</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="spring_editor" native="true">
+           <layout class="QVBoxLayout" name="layout41">
+            <item>
+             <layout class="QHBoxLayout" name="layout43">
+              <item>
+               <widget class="QLabel" name="static44">
+                <property name="text">
+                 <string>Stiffness:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="stiffness_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>1.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.010000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout44">
+              <item>
+               <widget class="QLabel" name="static49">
+                <property name="text">
+                 <string>Length:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="equilibrium_length_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="maximum">
+                 <double>9999.998999999999796</double>
+                </property>
+                <property name="value">
+                 <double>0.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="static12">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="layout3" stretch="0,0,0,0,0">
+      <item>
        <widget class="QGroupBox" name="static50">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="title">
          <string>Actuators</string>
         </property>
         <layout class="QVBoxLayout" name="layout38">
-         <item>
-          <widget class="QCheckBox" name="show_actuators_checkbox">
-           <property name="text">
-            <string>Display actuators</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolBox" name="actuator_list">
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="actuator_placeholder_widget">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>171</width>
-              <height>112</height>
-             </rect>
-            </property>
-            <attribute name="label">
-             <string>No actuators added</string>
-            </attribute>
-           </widget>
-          </widget>
-         </item>
          <item>
           <layout class="QHBoxLayout" name="layout40">
            <item>
@@ -559,14 +762,57 @@
        </widget>
       </item>
       <item>
-       <spacer name="static12">
+       <widget class="QCustomToolBox" name="actuator_list">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="actuator_placeholder_widget">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>148</width>
+           <height>280</height>
+          </rect>
+         </property>
+         <attribute name="label">
+          <string>No actuators added</string>
+         </attribute>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="static45">
+        <property name="text">
+         <string>Tech log:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="log_text_edit">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="static13">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>20</width>
-          <height>40</height>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
        </spacer>
@@ -574,755 +820,575 @@
      </layout>
     </item>
     <item>
-     <widget class="QGroupBox" name="static10">
-      <property name="title">
-       <string>Simulator settings</string>
-      </property>
-      <layout class="QVBoxLayout" name="layout5">
-       <item>
-        <widget class="QLabel" name="static30">
-         <property name="font">
-          <font>
-           <pointsize>6</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Be aware that changing settings between the runs of the same instance of a simulator might lead to an abnormal behavior! Rather run a new initialization after you alter the settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static46">
-         <property name="title">
-          <string>Simulator</string>
-         </property>
-         <layout class="QHBoxLayout" name="layout35">
-          <item>
-           <widget class="QRadioButton" name="inelastic_button">
-            <property name="text">
-             <string>Wax</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">simulator_type_button_group</string>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="elastic_button">
-            <property name="text">
-             <string>Cloth</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">simulator_type_button_group</string>
-            </attribute>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static16">
-         <property name="title">
-          <string>Particle</string>
-         </property>
-         <layout class="QVBoxLayout" name="layout14">
-          <item>
-           <layout class="QHBoxLayout" name="layout11">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static17">
-              <property name="text">
-               <string>Radius:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="particle_radius_spinbox">
-              <property name="decimals">
-               <number>2</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout12">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static18">
-              <property name="text">
-               <string>Molten radius:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="particle_molten_radius_spinbox">
-              <property name="decimals">
-               <number>2</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>2.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout4">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static7">
-              <property name="text">
-               <string>Cooling rate:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="cooldown_time_spinbox">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>999</number>
-              </property>
-              <property name="value">
-               <number>20</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="static8">
-              <property name="text">
-               <string>ticks</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static20">
-         <property name="title">
-          <string>Spring</string>
-         </property>
-         <layout class="QVBoxLayout" name="layout15">
-          <item>
-           <layout class="QHBoxLayout" name="layout13">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static19">
-              <property name="text">
-               <string>Length:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="spring_length_spinbox">
-              <property name="decimals">
-               <number>2</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>5.500000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout16">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static21">
-              <property name="text">
-               <string>Stiffness:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="spring_stiffness_spinbox">
-              <property name="decimals">
-               <number>3</number>
-              </property>
-              <property name="minimum">
-               <double>0.001000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>100.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.010000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.010000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QLabel" name="static23">
-            <property name="text">
-             <string>Threshold/length:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout17">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static22">
-              <property name="text">
-               <string>- connection:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="spring_connection_spinbox">
-              <property name="decimals">
-               <number>2</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>10.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout18">
-            <item>
-             <widget class="QLabel" name="static24">
-              <property name="text">
-               <string>- disconnection:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="spring_disconnection_spinbox">
-              <property name="decimals">
-               <number>2</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>99.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.300000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static26">
-         <property name="title">
-          <string>Relaxation</string>
-         </property>
-         <layout class="QVBoxLayout" name="layout19">
-          <item>
-           <layout class="QHBoxLayout" name="layout20">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static27">
-              <property name="text">
-               <string>Iteration limit:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="iteration_limit_spinbox">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>10000</number>
-              </property>
-              <property name="value">
-               <number>2000</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout21">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static28">
-              <property name="text">
-               <string>Convergence:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="relaxation_convergence_spinbox">
-              <property name="decimals">
-               <number>3</number>
-              </property>
-              <property name="minimum">
-               <double>0.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>99.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.010000000000000</double>
-              </property>
-              <property name="value">
-               <double>0.001000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static2">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="title">
-          <string>Heater</string>
-         </property>
-         <layout class="QVBoxLayout" name="layout10">
-          <item>
-           <layout class="QHBoxLayout" name="layout2">
-            <item>
-             <widget class="QLabel" name="static3">
-              <property name="text">
-               <string>Speed:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="heater_speed_spinbox">
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="minimum">
-               <double>0.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>2.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="static4">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;tick&lt;span style=&quot; vertical-align:super;&quot;&gt;-1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="layout3">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="static5">
-              <property name="text">
-               <string>Spot size:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="heater_size_spinbox">
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="minimum">
-               <double>0.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>20.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static52">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="title">
-          <string>Pusher</string>
-         </property>
-         <layout class="QVBoxLayout" name="layout37">
-          <item>
-           <layout class="QHBoxLayout" name="layout39">
-            <item>
-             <widget class="QLabel" name="static53">
-              <property name="text">
-               <string>Speed:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QDoubleSpinBox" name="pusher_speed_spinbox">
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="minimum">
-               <double>0.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>999.000000000000000</double>
-              </property>
-              <property name="value">
-               <double>2.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="static54">
-              <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;tick&lt;span style=&quot; vertical-align:super;&quot;&gt;-1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="allow_spring_crossing">
-            <property name="text">
-             <string>Allow spring crossing</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="load_settings_button">
-         <property name="text">
-          <string>Load from file</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="save_settings_button">
-         <property name="text">
-          <string>Save to file</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="static25">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="static9">
-      <property name="title">
-       <string>UI settings</string>
-      </property>
-      <layout class="QVBoxLayout" name="layout8">
-       <item>
-        <layout class="QHBoxLayout" name="layout6">
+     <layout class="QVBoxLayout" name="layout2">
+      <item>
+       <widget class="QGroupBox" name="static9">
+        <property name="title">
+         <string>UI settings</string>
+        </property>
+        <layout class="QVBoxLayout" name="layout8">
          <item>
-          <widget class="QLabel" name="static11">
+          <layout class="QHBoxLayout" name="layout6">
+           <item>
+            <widget class="QLabel" name="static11">
+             <property name="text">
+              <string>Zoom:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="zoom_slider">
+             <property name="minimum">
+              <number>5</number>
+             </property>
+             <property name="maximum">
+              <number>1000</number>
+             </property>
+             <property name="singleStep">
+              <number>5</number>
+             </property>
+             <property name="pageStep">
+              <number>50</number>
+             </property>
+             <property name="value">
+              <number>200</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBothSides</enum>
+             </property>
+             <property name="tickInterval">
+              <number>50</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="show_axes_checkbox">
            <property name="text">
-            <string>Zoom:</string>
+            <string>Display axes</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="zoom_slider">
-           <property name="minimum">
-            <number>5</number>
+          <widget class="QCheckBox" name="show_actuators_checkbox">
+           <property name="text">
+            <string>Display actuators</string>
            </property>
-           <property name="maximum">
-            <number>1000</number>
+           <property name="checked">
+            <bool>true</bool>
            </property>
-           <property name="singleStep">
-            <number>5</number>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="show_contour_checkbox">
+           <property name="text">
+            <string>Display contour</string>
            </property>
-           <property name="pageStep">
-            <number>50</number>
-           </property>
-           <property name="value">
-            <number>200</number>
-           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="static47">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksBothSides</enum>
-           </property>
-           <property name="tickInterval">
-            <number>50</number>
-           </property>
           </widget>
          </item>
-        </layout>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="show_axes_checkbox">
-         <property name="text">
-          <string>Show axes</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="static51">
-         <property name="title">
-          <string>Drawing mode</string>
-         </property>
-         <layout class="QVBoxLayout" name="layout36">
-          <item>
-           <widget class="QRadioButton" name="selection_button">
-            <property name="text">
-             <string>Selection</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">drawing_mode_button_group</string>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="pass_drawing_button">
-            <property name="text">
-             <string>Pass drawing</string>
-            </property>
-            <attribute name="buttonGroup">
-             <string notr="true">drawing_mode_button_group</string>
-            </attribute>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="show_contour_checkbox">
-         <property name="text">
-          <string>Display contour</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="Line" name="static47">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="change_bkg_button">
-         <property name="text">
-          <string>Change background</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="layout22">
          <item>
-          <widget class="QLabel" name="static29">
+          <widget class="QPushButton" name="change_bkg_button">
            <property name="text">
-            <string>Opacity:</string>
+            <string>Change background</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="bkg_opacity_slider">
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="value">
-            <number>100</number>
-           </property>
-           <property name="sliderPosition">
-            <number>100</number>
-           </property>
+          <layout class="QHBoxLayout" name="layout22">
+           <item>
+            <widget class="QLabel" name="static29">
+             <property name="text">
+              <string>Opacity:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="bkg_opacity_slider">
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>100</number>
+             </property>
+             <property name="sliderPosition">
+              <number>100</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksBothSides</enum>
+             </property>
+             <property name="tickInterval">
+              <number>20</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="Line" name="static48">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksBothSides</enum>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="static51">
+           <property name="title">
+            <string>Drawing mode</string>
            </property>
-           <property name="tickInterval">
-            <number>20</number>
-           </property>
+           <layout class="QVBoxLayout" name="layout36">
+            <item>
+             <widget class="QRadioButton" name="selection_button">
+              <property name="text">
+               <string>Selection</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">drawing_mode_button_group</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="pass_drawing_button">
+              <property name="text">
+               <string>Pass drawing</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">drawing_mode_button_group</string>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="Line" name="static48">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="layout34" stretch="0,1,0">
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="static10">
+        <property name="title">
+         <string>Simulator settings</string>
+        </property>
+        <layout class="QVBoxLayout" name="layout5">
          <item>
-          <widget class="QToolButton" name="previous_state_button">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <widget class="QGroupBox" name="static46">
+           <property name="title">
+            <string>Simulator</string>
            </property>
+           <layout class="QHBoxLayout" name="layout35">
+            <item>
+             <widget class="QRadioButton" name="inelastic_button">
+              <property name="text">
+               <string>Wax</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">simulator_type_button_group</string>
+              </attribute>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="elastic_button">
+              <property name="text">
+               <string>Cloth</string>
+              </property>
+              <attribute name="buttonGroup">
+               <string notr="true">simulator_type_button_group</string>
+              </attribute>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="static16">
+           <property name="title">
+            <string>Particle</string>
+           </property>
+           <layout class="QVBoxLayout" name="layout14">
+            <item>
+             <layout class="QHBoxLayout" name="layout11">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static17">
+                <property name="text">
+                 <string>Radius:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="particle_radius_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>999.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout12">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static18">
+                <property name="text">
+                 <string>Molten radius:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="particle_molten_radius_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>999.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>2.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout4">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static7">
+                <property name="text">
+                 <string>Cooling rate:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="cooldown_time_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
+                </property>
+                <property name="value">
+                 <number>20</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="static8">
+                <property name="text">
+                 <string>ticks</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="static20">
+           <property name="title">
+            <string>Spring</string>
+           </property>
+           <layout class="QVBoxLayout" name="layout15">
+            <item>
+             <layout class="QHBoxLayout" name="layout13">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static19">
+                <property name="text">
+                 <string>Length:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="spring_length_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>999.000000000000000</double>
+                </property>
+                <property name="value">
+                 <double>5.500000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout16">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static21">
+                <property name="text">
+                 <string>Stiffness:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="spring_stiffness_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="minimum">
+                 <double>0.001000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>100.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.010000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.010000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="static23">
+              <property name="text">
+               <string>Threshold/length:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout17">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static22">
+                <property name="text">
+                 <string>- connection:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="spring_connection_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout18">
+              <item>
+               <widget class="QLabel" name="static24">
+                <property name="text">
+                 <string>- disconnection:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="spring_disconnection_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="minimum">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>99.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value">
+                 <double>1.300000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="static26">
+           <property name="title">
+            <string>Relaxation</string>
+           </property>
+           <layout class="QVBoxLayout" name="layout19">
+            <item>
+             <layout class="QHBoxLayout" name="layout20">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static27">
+                <property name="text">
+                 <string>Iteration limit:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="iteration_limit_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>10000</number>
+                </property>
+                <property name="value">
+                 <number>2000</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="layout21">
+              <property name="spacing">
+               <number>4</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="static28">
+                <property name="text">
+                 <string>Convergence:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="relaxation_convergence_spinbox">
+                <property name="keyboardTracking">
+                 <bool>false</bool>
+                </property>
+                <property name="decimals">
+                 <number>3</number>
+                </property>
+                <property name="minimum">
+                 <double>0.000000000000000</double>
+                </property>
+                <property name="maximum">
+                 <double>99.000000000000000</double>
+                </property>
+                <property name="singleStep">
+                 <double>0.010000000000000</double>
+                </property>
+                <property name="value">
+                 <double>0.001000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_settings_button">
            <property name="text">
-            <string>&lt;</string>
+            <string>Load from file</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="state_label">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
+          <widget class="QPushButton" name="save_settings_button">
+           <property name="text">
+            <string>Save to file</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="next_state_button">
-           <property name="text">
-            <string>&gt;</string>
+          <spacer name="static25">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
-          </widget>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
-       </item>
-       <item>
-        <widget class="QPushButton" name="restore_state_button">
-         <property name="text">
-          <string>Restore this state</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="save_state_button">
-         <property name="text">
-          <string>Save state to file</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="static45">
-         <property name="text">
-          <string>Tech log:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPlainTextEdit" name="log_text_edit"/>
-       </item>
-       <item>
-        <spacer name="static13">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -1331,13 +1397,21 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>636</width>
+     <width>718</width>
      <height>21</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomToolBox</class>
+   <extends>QToolBox</extends>
+   <header>ui/qcustomtoolbox.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="res/images.qrc"/>
  </resources>

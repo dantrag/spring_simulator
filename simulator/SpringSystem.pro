@@ -40,7 +40,8 @@ SOURCES += \
     pugixml/pugixml.cpp \
     ui/mainwindow.cpp \
     ui/qactuatorwidget.cpp \
-    ui/qcustomgraphicsscene.cpp
+    ui/qcustomgraphicsscene.cpp \
+    ui/qcustomtoolbox.cpp
 
 HEADERS += \
     backend/Actuator.h \
@@ -65,6 +66,7 @@ HEADERS += \
     ui/mainwindow.h \
     ui/qactuatorwidget.h \
     ui/qcustomgraphicsscene.h \
+    ui/qcustomtoolbox.h \
     ui/qtoverloads.h
 
 FORMS += \
