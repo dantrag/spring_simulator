@@ -5,6 +5,7 @@
 
 #ifdef QT_CORE_LIB
 #include <QApplication>
+#include <QStyleFactory>
 #include <QString>
 
 #include "ui/mainwindow.h"
@@ -44,6 +45,7 @@ void pngToArray(std::string filename, std::vector<std::vector<int>>& pixel_array
 int main(int argc, char* argv[]) {
 #ifdef QT_CORE_LIB
   QApplication a(argc, argv);
+  a.setStyle(QStyleFactory::create("Fusion"));
   auto default_config_filename = QApplication::applicationDirPath() + "/default.cfg";
   auto simulator = new SpringSimulator(default_config_filename.toStdString());
 
