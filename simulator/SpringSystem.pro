@@ -63,7 +63,8 @@ HEADERS += \
     pugixml/pugixml.hpp \
     ui/mainwindow.h \
     ui/qactuatorwidget.h \
-    ui/qcustomgraphicsscene.h
+    ui/qcustomgraphicsscene.h \
+    ui/qtoverloads.h
 
 FORMS += \
     ui/mainwindow.ui \
@@ -76,3 +77,14 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
   ui/res/images.qrc
+
+CONFIG(debug, debug|release) {
+    DESTDIR = ../debug-x64
+} else {
+    DESTDIR = ../release-x64
+}
+
+OBJECTS_DIR = $${DESTDIR}/.obj
+MOC_DIR = $${DESTDIR}/.moc
+RCC_DIR = $${DESTDIR}/.rcc
+UI_DIR = $${DESTDIR}/.ui

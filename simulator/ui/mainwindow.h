@@ -15,6 +15,7 @@
 #include "backend/Heater.h"
 #include "backend/Pusher.h"
 
+#include "ui/qtoverloads.h"
 #include "ui/qactuatorwidget.h"
 
 QT_BEGIN_NAMESPACE

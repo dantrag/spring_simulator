@@ -9,6 +9,8 @@
 #include <backend/Path.h>
 #include <backend/Actuator.h>
 
+#include <ui/qtoverloads.h>
+
 namespace Ui {
   class QActuatorWidget;
 }
