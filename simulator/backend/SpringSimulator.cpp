@@ -284,6 +284,29 @@ void SpringSimulator::initializeFromShape(const Shape& shape, double scale, Init
   });
 }
 
+// this algorithm relies on a complete triangulation
+template<typename T>
+void calculateOpposingSprings(const std::vector<Particle*>& particles,
+                              T& opposing_springs) {
+  std::vector<Spring*> springs;
+  for (auto p : particles)
+    for (auto s : p->springs()) springs.push_back(s);
+
+  for (auto spring : springs) {
+    std::map<Particle*, int> neighbour_count;
+    auto p1 = spring->particle1();
+    auto p2 = spring->particle2();
+    for (auto s : p1->springs()) neighbour_count[s->otherEnd(p1)]++;
+    for (auto s : p2->springs()) neighbour_count[s->otherEnd(p2)]++;
+    for (auto neighbour : neighbour_count) {
+      if (neighbour.second > 1) {
+        // common neighbour of p1 and p2
+        opposing_springs[neighbour.first].push_back(spring);
+      }
+    }
+  }
+}
+
 void SpringSimulator::relax(bool extra_long_relaxation) {
   double max_displacement = 0;
   int iteration_count = 0;
@@ -293,6 +316,9 @@ void SpringSimulator::relax(bool extra_long_relaxation) {
 
   log_ << movable_particles_.size() << " movable particles\n";
   auto timer = std::chrono::steady_clock::now();
+
+  //std::map<Particle*, std::vector<Spring*>> opposing_springs;
+  //calculateOpposingSprings(movable_particles_, opposing_springs);
 
   bool is_spring_crossing_allowed = false;
   for (auto actuator : actuators_) is_spring_crossing_allowed |= actuator->isSpringCrossingAllowed();
@@ -327,11 +353,26 @@ void SpringSimulator::relax(bool extra_long_relaxation) {
         for (auto neighbour_spring : neighbour->springs()) {
           if (neighbours.count(neighbour_spring->otherEnd(neighbour)) &&
               neighbour < neighbour_spring->otherEnd(neighbour)) {
-            double distance_to_spring = distance(p,
-                                                 neighbour,
-                                                 neighbour_spring->otherEnd(neighbour));
-            max_allowable_displacement = std::min(max_allowable_displacement, distance_to_spring / 2);
+            double distance_to_spring_squared = distance2(p,
+                                                          neighbour,
+                                                          neighbour_spring->otherEnd(neighbour));
+            if (max_allowable_displacement * max_allowable_displacement * 4 > distance_to_spring_squared)
+              max_allowable_displacement = std::sqrt(distance_to_spring_squared) / 2;
           }
+        }
+      }
+      */
+      /*
+      if (!is_spring_crossing_allowed)
+      for (auto s : opposing_springs[p]) {
+        if (segmentsIntersect(p->point(), Point(p->x() + x_displacement,
+                                                p->y() + y_displacement),
+                              s->particle1()->point(), s->particle2()->point())) {
+          double distance_to_spring_squared = distance2(p,
+                                                        s->particle1(),
+                                                        s->particle2(), false);
+          if (max_allowable_displacement * max_allowable_displacement * 4 > distance_to_spring_squared)
+            max_allowable_displacement = std::sqrt(distance_to_spring_squared) / 2;
         }
       }
       */
@@ -351,6 +392,7 @@ void SpringSimulator::relax(bool extra_long_relaxation) {
 
     if (iteration_count % 50 == 0) {
       updateConnectivity();
+      //calculateOpposingSprings(movable_particles_, opposing_springs);
     }
 
     for (auto p : movable_particles_) {
@@ -429,6 +471,7 @@ void SpringSimulator::runLinearPasses() {
 
   for (auto actuator : actuators_) actuator->disable();
 
+  std::cout << "Total time: " << stopwatch(total_timer) << " ms\n";
   log_ << "Total time: " << stopwatch(total_timer) << " ms\n";
 }
 
