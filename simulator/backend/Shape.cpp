@@ -14,6 +14,12 @@ Shape::Shape(const std::vector<Point>& points)
 Shape::Shape(const Shape& shape)
   : Shape(shape.points()) {}
 
+Shape& Shape::operator=(const Shape& other) {
+  points_ = other.points();
+  n_ = static_cast<int>(points_.size());
+  return *this;
+}
+
 Shape::Shape(std::string filename) {
   std::ifstream shape_file;
   shape_file.open(filename);

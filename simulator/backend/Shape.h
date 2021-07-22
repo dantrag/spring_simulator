@@ -10,6 +10,7 @@ class Shape {
   Shape(const std::vector<Point>& points);
   Shape(const Shape& shape);
   Shape(std::string filename);
+  Shape& operator=(const Shape& other);
 
   const std::vector<Point> points() const { return points_; }
   int n() const { return n_; }
