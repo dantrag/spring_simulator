@@ -82,9 +82,9 @@ RESOURCES += \
   ui/res/images.qrc
 
 CONFIG(debug, debug|release) {
-    DESTDIR = debug-x64
+    DESTDIR = ../builds/debug-x64
 } else {
-    DESTDIR = release-x64
+    DESTDIR = ../builds/release-x64
 }
 
 OBJECTS_DIR = $${DESTDIR}/.obj
