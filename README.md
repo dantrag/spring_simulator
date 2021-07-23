@@ -1,5 +1,5 @@
 # Spring Simulator
-C++-based simulator of 2d spring-connected particle nets capable of changing shape via manipulating with actuators. Currently actuators include heaters (capable of melting/freezing the material) and pushers (grippers that can grip a piece of material and move).
+C++-based simulator of 2d particle meshes capable of changing shape via manipulating with actuators. Currently actuators include heaters (can  melt/freeze the material) and pushers (grippers that can grip a piece of material and move). Other programmable actuators can be easily added, if needed.
 
 - [Background](#background)
   * [Actuators](#actuators)
@@ -18,7 +18,7 @@ C++-based simulator of 2d spring-connected particle nets capable of changing sha
 
 ## Background
 
-The simulated system consists of a mass-spring model, where round particles are connected with springs. There are two types of simulators: elastic and inelastic. Elastic simulator does not change the connectivity of the particles, i.e. springs do not break, and new springs do not appear. Inelastic simulator allows springs to break when they become too long and creates springs when two non-connected particles appear too close.
+The simulated system consists of a mass-spring model, where round particles are connected with springs. There are two types of simulators: elastic and inelastic. Elastic simulator does not change the connectivity of the particles, i.e. springs do not break, and new springs do not appear. Inelastic simulator allows springs to break when they become too long and creates springs when two non-connected particles appear too close. Inelasticity can simulate non-linear behaviors, such as flows.
 
 A spring acts as a physical spring: it exerts the force on particles attached to its ends when stretched or compressed beyond its equilibrium length. Ideal spring obeys a [Hooke's law](https://en.wikipedia.org/wiki/Hooke%27s_law), according to which the force is proportional to deformation: <a href="#"><img src="https://render.githubusercontent.com/render/math?math=F = k\Delta x" alt="F = k dx"></a> (_k_ is a force constant). However, real springs have a limit of compression, and so do the materials. Therefore, in current version, the springs follow the Hooke's law upon stretching and the following handcrafted equation upon compressing:
 
