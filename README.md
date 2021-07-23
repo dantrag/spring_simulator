@@ -1,5 +1,5 @@
 # Wax Simulator
-C++-based simulator of 2d spots capable of changing shape via localized melting/cooling.
+C++-based simulator of particle meshes, manipulated by grippers, heaters and other programmable manipulators.
 
 - [Background](#background)
   * [Settings](#settings)
