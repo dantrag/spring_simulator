@@ -17,7 +17,9 @@ class Pusher : public Actuator {
 
   void resetParticles(std::vector<Particle*>& particles) override;
 
-  bool isSpringCrossingApplicable() const override { return true; };
+  double netForce() const override;
+
+  bool isSpringCrossingApplicable() const override { return true; }
   bool isFirmGripApplicable() const override { return true; }
   bool isFinalReleaseApplicable() const override { return true; }
 

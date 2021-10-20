@@ -49,6 +49,8 @@ class Particle {
   inline double radius() const { return molten_ ? settings_->moltenParticleDefaultRadius()
                                                 : settings_->particleDefaultRadius(); }
 
+  std::pair<double, double> netForce() const;
+
   void setDisplacement(const Point& displacement) { displacement_ = displacement; }
   void applyDisplacement() { x_ += displacement_.x; y_ += displacement_.y; }
 

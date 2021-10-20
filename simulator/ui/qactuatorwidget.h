@@ -25,9 +25,12 @@ class QActuatorWidget : public QWidget {
   void setActuatorEnabled(bool enabled);
   bool isActuatorEnabled();
 
+  bool isForceRestrictionEnabled();
+
   Shape getShape();
   double getOrientation();
   double getSpeed();
+  double getForce();
 
   void addPass(const Path& path);
   Path getPasses();
@@ -39,6 +42,8 @@ class QActuatorWidget : public QWidget {
   void actuatorPathChanged();
   void actuatorSpeedChanged();
   void actuatorEnabledChanged(bool enabled);
+  void actuatorForceRestrictionChanged(bool enabled);
+  void actuatorForceChanged();
   void actuatorSpringCrossingChanged(bool allowed);
   void actuatorFirmGripChanged(bool allowed);
   void actuatorFinalReleaseChanged(bool allowed);

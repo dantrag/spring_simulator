@@ -1,5 +1,7 @@
 #include "backend/Pusher.h"
 
+#include <cmath>
+
 #include "backend/Spring.h"
 
 bool Pusher::isParticleCaptured(Particle* particle) {
@@ -13,6 +15,19 @@ bool Pusher::isParticleCaptured(Particle* particle) {
 void Pusher::enable() {
   Actuator::enable();
   gripping_in_progress_ = true;
+}
+
+double Pusher::netForce() const {
+  double force_x = 0.0;
+  double force_y = 0.0;
+
+  for (const auto particle : current_grip) {
+    auto force = particle->netForce();
+    force_x += force.first;
+    force_y += force.second;
+  }
+
+  return std::sqrt(force_x * force_x + force_y * force_y);
 }
 
 void Pusher::preprocessParticle(Particle* particle) {

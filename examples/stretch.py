@@ -1,6 +1,6 @@
 from os import system
 from math import pi, sin, cos
-from simulator_interface import Point, ParticleMesh, Manipulator
+from simulator_interface import Particle, Point, ParticleMesh, Manipulator
 
 # Creates a particle mesh in a rectangle 100x70 centered at (0, 0)
 # with particle radii 1 and spring lengths 5
@@ -47,6 +47,8 @@ hand2.speed = 2
 
 # Try pulling the top right corner in different directions
 for angle in range(0, 180, 30):
+    print("Angle %d:" % angle)
+
     radians = angle / 180 * pi
 
     # top right with some margin to capture just one particle
@@ -58,9 +60,30 @@ for angle in range(0, 180, 30):
                         y + distance * cos(radians))]
     hand2.save_to_file("hand2.xml")
     
+    # For future use, let's remember particles captured by the manipulator
+    # (only if you need these particles later, for example, for the force data)
+    captured_particles = []
+    for particle in cloth.particles:
+        if hand2.contains_point(particle.point(), Point(x, y)):
+            captured_particles.append(particle.id_)
+
     # run the simulator
     system("./../builds/nongui/springsim -s stretching.cfg -c simulate"\
            " -a hand1.xml -a hand2.xml"\
            " -i initial.xml -o angle%d.xml" % angle)
     # if you want to save full simulator output, including actuators,
     # add -S parameter with a file name
+
+    # Calculate net force on the manipulator and each of captured particles
+    result = ParticleMesh(Point(0, 0), 1, 1, 1, 1)
+    result.load_from_xml("angle%d.xml" % angle)
+    net_force_x = 0.0
+    net_force_y = 0.0
+    for particle_id in captured_particles:
+        force_x, force_y = result.force_on_particle(particle_id)
+        print("Force on particle #%d: (%.3f, %.3f)" %\
+              (particle_id, force_x, force_y))
+        net_force_x += force_x
+        net_force_y += force_y
+
+    print("Force on hand2: (%.3f, %.3f)" % (net_force_x, net_force_y))

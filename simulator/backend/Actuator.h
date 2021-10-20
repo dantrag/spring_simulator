@@ -45,6 +45,14 @@ class Actuator : public XMLIO, public TypeReadable {
   double orientation() const { return orientation_; }
   void setOrientation(double orientation) { orientation_ = orientation; }
 
+  bool forceRestrictionEnabled() const { return force_restricted_; }
+  void setForceRestriction(bool restrict) { force_restricted_ = restrict; }
+
+  double forceLimit() const { return force_limit_; }
+  void setForceLimit(double force_limit) { force_limit_ = force_limit; }
+
+  virtual double netForce() const { return 0.0; }
+
   virtual void preprocessParticle(Particle* particle) = 0;
   virtual void processParticle(Particle* particle) = 0;
   virtual void postprocessParticle(Particle* particle) = 0;
@@ -88,6 +96,8 @@ class Actuator : public XMLIO, public TypeReadable {
   bool on_ = false;
   double speed_ = 0.0;
   int time_ = 0;
+  double force_limit_ = 0.0;
+  bool force_restricted_ = false;
   bool spring_crossing_allowed_ = false;
   bool firm_grip_ = true;
   bool final_release_ = false;

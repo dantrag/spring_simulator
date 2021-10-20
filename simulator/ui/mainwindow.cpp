@@ -568,6 +568,25 @@ void MainWindow::makeTriangle() {
   }
 }
 
+std::pair<double, double> calculateForce(const SpringState* spring_state, SimulatorSettings* settings) {
+  // create fake Spring object with the same parameters and calculate the force
+  auto x1 = spring_state->particle1()->x();
+  auto y1 = spring_state->particle1()->y();
+  auto x2 = spring_state->particle2()->x();
+  auto y2 = spring_state->particle2()->y();
+  auto p1 = new Particle(x1, y1, settings);
+  auto p2 = new Particle(x2, y2, settings);
+  Spring spring(p1, p2,
+                spring_state->equilibriumLength(),
+                spring_state->forceConstant());
+  spring.updateForce();
+
+  auto length = std::sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+  if (length < 1e-5) return std::make_pair(0, 0);
+  return std::make_pair(-(x2 - x1) * spring.force() / length,
+                        -(y2 - y1) * spring.force() / length);
+}
+
 void MainWindow::updateFieldUI() {
   clearUI();
   redrawActuators();
@@ -575,17 +594,7 @@ void MainWindow::updateFieldUI() {
   if (current_sim_state_) {
     ui_->state_label->setText(QString("State %1").arg(current_sim_state_->id()));
 
-    for (auto p : current_sim_state_->particles()) {
-      particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius(),
-                                                               p->y() - p->radius(),
-                                                               2 * p->radius(),
-                                                               2 * p->radius(),
-                                                               QPen(Qt::darkBlue), QBrush(Qt::darkBlue));
-      particle_ui_[p]->setToolTip(QString("(%1, %2)").arg(p->x(), 0, 'f', 0)
-                                                     .arg(p->y(), 0, 'f', 0));
-      particle_ui_[p]->setZValue(20);
-      particle_ui_[p]->setFlag(QGraphicsItem::ItemIsSelectable, true);
-    }
+    std::map<const ParticleState*, std::pair<double, double>> particle_forces;
     for (auto s : current_sim_state_->springs()) {
       spring_ui_[s] = ui_->graphicsView->scene()->addLine(s->particle1()->x(), s->particle1()->y(),
                                                           s->particle2()->x(), s->particle2()->y(),
@@ -597,7 +606,28 @@ void MainWindow::updateFieldUI() {
                                   .arg(s->forceConstant(), 0, 'f', 2));
       spring_ui_[s]->setZValue(10);
       spring_ui_[s]->setFlag(QGraphicsItem::ItemIsSelectable, true);
+
+      auto force = calculateForce(s, sim_->settings());
+      particle_forces[s->particle1()].first += force.first;
+      particle_forces[s->particle1()].second += force.second;
+      particle_forces[s->particle2()].first -= force.first;
+      particle_forces[s->particle2()].second -= force.second;
     }
+
+    for (auto p : current_sim_state_->particles()) {
+      particle_ui_[p] = ui_->graphicsView->scene()->addEllipse(p->x() - p->radius(),
+                                                               p->y() - p->radius(),
+                                                               2 * p->radius(),
+                                                               2 * p->radius(),
+                                                               QPen(Qt::darkBlue), QBrush(Qt::darkBlue));
+      particle_ui_[p]->setToolTip(QString("(%1, %2)\nforce: (%3, %4)").arg(p->x(), 0, 'f', 0)
+                                                                      .arg(p->y(), 0, 'f', 0)
+                                                                      .arg(particle_forces[p].first, 0, 'f', 3)
+                                                                      .arg(particle_forces[p].second, 0, 'f', 3));
+      particle_ui_[p]->setZValue(20);
+      particle_ui_[p]->setFlag(QGraphicsItem::ItemIsSelectable, true);
+    }
+
   }
   displayContour(ui_->show_contour_checkbox->isChecked());
   displayActuators(ui_->show_actuators_checkbox->isChecked());
@@ -1030,6 +1060,8 @@ void MainWindow::addActuatorUI(Actuator* actuator, bool actuator_loaded) {
                               Point(10, 0),
                               Point(10, 10),
                               Point(0, 10)}));
+    actuator->setForceRestriction(false);
+    actuator->setForceLimit(0.0);
   }
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list, actuator);
 
@@ -1073,6 +1105,12 @@ void MainWindow::addActuatorUI(Actuator* actuator, bool actuator_loaded) {
     widget_to_actuator_[actuator_widget]->setSpeed(actuator_widget->getSpeed());
     // save last change as a general setting for an actuator speed
     sim_->settings()->setActuatorSpeed(actuator_widget->getSpeed());
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorForceRestrictionChanged, this, [actuator_widget, this]() {
+    widget_to_actuator_[actuator_widget]->setForceRestriction(actuator_widget->isForceRestrictionEnabled());
+  });
+  connect(actuator_widget, &QActuatorWidget::actuatorForceChanged, this, [actuator_widget, this]() {
+    widget_to_actuator_[actuator_widget]->setForceLimit(actuator_widget->getForce());
   });
   connect(actuator_widget, &QActuatorWidget::actuatorPathChanged, this, [actuator_widget, this]() {
     auto path = actuator_widget->getPasses();

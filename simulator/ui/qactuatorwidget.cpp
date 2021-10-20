@@ -21,6 +21,9 @@ QActuatorWidget::QActuatorWidget(QWidget* parent, const Actuator* actuator)
 
   ui_->speed_spinbox->setValue(actuator->speed());
   ui_->orientation_spinbox->setValue(actuator->orientation() / M_PI);
+  ui_->limit_force_checkbox->setChecked(actuator->forceRestrictionEnabled());
+  ui_->force_spinbox->setValue(actuator->forceLimit());
+  ui_->force_spinbox->setEnabled(ui_->limit_force_checkbox->isChecked());
   ui_->enabled_checkbox->setChecked(actuator->enabled());
   for (auto point : actuator->shape().points()) {
     ui_->coordinates_line_edit->insert(QString("%1 %2 ").arg(point.x).arg(point.y));
@@ -37,6 +40,10 @@ QActuatorWidget::QActuatorWidget(QWidget* parent, const Actuator* actuator)
   connect(ui_->speed_spinbox, QDoubleSpinBoxChanged, this, &QActuatorWidget::actuatorSpeedChanged);
   connect(ui_->passes_text_edit, &QPlainTextEdit::textChanged, this, &QActuatorWidget::actuatorPathChanged);
   connect(ui_->enabled_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorEnabledChanged);
+  connect(this, &QActuatorWidget::actuatorEnabledChanged, this, &QActuatorWidget::actuatorForceRestrictionChanged);
+  connect(ui_->limit_force_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorForceRestrictionChanged);
+  connect(this, &QActuatorWidget::actuatorForceRestrictionChanged, [&](bool enabled) { ui_->force_spinbox->setEnabled(enabled); });
+  connect(ui_->force_spinbox, QDoubleSpinBoxChanged, this, &QActuatorWidget::actuatorForceChanged);
   connect(ui_->allow_spring_crossing_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorSpringCrossingChanged);
   connect(ui_->firm_grip_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorFirmGripChanged);
   connect(ui_->release_grip_checkbox, &QCheckBox::clicked, this, &QActuatorWidget::actuatorFinalReleaseChanged);
@@ -52,6 +59,10 @@ void QActuatorWidget::setActuatorEnabled(bool enabled) {
 
 bool QActuatorWidget::isActuatorEnabled() {
   return ui_->enabled_checkbox->isChecked();
+}
+
+bool QActuatorWidget::isForceRestrictionEnabled() {
+  return ui_->limit_force_checkbox->isChecked();
 }
 
 Shape QActuatorWidget::getShape() {
@@ -73,6 +84,10 @@ double QActuatorWidget::getOrientation() {
 
 double QActuatorWidget::getSpeed() {
   return ui_->speed_spinbox->value();
+}
+
+double QActuatorWidget::getForce() {
+  return ui_->force_spinbox->value();
 }
 
 void QActuatorWidget::addPass(const Path& path) {

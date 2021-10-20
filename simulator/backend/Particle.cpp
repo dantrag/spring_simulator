@@ -180,6 +180,24 @@ void Particle::removeSpring(Spring* spring) {
   if (*springs_.rbegin() == nullptr) springs_.pop_back();
 }
 
+std::pair<double, double> Particle::netForce() const {
+  double force_x = 0.0;
+  double force_y = 0.0;
+
+  for (const auto spring : springs_) {
+    auto dx = spring->otherEnd(this)->x() - this->x();
+    auto dy = spring->otherEnd(this)->y() - this->y();
+    auto length = std::sqrt(dx * dx + dy * dy);
+    if (length < 1e-5) continue;
+    dx /= length;
+    dy /= length;
+    force_x -= dx * spring->force();
+    force_y -= dy * spring->force();
+  }
+
+  return std::make_pair(force_x, force_y);
+}
+
 Particle::~Particle() {
   for (auto s : springs_) {
     s->otherEnd(this)->removeSpring(s);

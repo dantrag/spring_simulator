@@ -54,6 +54,8 @@ bool Actuator::loadFromXMLNode(pugi::xml_node root) {
   setName(root.attribute("name").as_string());
   setSpeed(root.attribute("speed").as_double());
   setEnabled(root.attribute("enabled").as_bool(true));
+  setForceRestriction(root.attribute("force_limited").as_bool(false));
+  setForceLimit(root.attribute("force_limit").as_double());
   setSpringCrossing(root.attribute("spring_crossing_allowed").as_bool(false));
   setFirmGrip(root.attribute("firm_grip").as_bool(true));
   setFinalRelease(root.attribute("final_release").as_bool(false));
@@ -103,6 +105,8 @@ pugi::xml_document Actuator::toXML() const {
   actuator_node.append_attribute("speed") = speed_;
   actuator_node.append_attribute("path_advancement") = path_advancement_;
   actuator_node.append_attribute("orientation") = orientation_ / M_PI * 180;
+  actuator_node.append_attribute("force_limited") = force_restricted_;
+  actuator_node.append_attribute("force_limit") = force_limit_;
   actuator_node.append_attribute("spring_crossing_allowed") = spring_crossing_allowed_;
   actuator_node.append_attribute("firm_grip") = firm_grip_;
   actuator_node.append_attribute("final_release") = final_release_;

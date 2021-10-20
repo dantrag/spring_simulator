@@ -424,7 +424,11 @@ void SpringSimulator::runLinearPasses() {
   for (int tick = 0; tick <= total_ticks; ++tick) {
     for (auto actuator : actuators_) {
       if (actuator->enabled()) {
-        actuator->setPathAdvancement(std::min(actuator->speed() * tick, actuator->path().length()));
+        // maximum force restriction
+        if (actuator->forceRestrictionEnabled() && actuator->netForce() >= actuator->forceLimit())
+          actuator->setPathAdvancement(actuator->pathAdvancement());
+        else
+          actuator->setPathAdvancement(std::min(actuator->speed() * tick, actuator->path().length()));
       }
     }
 
@@ -456,7 +460,7 @@ void SpringSimulator::runLinearPasses() {
   }
 
 
-  // reset particles' states changed during these passes
+  // reset particles' states changed during these passes - also releases grip
   for (const auto& a : actuators_) {
     if (a->enabled()) {
       a->resetParticles(particles_);
