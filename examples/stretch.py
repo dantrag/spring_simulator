@@ -41,6 +41,10 @@ hand2 = Manipulator(shape = [Point(0, 0),
 # Rotate by 30 degrees, if you want
 hand2.orientation = 30
 
+# Limit the force, if you want
+hand2.force_limited = True
+hand2.force = 0.1
+
 # Higher speed makes simulation faster -- less intermediate states
 # in extreme cases possibly involving self-penetration it is better to keep it low
 hand2.speed = 2

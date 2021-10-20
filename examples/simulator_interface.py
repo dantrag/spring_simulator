@@ -189,11 +189,14 @@ class ParticleMesh:
         xml.write(filename)
 
 class Manipulator:
-    def __init__(self, shape = [], path = [], orientation = 0, speed = 1.0):
+    def __init__(self, shape = [], path = [], orientation = 0, speed = 1.0,
+                 force_limited = False, force = 0.0):
         self.shape = shape
         self.path = path
         self.orientation = orientation
         self.speed = speed
+        self.force_limited = force_limited
+        self.force = force
 
     def contains_point(self, point: Point, position: Point):
         def cross_product(p1: Point, p2: Point, p3: Point):
@@ -240,6 +243,8 @@ class Manipulator:
                                    type = "Pusher",
                                    enabled = "true",
                                    spring_crossing_allowed = "false",
+                                   force_limited = str(self.force_limited),
+                                   force_limit = str(self.force),
                                    orientation = str(self.orientation),
                                    speed = str(self.speed))
         shape_node =  ElementTree.SubElement(root, "shape")
