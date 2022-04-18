@@ -45,7 +45,7 @@ bool checkSpringRemovalAllowance(Spring* s, int min_cycle_length, int max_cycle_
   if (!depth.count(s->particle2())) {
     // particles became disjointed or too long cycle forms, so removal of the spring is not possible
     fixable = false;
-    return false;
+    return true;
   }
 
   auto current = s->particle2();
