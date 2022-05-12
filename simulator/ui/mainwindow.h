@@ -62,6 +62,8 @@ private:
   void restoreCurrentState();
   void loadStateFromFile();
   void saveStateToFile();
+  void loadStatesFromFile();
+  void saveStatesToFile();
   void loadSimulatorFromFile();
   void saveSimulatorToFile();
   inline bool isLatestState();

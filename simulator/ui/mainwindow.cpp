@@ -938,6 +938,38 @@ void MainWindow::saveStateToFile() {
     current_sim_state_->saveToXML(filename.toStdString());
 }
 
+void MainWindow::loadStatesFromFile() {
+  auto dialog = QFileDialog();
+  dialog.setFileMode(QFileDialog::ExistingFiles);
+  auto filenames = dialog.getOpenFileNames(this, "Load states from files",
+                                           QApplication::applicationDirPath(),
+                                           "Extensible Markup Language (*.xml);;"
+                                           "All Files (*)");
+  if (!filenames.isEmpty()) {
+    for (auto filename : filenames) {
+      auto state = new SpringSimulatorState(filename.toStdString());
+      sim_->restoreState(state);
+      delete state;
+      addNewState();
+    }
+    updateFieldUI();
+  }
+}
+
+void MainWindow::saveStatesToFile() {
+  auto filename = QFileDialog::getSaveFileName(this, "Save states to files",
+                                               QApplication::applicationDirPath(),
+                                               "Extensible Markup Language (*.xml);;"
+                                               "All Files (*)");
+  if (!filename.isEmpty()) {
+    int cnt = 0;
+    for (auto state : sim_states_) {
+      state->saveToXML(filename.toStdString() + "_" + QString::number(cnt).toStdString() + ".xml");
+      cnt++;
+    }
+  }
+}
+
 void MainWindow::populateSettings() {
   ui_->particle_radius_spinbox->setValue(sim_->settings()->particleDefaultRadius());
   ui_->particle_molten_radius_spinbox->setValue(sim_->settings()->moltenParticleDefaultRadius());
@@ -1203,6 +1235,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->restore_state_button, &QPushButton::clicked, this, &MainWindow::restoreCurrentState);
   connect(ui_->load_state_button, &QPushButton::clicked, this, &MainWindow::loadStateFromFile);
   connect(ui_->save_state_button, &QPushButton::clicked, this, &MainWindow::saveStateToFile);
+  connect(ui_->load_states_button, &QPushButton::clicked, this, &MainWindow::loadStatesFromFile);
+  connect(ui_->save_states_button, &QPushButton::clicked, this, &MainWindow::saveStatesToFile);
   connect(ui_->triangle_button, &QPushButton::clicked, this, &MainWindow::makeTriangle);
   connect(ui_->add_actuator_button, &QToolButton::clicked, this, &MainWindow::addActuator);
   connect(ui_->remove_actuator_button, &QToolButton::clicked, this, &MainWindow::removeActuator);
