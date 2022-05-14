@@ -459,6 +459,29 @@ void MainWindow::runPasses() {
   updateFieldUI();
 }
 
+void MainWindow::run10Passes() {
+  std::map<Actuator*, bool> actuator_enabled;
+  for (int i = 0; i < 10; ++i) {
+    for (auto actuator : actuators_) {
+      if (i == 0) {
+        actuator_enabled[actuator] = actuator_widgets_[actuator]->isActuatorEnabled();
+      }
+      actuator->setEnabled(actuator_enabled[actuator]);
+      actuator->setPath(actuator_widgets_[actuator]->getPasses());
+    }
+
+    sim_->runLinearPasses();
+
+    for (auto actuator : actuators_) {
+      actuator_widgets_[actuator]->setActuatorEnabled(actuator->enabled());
+    }
+
+    addNewState();
+
+    updateFieldUI();
+  }
+}
+
 void MainWindow::makeTriangle() {
   /*
   auto contour = sim_->fieldContour();
@@ -1216,6 +1239,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
   connect(ui_->heat_button, &QPushButton::clicked, this, &MainWindow::doHeat);
   connect(ui_->cool_button, &QPushButton::clicked, this, &MainWindow::doCool);
   connect(ui_->submit_passes_button, &QPushButton::clicked, this, &MainWindow::runPasses);
+  connect(ui_->submit_x10_button, &QPushButton::clicked, this, &MainWindow::run10Passes);
 
   connect(ui_->zoom_slider, &QSlider::valueChanged, this, &MainWindow::updateZoom);
   connect(ui_->bkg_opacity_slider, &QSlider::valueChanged, this, &MainWindow::updateBackgroundOpacity);

@@ -57,7 +57,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
+              <width>186</width>
               <height>139</height>
              </rect>
             </property>
@@ -148,7 +148,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
+              <width>186</width>
               <height>170</height>
              </rect>
             </property>
@@ -361,6 +361,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QPushButton" name="submit_x10_button">
+           <property name="text">
+            <string>Submit x10</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -428,6 +435,20 @@
           <widget class="QPushButton" name="save_state_button">
            <property name="text">
             <string>Save state to file</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_states_button">
+           <property name="text">
+            <string>Load states from files</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="save_states_button">
+           <property name="text">
+            <string>Save states to files</string>
            </property>
           </widget>
          </item>

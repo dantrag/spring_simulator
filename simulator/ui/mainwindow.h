@@ -75,6 +75,7 @@ private:
   void addActuatorUI(Actuator* actuator, bool actuator_loaded);
   void removeActuator();
   void runPasses();
+  void run10Passes();
   void makeTriangle();
 
   void changeBackground();
