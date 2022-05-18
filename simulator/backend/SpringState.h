@@ -12,7 +12,8 @@ class SpringState {
   const ParticleState* particle1() const { return particle1_; }
   const ParticleState* particle2() const { return particle2_; }
   double equilibriumLength() const { return equilibrium_length_; }
-  double actualLength() const { return distance(particle1_->point(), particle2_->point()); }
+  double actualLength() const { return distance(particle1_->point(), particle2_->point())
+                                       - particle1_->radius() - particle2_->radius(); }
   double forceConstant() const { return force_constant_; }
   double stretch() const { return actualLength() / equilibrium_length_; }
 
