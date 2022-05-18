@@ -468,7 +468,11 @@ void MainWindow::run10Passes() {
       }
       actuator->setEnabled(actuator_enabled[actuator]);
       actuator->setPath(actuator_widgets_[actuator]->getPasses());
+      actuator_widgets_[actuator]->setActuatorEnabled(actuator->enabled());
     }
+    redrawActuators();
+    this->repaint();
+    QApplication::processEvents();
 
     sim_->runLinearPasses();
 
@@ -632,6 +636,9 @@ void MainWindow::updateFieldUI() {
   ui_->log_text_edit->clear();
   ui_->log_text_edit->insertPlainText(QString::fromStdString(sim_->log()));
   ui_->log_text_edit->ensureCursorVisible();
+
+  this->repaint();
+  QApplication::processEvents();
 }
 
 void MainWindow::displayState(SpringSimulatorState* state) {
