@@ -1230,7 +1230,7 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
                                      static_cast<int>(SimulatorType::kInelastic));
   ui_->simulator_type_button_group->setId(ui_->elastic_button,
                                      static_cast<int>(SimulatorType::kElastic));
-  ui_->elastic_button->setChecked(true);
+  ui_->inelastic_button->setChecked(true);
 
   ui_->drawing_mode_button_group->setId(ui_->selection_button,
                                      static_cast<int>(QCustomGraphicsScene::MouseMode::kSelection));

@@ -69,13 +69,13 @@ QRectF QCustomGraphicsScene::fieldBoundingRect() {
     rect = rect.united(item->sceneBoundingRect());
   }
 
-  // extend bounding rect by 10% for a nicer view
+  // extend bounding rect by 33% for a nicer view
   auto rect_width = rect.width();
   auto rect_height = rect.height();
-  rect.setLeft(rect.left() - rect_width / 10);
-  rect.setRight(rect.right() + rect_width / 10);
-  rect.setTop(rect.top() - rect_height / 10);
-  rect.setBottom(rect.bottom() + rect_height / 10);
+  rect.setLeft(rect.left() - rect_width / 3);
+  rect.setRight(rect.right() + rect_width / 3);
+  rect.setTop(rect.top() - rect_height / 3);
+  rect.setBottom(rect.bottom() + rect_height / 3);
   return rect;
 }
 
