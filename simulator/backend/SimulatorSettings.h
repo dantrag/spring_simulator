@@ -31,8 +31,8 @@ class SimulatorSettings {
 
   double actuatorSpeed() const { return actuator_speed_; }
   void setActuatorSpeed(double speed) { actuator_speed_ = speed; }
-  double heaterSize() const { return heater_size_; }
-  void setHeaterSize(double size) { heater_size_ = size; }
+  double heaterRadius() const { return heater_radius_; }
+  void setHeaterRadius(double radius) { heater_radius_ = radius; }
 
   void loadFromFile(std::string filename);
   void saveToFile(std::string filename);
@@ -51,7 +51,7 @@ class SimulatorSettings {
   double relaxation_convergence_limit_ = 0.001;
 
   double actuator_speed_ = 2.0;
-  double heater_size_ = 20.0;
+  double heater_radius_ = 20.0;
 };
 
 #endif // SIMULATORSETTINGS_H

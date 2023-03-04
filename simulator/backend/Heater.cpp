@@ -10,7 +10,7 @@ void Heater::preprocessParticle(Particle* particle) {
 
 void Heater::processParticle(Particle* particle) {
   // heat around x, y
-  if (distance(particle->point(), position_) <= size_) {
+  if (shape_->distanceTo(particle->point()) <= radius_) {
     particle->setMolten(true);
     particle->setMeltingTimeout(time_ + particle->settings()->moltenParticleCooldownTime());
     particle->setMovable(true);

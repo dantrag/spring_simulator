@@ -44,7 +44,7 @@ void SimulatorSettings::loadFromFile(std::string filename) {
   relaxation_convergence_limit_ = convert(ini["Relaxation"]["ConvergenceLimit"], 0.001);
 
   actuator_speed_ = convert(ini["Actuator"]["Speed"], 2.0);
-  heater_size_ = convert(ini["Heater"]["Size"], 20.0);
+  heater_radius_ = convert(ini["Heater"]["Radius"], 20.0);
 }
 
 void SimulatorSettings::saveToFile(std::string filename) {
@@ -64,7 +64,7 @@ void SimulatorSettings::saveToFile(std::string filename) {
   ini["Relaxation"]["ConvergenceLimit"] = convert(relaxation_convergence_limit_);
 
   ini["Actuator"]["Speed"] = convert(actuator_speed_);
-  ini["Heater"]["Size"] = convert(heater_size_);
+  ini["Heater"]["Radius"] = convert(heater_radius_);
 
   settings_file.write(ini);
 }

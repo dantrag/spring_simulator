@@ -125,17 +125,40 @@
        <widget class="QGraphicsView" name="actuator_preview"/>
       </item>
       <item>
-       <widget class="QRadioButton" name="coordinates_button">
+       <widget class="QRadioButton" name="polygon_coordinates_button">
         <property name="text">
-         <string>Outline coordinates</string>
+         <string>Polygon coordinates</string>
         </property>
         <property name="checked">
          <bool>true</bool>
         </property>
+        <attribute name="buttonGroup">
+         <string notr="true">coordinates_button_group</string>
+        </attribute>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="coordinates_line_edit">
+       <widget class="QLineEdit" name="polygon_coordinates_line_edit">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="circle_coordinates_button">
+        <property name="text">
+         <string>Circle center and radius (x, y, r)</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">coordinates_button_group</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="circle_coordinates_line_edit">
         <property name="text">
          <string/>
         </property>
@@ -260,4 +283,7 @@
   <include location="res/images.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="coordinates_button_group"/>
+ </buttongroups>
 </ui>

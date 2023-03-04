@@ -13,8 +13,8 @@ class Heater : public Actuator {
 
   void resetParticles(std::vector<Particle*>& particles) override;
 
-  double size() { return size_; }
-  void setSize(double size) { size_ = size; }
+  double radius() { return radius_; }
+  void setRadius(double radius) { radius_ = radius; }
 
   std::string generic_name() const override { return "Heater"; }
 
@@ -22,7 +22,7 @@ class Heater : public Actuator {
   virtual std::vector<std::string> compatible_names() override { return {"heater", "laser"}; }
 
  private:
-  double size_ = 0.0;
+  double radius_ = 0.0;
 };
 
 #endif // HEATER_H

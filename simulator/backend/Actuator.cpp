@@ -3,10 +3,7 @@
 #include <cmath>
 
 Actuator::Actuator() {
-  setShape(Shape({Point(0.0, 0.0),
-                  Point(1.0, 0.0),
-                  Point(1.0, 1.0),
-                  Point(0.0, 1.0)}));
+  setShape(new Circle(Point(0.0, 0.0), 1.0));
 }
 
 Actuator::Actuator(std::string xml_file)
@@ -37,13 +34,17 @@ void Actuator::setPathAdvancement(double cumulative_length) {
   }
 }
 
-void Actuator::setShape(Shape shape) {
-  shape_ = shape;
+void Actuator::setShape(const Shape* shape) {
+  if (shape_) delete shape_;
+
+  shape_ = shape->clone();
   capture_particle_check_ = std::move([shape, this](const Particle* particle) {
-    Shape oriented_shape(shape);
-    oriented_shape.rotateBy(orientation_);
-    oriented_shape.moveTo(position_);
-    return oriented_shape.contains(particle->point());
+    auto oriented_shape = shape->clone();
+    oriented_shape->rotateBy(orientation_);
+    oriented_shape->moveTo(position_);
+    bool captured = oriented_shape->contains(particle->point());
+    delete oriented_shape;
+    return captured;
   });
 }
 
@@ -59,6 +60,7 @@ bool Actuator::loadFromXMLNode(pugi::xml_node root) {
   setFinalRelease(root.attribute("final_release").as_bool(false));
 
   auto shape_node = root.child("shape");
+
   std::vector<Point> points = {};
   for (auto point_node = shape_node.child("point");
        point_node;
@@ -66,7 +68,14 @@ bool Actuator::loadFromXMLNode(pugi::xml_node root) {
     points.push_back(Point(point_node.attribute("x").as_double(),
                            point_node.attribute("y").as_double()));
   }
-  if (!points.empty()) setShape(Shape(points));
+  if (points.empty()) {
+    auto circle_node = shape_node.child("circle");
+    setShape(new Circle(Point(circle_node.attribute("x").as_double(),
+                              circle_node.attribute("y").as_double()),
+                        circle_node.attribute("radius").as_double()));
+  } else {
+    setShape(new Polygon(points));
+  }
   setOrientation(root.attribute("orientation").as_double() / 180 * M_PI);
 
   points.clear();
@@ -108,11 +117,7 @@ pugi::xml_document Actuator::toXML() const {
   actuator_node.append_attribute("final_release") = final_release_;
 
   auto shape_node = actuator_node.append_child("shape");
-  for (const auto point : shape_.points()) {
-    auto point_node = shape_node.append_child("point");
-    point_node.append_attribute("x") = point.x;
-    point_node.append_attribute("y") = point.y;
-  }
+  shape_->toXML(shape_node);
 
   auto path_node = actuator_node.append_child("path");
   for (const auto point : path_.points()) {

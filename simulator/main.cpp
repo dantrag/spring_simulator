@@ -242,7 +242,7 @@ int main(int argc, char* argv[]) {
 
   // run a linear/piecewise linear pass of a heater:
   // auto heater = new Heater();
-  // heater->setSize(20);
+  // heater->setRadius(20);
   // heater->setPath(Path({Point(-100, 0}, Point(100, 0)}));
   // heater->enable();
   // simulator->addActuator(heater);

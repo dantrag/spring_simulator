@@ -254,25 +254,19 @@ void SpringSimulator::initializeFromPixelArray(const std::vector<std::vector<int
 
 void SpringSimulator::initializeFromShape(const Shape& shape, double scale, InitializationGrid mode) {
   scale_ = scale;
-  auto points = shape.points();
-  Shape new_shape(points);
-  double min_x = points[0].x;
-  double max_x = points[0].x;
-  double min_y = points[0].y;
-  double max_y = points[0].y;
-  for (const auto& point : points) {
-    min_x = std::min(min_x, point.x);
-    max_x = std::max(max_x, point.x);
-    min_y = std::min(min_y, point.y);
-    max_y = std::max(max_y, point.y);
-  }
+  auto bounding_rect = shape.bounding_rectangle();
+  double min_x = bounding_rect.first.x;
+  double min_y = bounding_rect.first.y;
+  double max_x = bounding_rect.second.x;
+  double max_y = bounding_rect.second.y;
+  auto new_shape = shape.clone();
 
   // ensure that the shape is in the positive quadrant
   if (min_x < 0 || min_y < 0) {
     Point center = shape.centroid();
     if (min_x < 0) center.x -= min_x;
     if (min_y < 0) center.y -= min_y;
-    new_shape.moveTo(center);
+    new_shape->moveTo(center);
   }
   auto interval = defaultInitializationInterval();
   initializeField(mode, Point(max_x * scale / 2,
@@ -280,8 +274,9 @@ void SpringSimulator::initializeFromShape(const Shape& shape, double scale, Init
                         max_x * scale,
                         max_y * scale, interval,
                         [&](double x, double y) {
-    return new_shape.contains(Point(x / scale, y / scale));
+    return new_shape->contains(Point(x / scale, y / scale));
   });
+  delete new_shape;
 }
 
 // this algorithm relies on a complete triangulation
@@ -500,11 +495,11 @@ bool findCycle(VertexType* current, VertexType* parent,
   return false;
 }
 
-Shape SpringSimulator::fieldContour() const {
+Polygon SpringSimulator::fieldContour() const {
   return particlesContour(particles_);
 }
 
-Shape particlesContour(const std::vector<Particle*>& particles_) {
+Polygon particlesContour(const std::vector<Particle*>& particles_) {
   // threshold of what is considered to be a cycle lying inside the material
   const int max_inner_cycle_size = 4;
 
@@ -610,7 +605,7 @@ Shape particlesContour(const std::vector<Particle*>& particles_) {
 
   std::vector<Point> contour = {};
   for (auto p : largest_cycle) contour.push_back(p->point());
-  return Shape(contour);
+  return Polygon(contour);
 }
 
 void SpringSimulator::clear() {
@@ -620,7 +615,7 @@ void SpringSimulator::clear() {
   particles_.clear();
 }
 
-Path SpringSimulator::predictMoves(Shape target, Actuator* actuator,
+Path SpringSimulator::predictMoves(Polygon target, Actuator* actuator,
                                    double entry_margin, double exit_margin,
                                    int samples, int repeats, int angular_resolution) {
   const auto current_shape = fieldContour();

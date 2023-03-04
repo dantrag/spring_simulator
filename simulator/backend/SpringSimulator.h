@@ -70,13 +70,13 @@ class SpringSimulator : public XMLIO, public TypeReadable {
   const std::set<Spring*>& recentlyDeletedSprings() const { return recently_deleted_springs_; }
   void clearRecent() { recently_added_springs_.clear(); recently_deleted_springs_.clear(); }
 
-  Shape fieldContour() const;
+  Polygon fieldContour() const;
 
   // Operation
   void runLinearPasses();
   void relax(bool extra_long_relaxation = false);
   void clear();
-  Path predictMoves(Shape target, Actuator* actuator,
+  Path predictMoves(Polygon target, Actuator* actuator,
                     double entry_margin, double exit_margin,
                     int samples = 10, int repeats = 1, int angular_resolution = 60);
 
@@ -110,7 +110,7 @@ template<class SimulatorClass> SpringSimulator* tryLoadingSimulatorFromFile(std:
   return nullptr;
 }
 
-Shape particlesContour(const std::vector<Particle*>& particles_);
+Polygon particlesContour(const std::vector<Particle*>& particles_);
 
 double stopwatch(std::chrono::time_point<std::chrono::steady_clock> start);
 

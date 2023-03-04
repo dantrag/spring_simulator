@@ -25,7 +25,7 @@ class QActuatorWidget : public QWidget {
   void setActuatorEnabled(bool enabled);
   bool isActuatorEnabled();
 
-  Shape getShape();
+  const Shape* getShape();
   double getOrientation();
   double getSpeed();
 
@@ -50,5 +50,8 @@ class QActuatorWidget : public QWidget {
  private:
   Ui::QActuatorWidget* ui_;
 };
+
+QAbstractGraphicsShapeItem* drawActuator(QGraphicsScene* scene, const Shape* shape, double angle,
+                                         QColor main_color, QColor secondary_color);
 
 #endif // QACTUATORWIDGET_H

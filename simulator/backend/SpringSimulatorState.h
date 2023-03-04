@@ -27,7 +27,7 @@ class SpringSimulatorState : public XMLIO {
   ParticleState* getItemState(Particle* particle) const;
   SpringState* getItemState(Spring* spring) const;
 
-  Shape fieldContour();
+  Polygon fieldContour();
 
   bool loadFromXMLNode(pugi::xml_node root) override;
   bool loadFromXML(std::string xml_file) override;

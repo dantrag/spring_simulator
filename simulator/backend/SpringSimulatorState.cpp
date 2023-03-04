@@ -50,7 +50,7 @@ SpringSimulatorState::SpringSimulatorState(std::string xml_file) {
   loadFromXML(xml_file);
 }
 
-Shape SpringSimulatorState::fieldContour() {
+Polygon SpringSimulatorState::fieldContour() {
   std::vector<Particle*> particles;
   std::unordered_map<const ParticleState*, Particle*> state_to_particle;
   for (auto p : particles_) {

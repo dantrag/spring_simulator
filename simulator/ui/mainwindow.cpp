@@ -503,7 +503,7 @@ void MainWindow::makeTriangle() {
     Point p1(0.0, 0.0);
     Point p2(side, 0.0);
     Point p3(side / 2, side * std::sqrt(3) / 2);
-    Shape triangle({p1, p2, p3});
+    Polygon triangle({p1, p2, p3});
     /*for (int i = 0; i < 3; ++i)
       ui_->graphicsView->scene()->addLine(triangle[i].x, triangle[i].y,
                                           triangle[(i + 1) % 3].x, triangle[(i + 1) % 3].y,
@@ -530,7 +530,7 @@ void MainWindow::makeTriangle() {
       return;
     }
     auto actuator_state = active_actuator->saveState();
-    auto best_pass = sim_->predictMoves(triangle, active_actuator, sim_->settings()->heaterSize(), sim_->settings()->heaterSize(), 20, repeats);
+    auto best_pass = sim_->predictMoves(triangle, active_actuator, sim_->settings()->heaterRadius(), sim_->settings()->heaterRadius(), 20, repeats);
     active_actuator->loadState(actuator_state);
 
     std::stringstream log_;
@@ -719,19 +719,6 @@ void MainWindow::redrawActuator(Actuator* actuator) {
   eraseActuator(actuator);
 
   // draw actuator shape
-  auto shape = actuator->shape();
-  auto origin = shape.centroid();
-  QPolygonF polygon;
-  for (auto point : shape.points()) {
-    polygon << QPointF(point.x, point.y);
-  }
-  polygon = QTransform().translate(origin.x, origin.y)
-                        .rotateRadians(actuator->orientation())
-                        .translate(-origin.x, -origin.y)
-                        .map(polygon);
-  polygon = QTransform().translate(-origin.x, -origin.y)
-                        .map(polygon);
-
   int actuator_index = std::find(actuators_.begin(), actuators_.end(), actuator) - actuators_.begin();
   auto main_color = kColorPalette[actuator_index % kColorPalette.size()];
   if (!actuator->enabled()) {
@@ -740,9 +727,9 @@ void MainWindow::redrawActuator(Actuator* actuator) {
   }
   auto light_color = main_color;
   light_color.setAlpha(100);
-  auto shape_item = ui_->graphicsView->scene()->addPolygon(polygon,
-                      QPen(QBrush(main_color), 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin),
-                      QBrush(light_color));
+
+  auto shape_item = drawActuator(ui_->graphicsView->scene(), actuator->shape(), actuator->orientation(),
+                                 main_color, light_color);
   shape_item->setToolTip(QString::fromStdString(actuator->name()));
   actuators_ui_[actuator].push_back(shape_item);
 
@@ -1050,7 +1037,7 @@ Actuator* MainWindow::createActuatorByType(int type, bool& loaded) {
     case static_cast<int>(ActuatorType::kHeater): {
       actuator = new Heater();
       // TODO: remove this when we all actuators can use Shape
-      dynamic_cast<Heater*>(actuator)->setSize(sim_->settings()->heaterSize());
+      dynamic_cast<Heater*>(actuator)->setRadius(sim_->settings()->heaterRadius());
       break;
     }
     case static_cast<int>(ActuatorType::kPusher): {
@@ -1088,10 +1075,7 @@ void MainWindow::addActuatorUI(Actuator* actuator, bool actuator_loaded) {
   if (!actuator_loaded) {
     actuator->enable();
     actuator->setSpeed(sim_->settings()->actuatorSpeed());
-    actuator->setShape(Shape({Point(0, 0),
-                              Point(10, 0),
-                              Point(10, 10),
-                              Point(0, 10)}));
+    actuator->setShape(new Circle(Point(0, 0), 10.0));
   }
   auto actuator_widget = new QActuatorWidget(ui_->actuator_list, actuator);
 
@@ -1243,8 +1227,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
 
   populateSettings();
 
-  connect(ui_->heat_button, &QPushButton::clicked, this, &MainWindow::doHeat);
-  connect(ui_->cool_button, &QPushButton::clicked, this, &MainWindow::doCool);
+  connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::doHeat);//
+  connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::doCool);//
   connect(ui_->submit_passes_button, &QPushButton::clicked, this, &MainWindow::runPasses);
   connect(ui_->submit_x10_button, &QPushButton::clicked, this, &MainWindow::run10Passes);
 
@@ -1253,8 +1237,8 @@ MainWindow::MainWindow(SpringSimulator* simulator, QWidget* parent)
 
   connect(ui_->load_simulator_button, &QPushButton::clicked, this, &MainWindow::loadSimulatorFromFile);
   connect(ui_->save_simulator_button, &QPushButton::clicked, this, &MainWindow::saveSimulatorToFile);
-  connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::loadSettings);
-  connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);
+  connect(ui_->load_settings_button, &QPushButton::clicked, this, &MainWindow::loadSettings);//
+  connect(ui_->save_settings_button, &QPushButton::clicked, this, &MainWindow::saveSettings);//
   connect(ui_->init_circle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldCircle);
   connect(ui_->init_rectangle_button, &QPushButton::clicked, this, &MainWindow::initializeFieldRectangle);
   connect(ui_->init_select_image, &QPushButton::clicked, this, &MainWindow::initializeFieldImage);

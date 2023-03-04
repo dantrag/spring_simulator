@@ -8,19 +8,27 @@
 
 #include "backend/Path.h"
 
-Shape::Shape(const std::vector<Point>& points)
+void Shape::scaleTo(double new_area) {
+  double area = this->area();
+  if (area < 1e-5) return;
+
+  double scale = std::sqrt(new_area / area);
+  this->scaleBy(scale);
+}
+
+Polygon::Polygon(const std::vector<Point>& points)
   : points_(points), n_(static_cast<int>(points.size())) {}
 
-Shape::Shape(const Shape& shape)
-  : Shape(shape.points()) {}
+Polygon::Polygon(const Polygon& shape)
+  : Polygon(shape.points()) {}
 
-Shape& Shape::operator=(const Shape& other) {
+Polygon& Polygon::operator=(const Polygon& other) {
   points_ = other.points();
   n_ = static_cast<int>(points_.size());
   return *this;
 }
 
-Shape::Shape(std::string filename) {
+Polygon::Polygon(std::string filename) {
   std::ifstream shape_file;
   shape_file.open(filename);
   std::string line;
@@ -42,7 +50,17 @@ Shape::Shape(std::string filename) {
   shape_file.close();
 }
 
-bool Shape::contains(const Point& point) const {
+void Polygon::saveToFile(std::string filename) const {
+  // in CSV format
+  std::ofstream output_file(filename);
+  output_file << "X,Y" << std::endl;
+  for (const auto& point : points_) {
+    output_file << point.x << "," << point.y << std::endl;
+  }
+  output_file.close();
+}
+
+bool Polygon::contains(const Point& point) const {
   int winding_number = 0;
 
   for (int i = 0; i < n_; i++) {
@@ -63,7 +81,7 @@ bool Shape::contains(const Point& point) const {
   return winding_number != 0;
 }
 
-bool Shape::contains_ray_casting(const Point& point) const {
+bool Polygon::contains_ray_casting(const Point& point) const {
   int intersections = 0;
   if (n_ < 3) return false;
 
@@ -87,12 +105,12 @@ bool Shape::contains_ray_casting(const Point& point) const {
   return (intersections & 1);
 }
 
-double Shape::perimeter() const {
+double Polygon::perimeter() const {
   Path boundary(points_, true);
   return boundary.length();
 }
 
-double Shape::diameter() const {
+double Polygon::diameter() const {
   double diameter = 0.0;
   for (int i = 0; i < n_ - 1; ++i) {
     for (int j = i + 1; j < n_; ++j) {
@@ -102,7 +120,7 @@ double Shape::diameter() const {
   return diameter;
 }
 
-double Shape::area(bool oriented) const {
+double Polygon::area(bool oriented) const {
   double a = 0.0;
   for (int i = 0; i < n_; ++i) {
     auto& p1 = points_[i];
@@ -115,7 +133,7 @@ double Shape::area(bool oriented) const {
   return a / 2;
 }
 
-Point Shape::centroid() const {
+Point Polygon::centroid() const {
   Point center(0.0, 0.0);
   if (n_) {
     for (const auto& point : points_) {
@@ -128,12 +146,21 @@ Point Shape::centroid() const {
   return center;
 }
 
-bool Shape::clockwise() const {
-  auto a = this->area(true);
-  return (a > 0);
+std::pair<Point, Point> Polygon::bounding_rectangle() const {
+  double min_x = points_[0].x;
+  double max_x = points_[0].x;
+  double min_y = points_[0].y;
+  double max_y = points_[0].y;
+  for (const auto& point : points_) {
+    min_x = std::min(min_x, point.x);
+    max_x = std::max(max_x, point.x);
+    min_y = std::min(min_y, point.y);
+    max_y = std::max(max_y, point.y);
+  }
+  return std::make_pair(Point(min_x, min_y), Point(max_x, max_y));
 }
 
-void Shape::moveTo(const Point& new_center) {
+void Polygon::moveTo(const Point& new_center) {
   auto center = this->centroid();
   for (auto& point : points_) {
     point.x -= (center.x - new_center.x);
@@ -141,15 +168,7 @@ void Shape::moveTo(const Point& new_center) {
   }
 }
 
-void Shape::scaleTo(double new_area) {
-  double area = this->area();
-  if (area < 1e-5) return;
-
-  double scale = std::sqrt(new_area / area);
-  this->scaleBy(scale);
-}
-
-void Shape::scaleBy(double scale) {
+void Polygon::scaleBy(double scale) {
   auto center = this->centroid();
   for (auto& point : points_) {
     point.x = center.x + (point.x - center.x) * scale;
@@ -157,7 +176,7 @@ void Shape::scaleBy(double scale) {
   }
 }
 
-void Shape::rotateBy(double angle) {
+void Polygon::rotateBy(double angle) {
   auto center = this->centroid();
   for (auto& point : points_) {
     auto x = point.x;
@@ -167,17 +186,12 @@ void Shape::rotateBy(double angle) {
   }
 }
 
-Point Shape::sampleBoundary(double fraction) const {
-  Path boundary(points_, true);
-  return boundary.sampleFraction(fraction);
+bool Polygon::clockwise() const {
+  auto a = this->area(true);
+  return (a > 0);
 }
 
-Point Shape::sampleBoundary() const {
-  double fraction = static_cast<double>(std::rand()) / RAND_MAX;
-  return this->sampleBoundary(fraction);
-}
-
-double Shape::distanceTo(const Shape& other, int samples, bool hausdorff) const {
+double Polygon::distanceTo(const Polygon& other, int samples, bool hausdorff) const {
   const int sample_points1 = samples;
   std::vector<Point> sampled1;
   for (int i = 0; i < sample_points1; ++i) {
@@ -228,18 +242,29 @@ double Shape::distanceTo(const Shape& other, int samples, bool hausdorff) const 
   return std::sqrt(diff);
 }
 
-void Shape::saveToFile(std::string filename) const {
-  // in CSV format
-  std::ofstream output_file(filename);
-  output_file << "X,Y" << std::endl;
-  for (const auto& point : points_) {
-    output_file << point.x << "," << point.y << std::endl;
+double Polygon::distanceTo(const Point& point) const {
+  double min_distance2 = std::numeric_limits<double>::max();
+  for (int i = 0; i < n_; ++i) {
+    const auto& current = points_[i];
+    const auto& next = (i < n_ - 1) ? points_[i + 1]
+                                    : points_[0];
+    min_distance2 = std::min(min_distance2, distance2(point, current, next));
   }
-  output_file.close();
+  return std::sqrt(min_distance2);
 }
 
-Shape Shape::samplingContour(const std::vector<std::pair<double, double>>& vectors,
-                             double margin) const {
+Point Polygon::sampleBoundary(double fraction) const {
+  Path boundary(points_, true);
+  return boundary.sampleFraction(fraction);
+}
+
+Point Polygon::sampleBoundary() const {
+  double fraction = static_cast<double>(std::rand()) / RAND_MAX;
+  return this->sampleBoundary(fraction);
+}
+
+Polygon Polygon::samplingContour(const std::vector<std::pair<double, double>>& vectors,
+                                 double margin) const {
   std::vector<Point> sampling_contour;
   for (const auto& point : this->points()) {
     double separation_from_shape = -1.0;
@@ -261,5 +286,56 @@ Shape Shape::samplingContour(const std::vector<std::pair<double, double>>& vecto
     }
     if (separation_from_shape > 0) sampling_contour.push_back(best_sampling_point);
   }
-  return Shape(sampling_contour);
+  return Polygon(sampling_contour);
+}
+
+void Polygon::toXML(pugi::xml_node& root_node) const {
+  for (const auto point : points_) {
+    auto point_node = root_node.append_child("point");
+    point_node.append_attribute("x") = point.x;
+    point_node.append_attribute("y") = point.y;
+  }
+}
+
+Circle::Circle(std::string filename) {
+  std::ifstream shape_file;
+  shape_file.open(filename);
+  std::string line;
+  // read past the first line with column names
+  std::getline(shape_file, line);
+  std::getline(shape_file, line);
+  std::stringstream line_stream(line);
+  std::string substring;
+  std::stringstream spaced_values;
+  while (std::getline(line_stream, substring, ',')) {
+    spaced_values << substring << " ";
+  }
+  spaced_values >> center_.x >> center_.y >> radius_;
+  shape_file.close();
+}
+
+Circle& Circle::operator=(const Circle& other) {
+  radius_ = other.radius();
+  center_ = other.centroid();
+  return *this;
+}
+
+std::pair<Point, Point> Circle::bounding_rectangle() const {
+  return std::make_pair(Point(center_.x - radius_, center_.y - radius_),
+                        Point(center_.x + radius_, center_.y + radius_));
+}
+
+void Circle::saveToFile(std::string filename) const {
+  // in CSV format
+  std::ofstream output_file(filename);
+  output_file << "X,Y,R" << std::endl;
+  output_file << center_.x << "," << center_.y << "," << radius_ << std::endl;
+  output_file.close();
+}
+
+void Circle::toXML(pugi::xml_node& root_node) const {
+  auto circle_node = root_node.append_child("circle");
+  circle_node.append_attribute("x") = center_.x;
+  circle_node.append_attribute("y") = center_.y;
+  circle_node.append_attribute("radius") = radius_;
 }

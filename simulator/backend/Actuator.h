@@ -39,8 +39,8 @@ class Actuator : public XMLIO, public TypeReadable {
   const Path& path() const { return path_; }
   void setPath(Path path) { path_ = path; setPathAdvancement(0.0); }
 
-  const Shape& shape() const { return shape_; }
-  void setShape(Shape shape);
+  const Shape* shape() const { return shape_; }
+  void setShape(const Shape* shape);
 
   double orientation() const { return orientation_; }
   void setOrientation(double orientation) { orientation_ = orientation; }
@@ -98,7 +98,7 @@ class Actuator : public XMLIO, public TypeReadable {
   double path_advancement_ = 0.0;
 
   double orientation_ = 0.0;
-  Shape shape_ = Shape({Point(0.0, 0.0)});
+  Shape* shape_ = nullptr;
   ActuatorCaptureFunction capture_particle_check_;
 };
 
